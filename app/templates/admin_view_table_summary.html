@@ -1,0 +1,182 @@
+{% extends 'base.html' %}
+
+
+{% block css %}
+
+<link rel="stylesheet" type="text/css" href="https://cdn.datatables.net/1.10.19/css/jquery.dataTables.css">
+<link rel="stylesheet" type="text/css" href="https://cdnjs.cloudflare.com/ajax/libs/twitter-bootstrap/4.1.3/css/bootstrap.css">
+<link rel="stylesheet" type="text/css" href="https://cdn.datatables.net/1.10.19/css/dataTables.bootstrap4.min.css">
+<style>
+
+    .column {
+      float: left;
+      width: 45%;
+      margin-left: 5px;
+    }
+
+    /* Clear floats after the columns */
+    .row:after {
+      content: "";
+      display: table;
+      clear: both;}
+
+    .a {color: rgb(247, 249, 252)
+
+    }
+
+
+</style>
+{% endblock %}
+
+
+
+{% block title %}
+
+<h1 class="h3 mb-2 text-gray-800">桌子详情</h1>
+
+{% endblock %}
+
+
+{% block content %}
+
+
+
+<!-- start of form -->
+<form class="" action="" method="POST" enctype="multipart/form-data">
+
+  {{ form.hidden_tag() }}
+  {{ form.csrf_token }}
+
+  <div class="container">
+
+
+    <div class="column">
+
+
+      <div class="table-responsive">
+          <table class="table table-sm table-dark" style="width:50%">
+
+            <thead>
+              <tr>
+                <th scope="col">Tisch-Nr.</th>
+                <th>{{table_name}}</th>
+              </tr>
+            </thead>
+
+          </table>
+      </div>
+
+
+      <div class="table-responsive">
+        <table class="table table-sm table-dark" style="width:50%">
+          <thead>
+            <tr>
+              <th scope="col">跑堂名称</th>
+              <th>杜海军</th>
+            </tr>
+          </thead>
+        </table>
+
+      </div>
+
+    <!-- start of form -->
+      <div>
+
+          <button type="button" class="btn btn-secondary">
+            <a href="#coupon" data-toggle="collapse" style="color: rgb(247, 249, 252)">
+              代金券
+            </a>
+
+          </button>
+
+          <button type="button" class="btn btn-secondary">
+            <a href="#discount" data-toggle="collapse" style="color: rgb(247, 249, 252)">
+              折扣
+            </a>
+          </button>
+
+
+          {{form.coupon_amount(id="coupon", class="collapse", placeholder="请输入代金券金额")}}
+
+          {{form.discount_rate(id="discount", class="collapse", placeholder="请输入折扣点，如0.9打九折")}}
+
+
+          {{ form.cash_submit(class="btn btn-secondary") }}
+
+          {{ form.card_submit(class="btn btn-secondary") }}
+
+          <br>
+          <hr>
+
+      </div>
+
+  </div>
+
+  <div class="column">
+
+        <table class="table table-bordered" style="width:100%">
+          <thead>
+            <tr>
+              <th scope="col">菜品种类</th>
+              <th scope="col">菜品名称</th>
+              <th scope="col">数量</th>
+              <th scope="col">单价 €</th>
+              <th scope="col">价格 €</th>
+            </tr>
+          </thead>
+
+          <tbody>
+            {% for dish, details in dishes.items() %}
+            <tr>
+              <th scope="row">{{details.get('class_name')}}</th>
+              <td>{{dish}}</td>
+              <td>{{details.get('quantity')}}</td>
+              <td>{{ details.get('price') }}</td>
+              <td>{{ details.get('price') * details.get('quantity') }}</td>
+
+            </tr>
+            {% endfor %}
+          </tbody>
+        </table>
+
+        {{ form.grandtotal(value=total_price, class="btn btn-danger", readonly="readonly") }}
+
+
+        <hr>
+        <button type="button" class="btn btn-secondary" style="margin-left:25px;margin-top:50px">
+          <a href={{ url_for('admin_active_tables') }} style="color: rgb(247, 249, 252)">
+            返回
+          </a>
+        </button>
+
+      </div>
+    </div>
+</form>
+
+
+
+
+
+<!-- end of form -->
+
+{% endblock %}
+
+
+
+
+
+
+
+{% block scripts %}
+<script>
+    $(document).ready(function() {
+    $('#example').DataTable();
+} );
+</script>
+
+
+<script type="text/javascript" charset="utf8" src="https://cdn.datatables.net/1.10.19/js/dataTables.bootstrap4.min.js"></script>
+<script type="text/javascript" charset="utf8" src="https://code.jquery.com/jquery-3.3.1.js"></script>
+<script type="text/javascript" charset="utf8" src="https://cdn.datatables.net/1.10.19/js/jquery.dataTables.min.js"></script>
+
+{% endblock %}

@@ -1,0 +1,46 @@
+
+Done:
+
+1. Add Dish Full Function covering dish pic
+2. Store Settings
+3. Dish: CRUD
+4. Front Pages Displaying all dishes and drinks
+5. Ajax Req to the server
+6. Connect Flask server with mlab Mongo DB !!!
+7. Takeaway order generation and status Page !!!?????
+8. Takeaway orders card model in the admin interface.
+9. Takeaway Order Page CRUD !!! Eidt and View Functions
+10. Takeaway Admin Checkout an order > a. coupon b.discount c. payment methods
+11. Styling from blue to dark grey or any dark color.
+12. Table Management and frontend view
+13. transparent icons in alacarte nav page
+14. Section cache
+15. Table Switch on and off
+18. Cart total actual qtys
+16. QR Code Generation
+11. qty add and minus > > cart floating
+14. Categories management: CRUD
+18. Activity Logger
+22. Homepage's analytics graphing library
+21. URL Routing for users with different permissions.
+18. User Permission Management and Redirects: permerssion tier: 0, 1, 2, 3
+
+
+
+
+
+To Dos:
+
+10. Render Flashing MSGs in all front pages
+12. Takeaway Categories > sub categories > single items
+17. Product detail view page (width 100%)
+19. License Key to redirect to register page
+20. Remove email attr from user model
+23. Replace pandas and pendulum usages in the code
+
+
+
+
+
+
+

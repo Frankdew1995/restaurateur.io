@@ -1,0 +1,119 @@
+{% extends "base.html" %}
+
+
+{% block title %}
+
+
+
+<h1 class="h3 mb-2 text-gray-800">餐馆设置</h1>
+<br>
+
+{% endblock %}
+
+
+
+{% block content %}
+
+<form action='' method='POST' enctype="multipart/form-data" novalidate>
+
+
+
+    {{ form.hidden_tag() }}
+
+    <div class='form-group'>
+
+
+        <p>
+            {{ form.store_name.label }} <br>
+            {{ form.store_name()}}
+        </p>
+
+
+        <p>
+            {{ form.city.label }}<br>
+            {{ form.city()}}
+        </p>
+
+        <p>
+
+            {{ form.street.label }}<br>
+            {{ form.street()}}
+
+        </p>
+
+
+
+        <p>
+
+            {{ form.street_no.label }}<br>
+            {{ form.street_no()}}
+
+        </p>
+
+
+
+        <p>
+            {{ form.country.label }}<br>
+            {{ form.country() }}
+        </p>
+
+
+        <p>
+
+            {{ form.zip.label }}<br>
+            {{ form.zip()}}
+
+        </p>
+
+
+        <p>
+
+            {{ form.tax_id.label }}<br>
+            {{ form.tax_id() }}
+        </p>
+
+
+        <p>
+            {{ form.tax_rate_takeaway.label }}税率<br>
+            {{ form.tax_rate_takeaway(placeholder='请输入小数')}}
+        </p>
+
+        <p>
+            {{ form.tax_rate_InHouse.label }}税率<br>
+            {{ form.tax_rate_InHouse(placeholder='请输入小数')}}
+        </p>
+
+         <p>
+            {{ form.logo.label }}<br>
+            {{ form.logo()}}
+        </p>
+
+
+
+        <p>
+
+            {{ form.submit(class='btn btn-danger')}}
+
+            <button type="button" class="btn btn-secondary">
+              <a href={{ url_for('index') }} style="color: rgb(247, 249, 252)">
+                取消
+              </a>
+            </button>
+
+        </p>
+
+
+
+    </div>
+
+
+
+</form>
+
+
+
+
+
+
+
+{% endblock %}

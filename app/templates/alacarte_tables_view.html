@@ -1,0 +1,145 @@
+{% extends 'waiter_admin.html' %}
+
+
+{% block css %}
+<link rel="stylesheet" type="text/css" href="https://cdn.datatables.net/1.10.19/css/jquery.dataTables.css">
+<link rel="stylesheet" type="text/css" href="https://cdnjs.cloudflare.com/ajax/libs/twitter-bootstrap/4.1.3/css/bootstrap.css">
+<link rel="stylesheet" type="text/css" href="https://cdn.datatables.net/1.10.19/css/dataTables.bootstrap4.min.css">
+<style>
+
+    .column {
+      float: left;
+      width: 15%;
+      margin-left: 10px;
+    }
+
+    /* Clear floats after the columns */
+    .row:after {
+      content: "";
+      display: table;
+      clear: both;}
+
+    a {color: rgb(247, 249, 252)
+
+    }
+
+
+</style>
+{% endblock %}
+
+{% block title %}
+
+<h1 class="h3 mb-2 text-gray-800">订单查看</h1>
+
+{% endblock %}
+
+{% block content %}
+
+<hr>
+
+<form action='' method="POST" enctype="multipart/form-data">
+
+
+    {{ form.hidden_tag() }}
+
+    <div class="row">
+
+      <div class="col">
+        <p>
+          {{ form.start_section.label }}<br>
+
+          {{ form.start_section(
+            class='form-control',
+            style="width: 100%")}}
+        </p>
+      </div>
+
+
+      <div class="col">
+        <p>
+          {{ form.end_section.label }}<br>
+          {{ form.end_section(
+            class='form-control',
+            style="width: 100%") }}
+
+
+
+        </p>
+
+
+      </div>
+
+
+      <div class="col">
+
+        {{form.submit(class='btn btn-secondary')}}
+
+      </div>
+
+
+    </div>
+
+</form>
+
+
+<hr>
+
+
+<div class="container">
+
+
+  <div class="row">
+
+    <br>
+    {% for section, tables in ordered_sections.items() %}
+    <!-- start of column -->
+    {% if section in selected_sections %}
+    <div class="column">
+      <center><h1 class="h3 mb-2 text-gray-800 alert alert-dark">{{section}} 区</h1></center>
+      {% for table in tables %}
+      <!-- start of card -->
+      <div class="card" id={{ table.name }} >
+        <a href={{ url_for('view_table', table_name=table.name) }} style="color: #5a5c69!important">
+        <div class="card-body">
+          <center>
+            <h5 class="card-title">{{table.name}}</h5>
+          </center>
+        </div>
+        </a>
+      </div>
+      {% endfor %}
+      <!-- end of card -->
+      <br>
+    </div>
+    {% endif %}
+    {% endfor %}
+    <!-- end of column -->
+
+  </div>
+</div>
+
+<br>
+
+
+<br>
+
+
+
+{% endblock %}
+
+
+
+{% block scripts %}
+<script>
+    $(document).ready(function() {
+    $('#example').DataTable();
+} );
+</script>
+
+<script type="text/javascript" charset="utf8" src="https://cdn.datatables.net/1.10.19/js/dataTables.bootstrap4.min.js"></script>
+<script type="text/javascript" charset="utf8" src="https://code.jquery.com/jquery-3.3.1.js"></script>
+<script type="text/javascript" charset="utf8" src="https://cdn.datatables.net/1.10.19/js/jquery.dataTables.min.js"></script>
+
+<script src="{{ url_for('static', filename='js/parse_table_status.js') }}"></script>
+
+{% endblock %}

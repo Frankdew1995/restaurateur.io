@@ -1,0 +1,25 @@
+<!DOCTYPE html>
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no">
+
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title class="lan_Thanks_Head">谢谢惠顾！</title>
+    <script src="../js/jquery-2.1.1.js"></script>
+    <script src="../js/common/Strings.js"></script>
+    <script src="../js/common/common.js"></script>
+    <script src="../js/pages/thanks.js"></script>
+
+</head>
+<script>
+    history.pushState(null, null, document.URL);
+    window.addEventListener('popstate', function () {
+        history.pushState(null, null, document.URL);
+    });
+</script>
+<body style="padding: 15px">
+<h1 class="lan_Thanks_Title">谢谢惠顾</h1>
+<p class="lan_Thanks_Content">服务员正在准备账单，请稍等片刻。</p>
+</body>
+</html>
+

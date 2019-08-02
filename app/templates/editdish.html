@@ -1,0 +1,117 @@
+{% extends "base.html" %}
+
+
+
+
+
+{% block title %}
+
+
+<h1 class="h3 mb-2 text-gray-800">查看修改菜品</h1>
+<br>
+
+{% endblock %}
+
+
+{% block content %}
+
+
+<button type="button" class="btn btn-danger">
+  <a href={{ url_for('all_dishes') }} style="color: rgb(247, 249, 252)">
+    返回
+  </a>
+</button>
+
+<hr>
+
+<form action='' method="POST" enctype="multipart/form-data">
+
+
+    {{ form.hidden_tag() }}
+
+    <div class='form-group'>
+
+
+        <p>
+            {{ form.name.label }} <br>
+            {{ form.name()}}
+        </p>
+
+
+        <p>
+
+            {{ form.image.label }}<br>
+
+            <img src="{{ image }}" />
+
+        </p>
+
+
+        <p>
+
+            {{ form.category.label }}<br>
+            {{ form.category()}}
+
+        </p>
+
+
+        <p>
+          {{form.class_name.label}}<br>
+          {{ form.class_name() }}
+        </p>
+
+
+
+        <p>
+
+            {{ form.price.label }}<br>
+            {{ form.price()}}
+
+        </p>
+
+
+        <p>
+
+            {{ form.description.label }}<br>
+            {{ form.description(class='form-control')}}
+
+        </p>
+
+
+        <p>
+
+            <label for="file">更新菜品图片</label>
+            <input type='file' class='form-control-file' name='file'>
+
+        </p>
+
+
+        <p>
+
+            {{ form.submit(class='btn btn-danger')}}
+            <button type="button" class="btn btn-secondary">
+              <a href={{ url_for('all_dishes') }} style="color: rgb(247, 249, 252)">
+                取消
+              </a>
+            </button>
+
+        </p>
+
+
+
+    </div>
+
+
+
+
+
+
+
+</form>
+
+
+
+
+
+
+{% endblock %}

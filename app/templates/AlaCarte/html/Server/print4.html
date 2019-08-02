@@ -1,0 +1,47 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title></title>
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8"/>
+    <meta name="keywords" content=""/>
+    <script src="js/jquery2.0.3.min.js"></script>
+</head>
+<body>
+    <div id="w" style='white-space:pre'></div>
+</body>
+</html>
+<script type="text/javascript">
+    let id = getQueryString("id");
+    $("document").ready(function () {
+        $.ajax({
+            url:"../../php/menuDataByXSTAR.php?q=getPrint4",
+            data:{id,id},
+            type:"POST",
+            success:function (res) {
+                console.log(res);
+                //绑定数据
+                let types = JSON.parse(res);
+                let data = types[0];
+
+                var show = "Call service<br/>" +
+                           "********************************************************<br/>" + 
+                           " " + data['tablename'] + "    seat: " + data['seat'] + "<br/>" + 
+                           " " + data['calltime']+ "<br/>" + 
+                           "********************************************************<br/>";
+
+                $("#w").html(show);
+                window.print();
+                window.close();
+                //console.log(types[0]);
+            }
+        });
+        
+    });
+    //获取url参数
+    function getQueryString(name) {
+        var reg = new RegExp("(^|&)" + name + "=([^&]*)(&|$)"); //构造一个含有目标参数的正则表达式对象
+        var r = window.location.search.substr(1).match(reg);  //匹配目标参数
+        if (r != null) return unescape(r[2]); return null; //返回参数值
+    }
+</script>

@@ -1,0 +1,27 @@
+[
+  {
+    "Class": "Food",
+    "Subcategory": "Haxe Fleisch",
+    "Unit": "Stueck"
+  },
+  {
+    "Class": "Drinks",
+    "Subcategory": "Coffee",
+    "Unit": "Tasse"
+  },
+  {
+    "Class": "Food",
+    "Subcategory": "Chinese cuisine",
+    "Unit": "Topf"
+  },
+  {
+    "Class": "Food",
+    "Subcategory": "Japan cuisine",
+    "Unit": "Teller"
+  },
+  {
+    "Class": "Drinks",
+    "Subcategory": "Liqor",
+    "Unit": "Bottle"
+  }
+]

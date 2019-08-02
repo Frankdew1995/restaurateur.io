@@ -1,0 +1,36 @@
+.tableName{
+    width: 200px ;
+}
+.cd-nav .cd-primary-nav a{
+    font-size: medium;
+}
+#Buffet{
+    display: none;
+}
+.zy_back{
+	z-index: 99;
+	width: 100%;
+	top:0;
+	background: #393a3f;
+	height: 7%;
+	line-height: 50px;
+	position: fixed;
+	text-align: left;
+	color: white;
+	text-indent: 0.5em;
+}
+.zy_back a{
+	height: 35px;
+	line-height: 35px;
+	font-size: 2em;
+	display: inline-block;
+}
+.content_3{
+	background-image: url(../../img/bg3.png);
+	background-size: 100% 100%;
+	width: 100%;
+	bottom: 0;
+	position: fixed;
+	height: 93%;
+	overflow-y: scroll;
+}

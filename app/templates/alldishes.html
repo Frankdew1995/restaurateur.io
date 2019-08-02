@@ -1,0 +1,106 @@
+{% extends 'base.html' %}
+
+
+{% block css %}
+
+<link rel="stylesheet" type="text/css" href="https://cdn.datatables.net/1.10.19/css/jquery.dataTables.css">
+<link rel="stylesheet" type="text/css" href="https://cdnjs.cloudflare.com/ajax/libs/twitter-bootstrap/4.1.3/css/bootstrap.css">
+<link rel="stylesheet" type="text/css" href="https://cdn.datatables.net/1.10.19/css/dataTables.bootstrap4.min.css">
+
+{% endblock %}
+
+
+
+{% block title %}
+
+
+<h1 class="h3 mb-2 text-gray-800">菜品管理</h1>
+<br>
+
+{% endblock %}
+
+
+
+{% block content %}
+
+
+<button type="button" class="btn btn-secondary">
+  <a href={{ url_for('add_dish') }} style="color: rgb(247, 249, 252)">
+    新增
+  </a>
+</button>
+
+
+
+<hr>
+
+<div class="row">
+
+
+    <div class="col-sm-12">
+
+
+        <table id="example" class="table table-striped table-bordered">
+
+      <thead>
+        <tr>
+          <th scope="col">菜品编号#</th>
+          <th scope="col">菜品名称</th>
+          <th scope="col">菜品分类</th>
+          <th scope="col">菜品价格 €</th>
+          <th scope="col">操作</th>
+
+        </tr>
+      </thead>
+      <tbody>
+      {% for dish in dishes %}
+        <tr>
+          <th scope="row">{{ dish.id }}</th>
+          <td>{{ dish.name }}</td>
+          <td>{{ dish.category }}</td>
+          <td>{{ dish.price_gross }}</td>
+          <td>
+            <span>
+              <button type="button" class="btn btn-secondary">
+                <a href="{{ url_for('edit_dish', dish_id=dish.id) }}" style="color: rgb(247, 249, 252)">
+                  查看/修改
+                </a>
+              </button>
+            </span>
+            <span>
+              <button type="button" class="btn btn-secondary">
+                <a href="{{ url_for('remove_dish', dish_id=dish.id) }}" style="color: rgb(247, 249, 252)">
+                  删除
+                </a>
+              </button>
+            </span>
+          </td>
+        </tr>
+      {% endfor %}
+      </tbody>
+    </table>
+
+    </div>
+
+</div>
+
+
+{% endblock %}
+
+
+{% block scripts %}
+
+
+
+<script>
+    $(document).ready(function() {
+    $('#example').DataTable();
+} );
+</script>
+
+
+<script type="text/javascript" charset="utf8" src="https://cdn.datatables.net/1.10.19/js/dataTables.bootstrap4.min.js"></script>
+<script type="text/javascript" charset="utf8" src="https://code.jquery.com/jquery-3.3.1.js"></script>
+<script type="text/javascript" charset="utf8" src="https://cdn.datatables.net/1.10.19/js/jquery.dataTables.min.js"></script>
+
+{% endblock %}

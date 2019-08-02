@@ -1,0 +1,71 @@
+{% extends "boss.html" %}
+
+
+
+{% block title %}
+
+
+<h1 class="h3 mb-2 text-gray-800">修改账号</h1>
+<hr>
+
+
+{% endblock %}
+
+
+{% block content %}
+
+
+<button type="button" class="btn btn-danger">
+  <a href={{ referrer }} style="color: rgb(247, 249, 252)">
+    返回
+  </a>
+</button>
+
+<hr>
+
+<form action='' method="POST" enctype="multipart/form-data">
+
+    {{ form.hidden_tag() }}
+
+    <div class='form-group'>
+
+        <p>
+            {{ form.username.label }} <br>
+            {{ form.username(
+              class='form-control',
+              style="width: 50%",
+              placeholder='请输入用户名') }}
+        </p>
+
+        <p>
+
+          {{ form.permissions.label }}<br>
+          {{ form.permissions(
+              class='form-control',
+              style="width: 50%") }}
+        </p>
+
+        <p>当前权限:{{user.permissions}}</p>
+
+        <p>
+            {{ form.submit(class='btn btn-danger')}}
+            <button type="button" class="btn btn-secondary">
+              <a href={{ referrer }} style="color: rgb(247, 249, 252)">
+                取消
+              </a>
+            </button>
+        </p>
+
+
+
+    </div>
+
+
+</form>
+
+
+
+
+
+
+{% endblock %}

@@ -1,0 +1,103 @@
+{% extends 'base.html' %}
+
+
+{% block css %}
+
+<link rel="stylesheet" type="text/css" href="https://cdn.datatables.net/1.10.19/css/jquery.dataTables.css">
+<link rel="stylesheet" type="text/css" href="https://cdnjs.cloudflare.com/ajax/libs/twitter-bootstrap/4.1.3/css/bootstrap.css">
+<link rel="stylesheet" type="text/css" href="https://cdn.datatables.net/1.10.19/css/dataTables.bootstrap4.min.css">
+
+{% endblock %}
+
+
+{% block content %}
+
+
+
+<h1 class="h1 mb-2 text-gray-800">{{title}}</h1>
+<br>
+
+
+
+<hr>
+
+<form action='' method="POST" enctype="multipart/form-data">
+
+
+    <div class='form-group'>
+
+
+      <div class="row">
+
+
+          <div class="col-sm-12">
+
+
+            <table id="example" class="table table-striped table-bordered">
+
+            <thead>
+              <tr>
+                <th scope="col">日期</th>
+                <th scope="col">中午成人</th>
+                <th scope="col">下午成人</th>
+                <th scope="col">中午儿童</th>
+                <th scope="col">下午儿童</th>
+                <th scope="col">日期</th>
+                <th scope="col">备注</th>
+                <th scope="col">操作</th>
+              </tr>
+            </thead>
+            <tbody>
+
+              <tr>
+                <th scope="row">星期一</th>
+                <td>
+                  <input type="text" name="MonNoonAdult" value="">
+                </td>
+                <td>
+                  <input type="text" name="MonAfterAdult" value="">
+                </td>
+                <td>
+                  <input type="text" name="MonNoonKid" value="">
+                </td>
+                <td>
+                  <input type="text" name="MonAfterKid" value="">
+                </td>
+              </tr>
+            </tbody>
+          </table>
+
+        </div>
+
+      </div>
+
+
+
+    </div>
+
+
+
+
+</form>
+
+
+
+
+
+
+{% endblock %}
+
+
+{% block scripts %}
+
+<script>
+    $(document).ready(function() {
+    $('#example').DataTable();
+} );
+</script>
+
+<script type="text/javascript" charset="utf8" src="https://cdn.datatables.net/1.10.19/js/dataTables.bootstrap4.min.js"></script>
+<script type="text/javascript" charset="utf8" src="https://code.jquery.com/jquery-3.3.1.js"></script>
+<script type="text/javascript" charset="utf8" src="https://cdn.datatables.net/1.10.19/js/jquery.dataTables.min.js"></script>
+
+{% endblock %}

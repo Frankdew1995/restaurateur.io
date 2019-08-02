@@ -1,0 +1,91 @@
+{% extends 'base.html' %}
+
+
+{% block css %}
+
+<link rel="stylesheet" type="text/css" href="https://cdn.datatables.net/1.10.19/css/jquery.dataTables.css">
+<link rel="stylesheet" type="text/css" href="https://cdnjs.cloudflare.com/ajax/libs/twitter-bootstrap/4.1.3/css/bootstrap.css">
+<link rel="stylesheet" type="text/css" href="https://cdn.datatables.net/1.10.19/css/dataTables.bootstrap4.min.css">
+
+{% endblock %}
+
+
+
+{% block title %}
+
+
+<h1 class="h3 mb-2 text-gray-800">查看二维码</h1>
+<br>
+
+{% endblock %}
+
+
+
+{% block content %}
+
+
+<button type="button" class="btn btn-danger">
+  <a href={{ url_for('qrcode_manage') }} style="color: rgb(247, 249, 252)">
+    返回
+  </a>
+</button>
+
+
+
+<hr>
+
+
+<div class="container">
+
+
+  <p>QRCode</p>
+
+  <p>
+
+    <img src={{ url_for('static', filename='qrcode/' + qrcode) }} alt="">
+
+  </p>
+
+  <p>
+
+    桌子: {{table_name}}
+
+  </p>
+
+  <p>
+    座位号: {{seat_number}}
+
+
+  </p>
+
+
+
+
+</div>
+
+
+
+
+
+
+
+
+{% endblock %}
+
+
+{% block scripts %}
+
+
+
+<script>
+    $(document).ready(function() {
+    $('#example').DataTable();
+} );
+</script>
+
+
+<script type="text/javascript" charset="utf8" src="https://cdn.datatables.net/1.10.19/js/dataTables.bootstrap4.min.js"></script>
+<script type="text/javascript" charset="utf8" src="https://code.jquery.com/jquery-3.3.1.js"></script>
+<script type="text/javascript" charset="utf8" src="https://cdn.datatables.net/1.10.19/js/jquery.dataTables.min.js"></script>
+
+{% endblock %}

@@ -1,0 +1,104 @@
+{% extends "base.html" %}
+
+
+
+{% block title %}
+
+
+<h1 class="h3 mb-2 text-gray-800">修改跑堂资料</h1>
+<hr>
+
+
+{% endblock %}
+
+
+{% block content %}
+
+
+<button type="button" class="btn btn-danger">
+  <a href={{ referrer }} style="color: rgb(247, 249, 252)">
+    返回
+  </a>
+</button>
+
+<hr>
+
+<form action='' method="POST" enctype="multipart/form-data">
+
+    {{ form.hidden_tag() }}
+
+    <div class='form-group'>
+
+        <p>
+            {{ form.username.label }} <br>
+            {{ form.username(
+              class='form-control',
+              style="width: 50%",
+              placeholder='请输入用户名') }}
+        </p>
+
+        <p>
+          {{ form.alias.label }}<br>
+          {{ form.alias(
+              class='form-control',
+              style="width: 50%",
+              placeholder='请输入姓名') }}
+        </p>
+
+
+        <p>
+
+          {{ form.account_type.label }}<br>
+          {{ form.account_type(
+              class='form-control',
+              style="width: 50%",
+              placeholder='请输入姓名') }}
+
+        </p>
+
+
+        {% if user.permissions == 1 %}
+
+          <p>当前账号类型: 跑堂</p>
+
+        {% else %}
+
+          <p>当前账号类型: 外卖</p>
+
+        {% endif %}
+
+
+
+        <p>
+
+          {{ form.section.label }}<br>
+          {{ form.section(
+              class='form-control',
+              style="width: 50%") }}
+        </p>
+
+
+        {% if section %}
+
+          <p>当前负责分区: {{section}}</p>
+
+        {% endif %}
+
+        <p>
+            {{ form.submit(class='btn btn-danger')}}
+            <button type="button" class="btn btn-secondary">
+              <a href={{ referrer }} style="color: rgb(247, 249, 252)">
+                取消
+              </a>
+            </button>
+        </p>
+
+
+
+    </div>
+
+
+</form>
+
+
+{% endblock %}

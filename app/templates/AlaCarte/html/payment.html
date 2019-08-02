@@ -1,0 +1,52 @@
+<!DOCTYPE html>
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no">
+
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title  class="lan_Welcome_Head">欢迎使用Xstar餐饮系统</title>
+
+    <link rel="stylesheet" href="../css/Main.css">
+    <link rel="stylesheet" href="../css/reset.css">
+    <link rel="stylesheet" href="../css/style.css">
+
+    <script src="../js/jquery-2.1.1.js"></script>
+
+    <script src="../js/common/Strings.js"></script>
+    <script src="../js/common/common.js"></script> 
+    <script src="../js/pages/payment.js"></script>
+    <link rel="stylesheet" href="../css/pages/payment.css">
+    <script src="../js/http_raw.githubusercontent.com_hapjs_action-sheet_master_build_action-sheet.js"></script>
+
+
+
+</head>
+<body style="background-size:100%;background-image:url(../img/bg2.png);background-repeat: no-repeat;">
+<div class="zy_top">
+          <div class="zy_return">
+              <a href="javascript:history.back(-1)"></a>
+          </div>
+</div>
+<div class="menu_con">
+	<main id="totalContainer">
+
+
+
+	</main>
+
+
+
+	<footer>
+
+		<div class="summe"><span class=" lan_Summe">共计</span>
+			<span class="orange totalAmount"></span>
+			<span class="lan_piece">道</span>：
+			<span style="display: none; text-decoration:line-through;color: white;font-size: 0.8em;"  class="orange totalPrice"></span>
+			&nbsp;&nbsp;
+			<span  class="orange totalPrice"></span>€
+		</div>
+		<div onclick="showPaymentMethod()" class="btn-red lan_Button_Order">去支付</div>
+	</footer>
+</div>
+</body>
+</html>

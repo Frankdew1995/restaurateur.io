@@ -1,0 +1,94 @@
+{% extends "base.html" %}
+
+
+
+{% block title %}
+
+
+<h1 class="h3 mb-2 text-gray-800">{{ title }}</h1>
+<hr>
+
+
+
+{% endblock %}
+
+
+{% block content %}
+
+
+<button type="button" class="btn btn-danger">
+  <a href={{ url_for('view_tables') }} style="color: rgb(247, 249, 252)">
+    返回
+  </a>
+</button>
+
+<hr>
+
+<form action='' method="POST" enctype="multipart/form-data">
+
+
+    {{ form.hidden_tag() }}
+
+    <div class='form-group'>
+
+
+        <p>
+            {{ form.name.label }} <br>
+            {{ form.name(
+              class='form-control',
+              style="width: 50%",
+              placeholder='请输入桌子名称') }}
+        </p>
+
+
+        <p>
+
+          {{ form.persons.label }}<br>
+          {{ form.persons(
+              class='form-control',
+              style="width: 50%",
+              placeholder='请输入桌子人数') }}
+
+        </p>
+
+
+        <p>
+
+            {{ form.section.label }}<br>
+            {{ form.section(
+              class='form-control',
+              style='width: 50%')}}
+
+        </p>
+
+
+
+        <p>
+
+            {{ form.submit(class='btn btn-danger')}}
+            <button type="button" class="btn btn-secondary">
+              <a href={{ url_for('view_tables') }} style="color: rgb(247, 249, 252)">
+                取消
+              </a>
+            </button>
+
+        </p>
+
+
+
+    </div>
+
+
+
+
+
+
+
+</form>
+
+
+
+
+
+
+{% endblock %}

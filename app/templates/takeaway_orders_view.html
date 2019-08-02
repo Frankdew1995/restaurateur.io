@@ -1,0 +1,230 @@
+{% extends 'TakeawayAdmin.html' %}
+
+
+{% block css %}
+
+<link rel="stylesheet" type="text/css" href="https://cdn.datatables.net/1.10.19/css/jquery.dataTables.css">
+<link rel="stylesheet" type="text/css" href="https://cdnjs.cloudflare.com/ajax/libs/twitter-bootstrap/4.1.3/css/bootstrap.css">
+<link rel="stylesheet" type="text/css" href="https://cdn.datatables.net/1.10.19/css/dataTables.bootstrap4.min.css">
+<style>
+
+    .column {
+      float: left;
+      width: 30%;
+      margin-left: 15px;
+    }
+
+    /* Clear floats after the columns */
+    .row:after {
+      content: "";
+      display: table;
+      clear: both;}
+
+    .a {color: rgb(247, 249, 252)
+
+    }
+
+
+    .card-title{
+
+      text-align:center;
+    }
+
+
+</style>
+{% endblock %}
+
+{% block title %}
+
+<h1 class="h3 mb-2 text-gray-800">订单查看</h1>
+<hr>
+
+
+{% endblock %}
+
+
+{% block content %}
+
+
+
+
+<div class="container">
+
+  <div class="row">
+
+    <div class="column">
+      <center><h1 class="h3 mb-2 text-gray-800 alert alert-primary">待付款</h1></center>
+
+      {% for order in orders %}
+      {% if not order.isPaid %}
+      <div class="card bg-secondary text-white">
+
+        <a href="#collapse{{order.id}}"  data-toggle='collapse' style="color: rgb(247, 249, 252)">
+
+          <div class="card-body">
+            <h5 class="card-title" style="text-align:center">{{ order.id }}</h5>
+          </div>
+
+        </a>
+
+
+        <div class="card-footer collapse" id="collapse{{ order.id }}" style="text-align:center">
+
+          <a href={{url_for('checkout_takeaway_admin', order_id=order.id)}} class="btn btn-secondary" style="color: rgb(247, 249, 252)">结账</a>
+
+        </div>
+
+
+
+      </div>
+      {% endif %}
+      {% endfor %}
+      <br>
+
+    </div>
+    <br>
+
+    <div class="column">
+
+      <center><h1 class="h3 mb-2 text-gray-800 alert alert-info">备餐中</h1></center>
+      {% for order in orders %}
+      <!-- <br> -->
+      {% if order.isPaid and not order.isReady %}
+      <div class="card bg-danger text-white">
+
+        <a href="#collapse{{ order.id }}" data-toggle="collapse" style="color: rgb(247, 249, 252)">
+
+          <div class="card-body">
+            <h5 class="card-title">{{ order.id }}</h5>
+          </div>
+
+        </a>
+
+        <div class="card-footer collapse" id="collapse{{ order.id }}" style="text-align:center">
+
+          <p style="text-align:center">
+            <span>
+              <button type="button" class="btn btn-danger pickup">
+                <a href={{url_for('checkout_order', order_id=order.id)}} style="color: rgb(247, 249, 252)">
+                  取餐
+                </a>
+              </button>
+            </span>
+            <span>
+              <button type="button" class="btn btn-secondary">
+                <a href={{ url_for('takeaway_order_view', order_id=order.id) }} style="color: rgb(247, 249, 252)">
+                  查看
+                </a>
+              </button>
+            </span>
+          </p>
+
+        </div>
+
+
+
+      </div>
+      <br>
+      {% endif %}
+      {% endfor %}
+
+
+    </div>
+
+    <div class="column">
+      <center><h1 class="h3 mb-2 text-gray-800 alert alert-success">待取餐</h1></center>
+      {% for order in orders %}
+      <!-- <br> -->
+      {% if order.isReady and not order.isPickedUp %}
+      <div class="card text-white bg-success">
+
+        <a href="#collapse{{order.id}}" data-toggle="collapse" style="color: rgb(247, 249, 252)">
+
+          <div class="card-body">
+            <h5 class="card-title">{{ order.id }}</h5>
+          </div>
+
+        </a>
+
+        <div class="card-footer collapse" id="collapse{{order.id}}">
+
+          <p style="text-align:center">
+            <span>
+              <button type="button" class="btn btn-danger complete" id={{order.id}}>
+                <a href={{url_for('checkout_order', order_id=order.id)}} style="color: rgb(247, 249, 252)">
+                  已取餐
+                </a>
+              </button>
+            </span>
+            <span>
+              <button type="button" class="btn btn-secondary">
+                <a href={{ url_for('takeaway_order_view', order_id=order.id) }} style="color: rgb(247, 249, 252)">
+                  查看
+                </a>
+              </button>
+            </span>
+          </p>
+
+        </div>
+      </div>
+      <br>
+      {% endif %}
+      {% endfor %}
+
+    </div>
+
+
+  </div>
+</div>
+
+<br>
+
+
+<br>
+
+
+
+{% endblock %}
+
+
+
+
+
+
+
+{% block scripts %}
+<script>
+    $(document).ready(function() {
+    $('#example').DataTable();
+} );
+</script>
+
+
+<script type="text/javascript" charset="utf8" src="https://cdn.datatables.net/1.10.19/js/dataTables.bootstrap4.min.js"></script>
+<script type="text/javascript" charset="utf8" src="https://code.jquery.com/jquery-3.3.1.js"></script>
+<script type="text/javascript" charset="utf8" src="https://cdn.datatables.net/1.10.19/js/jquery.dataTables.min.js"></script>
+<script type="text/javascript">
+
+var request = new XMLHttpRequest();
+request.open('GET', '/all_takeaway_orders', true);
+
+request.onload = function() {
+  if (request.status >= 200 && request.status < 400) {
+    // Success!
+    var data = JSON.parse(request.responseText);
+    console.log(data);
+  } else {
+    // We reached our target server, but it returned an error
+
+  }
+};
+
+request.onerror = function() {
+  // There was a connection error of some sort
+};
+
+request.send();
+</script>
+<script src="{{ url_for('static', filename='front_end_js/mark_done_order.js') }}"></script>
+
+{% endblock %}

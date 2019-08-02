@@ -1,0 +1,160 @@
+{% extends 'TakeawayAdmin.html' %}
+
+
+{% block css %}
+
+<link rel="stylesheet" type="text/css" href="https://cdn.datatables.net/1.10.19/css/jquery.dataTables.css">
+<link rel="stylesheet" type="text/css" href="https://cdnjs.cloudflare.com/ajax/libs/twitter-bootstrap/4.1.3/css/bootstrap.css">
+<link rel="stylesheet" type="text/css" href="https://cdn.datatables.net/1.10.19/css/dataTables.bootstrap4.min.css">
+<link rel="stylesheet" href={{ url_for('static', filename='css/takeaway_order_update.css') }}>
+
+
+<style>
+
+    .column {
+      float: left;
+      width: 40%;
+      margin-left: 15px;
+    }
+
+    /* Clear floats after the columns */
+    .row:after {
+      content: "";
+      display: table;
+      clear: both;}
+
+    .a {color: rgb(247, 249, 252)
+
+    }
+
+
+</style>
+{% endblock %}
+
+
+{% block title %}
+
+<h1 class="h3 mb-2 text-gray-800">订单修改</h1>
+
+
+<hr>
+{% with messages = get_flashed_messages() %}
+  {% if messages %}
+    {% for message in messages %}
+    <p>{{ message }}</p>
+    {% endfor %}
+  {% endif %}
+{% endwith %}
+
+
+{% endblock %}
+
+
+
+{% block content %}
+
+
+
+<div class="shopping-cart">
+
+  <div class="column-labels">
+    <!-- <label class="product-image">Image</label> -->
+    <label class="product-details">Product</label>
+    <label class="product-price">Price</label>
+    <label class="product-quantity">Quantity</label>
+    <label class="product-removal">Remove</label>
+    <label class="product-line-price">Total</label>
+  </div>
+  {% for item, details in ordered_items.items() %}
+  <div class="product">
+
+    <div class="product-details">
+      <div class="product-title">{{ item }}</div>
+    </div>
+    <div class="product-price">{{ details.get('price') }}</div>
+    {% if not order.isPaid %}
+    <div class="product-quantity">
+      <input type="number" value={{ details.get('quantity')  }} min="1">
+    </div>
+    <div class="product-removal">
+      <button class="remove-product">
+        移除
+      </button>
+    </div>
+    {% else %}
+    <div class="product-quantity">
+      <input type="number" value={{ details.get('quantity')  }} min="1" readonly="readonly">
+    </div>
+    {% endif %}
+    <div class="product-line-price">{{ details.get('price') * details.get('quantity') }}</div>
+  </div>
+  {% endfor %}
+
+
+
+
+  <p>订单号:
+    <span id="orderId">
+      {{order.id}}
+    </span>
+  </p>
+  <p>状态:
+    <span>
+      {{"已支付" if order.isPaid else "未支付"}}
+    </span>
+    <span>
+      {{"备餐中" if order.isPaid and not order.isReady}}
+    </span>
+    <span>
+      {{"待取餐" if order.isPaid and order.isReady and not order.isPickedUp}}
+    </span>
+    <span>
+      {{"已完结" if order.isPickedUp }}
+    </span>
+  </p>
+  <p>生成时间: {{ order.timeCreated }}</p>
+
+  {% if not order.isPaid %}
+  <button id="update" class="btn btn-danger">
+    <a href={{ url_for('takeaway_orders_admin') }} style="color: rgb(247, 249, 252)">
+      确定更新
+    </a>
+    </button>
+  {% endif %}
+
+
+
+  <button type="button" class="btn btn-secondary">
+    <a href={{ url_for('takeaway_orders_admin') }} style="color: rgb(247, 249, 252)">
+      返回
+    </a>
+  </button>
+
+
+
+
+
+
+
+</div>
+
+
+
+
+
+{% endblock %}
+
+
+
+{% block scripts %}
+<script>
+    $(document).ready(function() {
+    $('#example').DataTable();
+} );
+</script>
+<script type="text/javascript" charset="utf8" src="https://cdn.datatables.net/1.10.19/js/dataTables.bootstrap4.min.js"></script>
+<script type="text/javascript" charset="utf8" src="https://code.jquery.com/jquery-3.3.1.js"></script>
+<script type="text/javascript" charset="utf8" src="https://cdn.datatables.net/1.10.19/js/jquery.dataTables.min.js"></script>
+<script  src={{ url_for('static', filename='front_end_js/takeaway_order_edit.js') }}></script>
+
+{% endblock %}

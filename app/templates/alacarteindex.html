@@ -1,0 +1,167 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+
+
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
+  <meta name="description" content="">
+  <meta name="author" content="">
+
+  <title>{{title}}</title>
+
+  <!-- Bootstrap Core CSS -->
+  <link href="{{ url_for('static', filename='css/bootstrap.min.css') }}" rel="stylesheet">
+
+  <!-- Custom Fonts -->
+  <link href=" {{ url_for('static', filename='fontawesome-free/css/all.min.css') }} " rel="stylesheet" type="text/css">
+  <link href="https://fonts.googleapis.com/css?family=Source+Sans+Pro:300,400,700,300italic,400italic,700italic" rel="stylesheet" type="text/css">
+  <link href="{{ url_for('static', filename='simple-line-icons/css/simple-line-icons.css') }}" rel="stylesheet">
+
+  <!-- Custom CSS -->
+  <link href="{{ url_for('static', filename='css/stylish-portfolio.min.css') }}" rel="stylesheet">
+
+</head>
+<style>
+
+    .right_img {
+        top: -35%;
+        position: absolute;
+        width: 100%;
+        display: flex;
+        justify-content: space-around;
+    }
+
+          .column {
+        float: left;
+        width: 20.33%;
+        padding: 5px;
+        margin-left: 13px
+
+      }
+
+        /* Clear floats after image containers */
+        .row::after {
+          content: "";
+          clear: both;
+          display: table;
+
+        }
+
+
+        .container {
+
+          margin-top: 390px
+        }
+
+
+      body {
+
+        background-size: 100% 90%
+      }
+
+
+
+
+
+</style>
+
+<body id="page-top" background={{url_for('static', filename='img/food6.jpg')}}>
+
+
+
+  <section class="content-section text-white text-center" id="services">
+    <div class="container">
+
+      {% with messages = get_flashed_messages() %}
+
+        {% if messages %}
+
+          {% for message in messages %}
+
+          <div class="alert alert-success" role="alert">
+              {{ message }}
+          </div>
+
+          {% endfor %}
+
+        {% endif %}
+
+      {% endwith %}
+
+      <div class="row">
+
+        <div class="column">
+
+          <a href={{ url_for('order_alacarte', table_name=table_name, seat_number=seat_number) }}>
+                  <img class="img1" src={{ url_for('static', filename='img/wydc.png') }}/>
+          </a>
+
+          <h6>
+            <strong>Bestellen</strong>
+          </h6>
+        </div>
+
+
+        <div class="column">
+
+            <img class="img1" src={{ url_for('static', filename='img/jsyl.png') }}/>
+          <h6>
+            <strong>Getraenke</strong>
+          </h6>
+
+        </div>
+
+
+
+        <div class="column">
+
+              <a href={{ url_for('guest_call_pay', table_name=table_name, seat_number=seat_number) }}>
+                <img class="img1" src={{ url_for('static', filename='img/wyjz.png') }}/>
+              </a>
+            <h6>
+              <strong>Zahlen</strong>
+            </h6>
+
+        </div>
+
+
+
+        <div class="column">
+
+            <a href={{ url_for('guest_call_service', table_name=table_name, seat_number=seat_number) }}>
+              <img class="img1" src={{ url_for('static', filename='img/fwyxd.png') }}/>
+            </a>
+          <h6>
+            <strong>Ruf Kellner</strong>
+          </h6>
+
+        </div>
+
+
+
+      </div>
+    </div>
+
+
+    <p>
+      Wenn Sie auf die Schaltfläche Start klicken, können Sie das automatische Bestellsystem von Buffet verwenden. Die entsprechende Mahlzeitgebühr wird nach Klicken dieses Knopfes berechnet. Bitte achten Sie darauf, den QR-Code an anderen Orten nicht zu scannen, da das Scannen des QR-Codes an anderen Standorten zu einer erneuten Rechnungsstellung führt. Dieses System speichert keine privaten Daten, die mit Ihnen verknüpft sind. Es werden nur Kunden-IDs für die einmalige Verwendung zur Differenzierung generiert.
+    </p>
+  </section>
+
+
+
+  <!-- Bootstrap core JavaScript -->
+  <script src="{{ url_for('static', filename='js/jquery/jquery.min.js') }}"></script>
+  <script src="{{ url_for('static', filename='js/bootstrap/bootstrap.bundle.min.js') }}"></script>
+
+  <!-- Plugin JavaScript -->
+  <script src="{{ url_for('static', filename='js/jquery/jquery.easing.min.js') }}"></script>
+
+  <!-- Custom scripts for this template -->
+  <script src="{{ url_for('static', filename='js/stylish-portfolio.min.js') }}"></script>
+
+</body>
+
+</html>

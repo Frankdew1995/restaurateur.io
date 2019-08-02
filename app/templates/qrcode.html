@@ -1,0 +1,126 @@
+{% extends 'base.html' %}
+
+
+{% block css %}
+
+<link rel="stylesheet" type="text/css" href="https://cdn.datatables.net/1.10.19/css/jquery.dataTables.css">
+<link rel="stylesheet" type="text/css" href="https://cdnjs.cloudflare.com/ajax/libs/twitter-bootstrap/4.1.3/css/bootstrap.css">
+<link rel="stylesheet" type="text/css" href="https://cdn.datatables.net/1.10.19/css/dataTables.bootstrap4.min.css">
+
+{% endblock %}
+
+
+
+{% block title %}
+
+
+<h1 class="h3 mb-2 text-gray-800">二维码管理</h1>
+<br>
+
+{% endblock %}
+
+
+
+{% block content %}
+
+
+<button type="button" class="btn btn-info">
+  <a href={{url_for('export_qrcode', table_name="All")}} style="color: rgb(247, 249, 252)">
+     全部导出
+  </a>
+</button>
+
+
+
+<hr>
+
+<div class="row">
+
+
+    <div class="col-sm-12">
+
+
+        <table id="example" class="table table-striped table-bordered">
+
+      <thead>
+        <tr>
+          <th scope="col">桌子名称</th>
+          <th scope="col">桌子人数</th>
+          <th scope="col">桌子分区</th>
+          <th scope="col">添加时间</th>
+          <th scope="col">状态</th>
+          <th scope="col">查看二维码</th>
+          <th scope="col">操作</th>
+
+
+        </tr>
+      </thead>
+      <tbody>
+
+        {% for table in tables %}
+        <tr>
+          <th scope="row">{{ table.name }}</th>
+          <td>{{ table.number }}</td>
+          <td>{{ table.section }}</td>
+          <td>{{ table.timeCreated }}</td>
+          {% if table.is_on %}
+          <td>打开</td>
+          {% else %}
+          <td>关闭</td>
+          {% endif %}
+          <td>
+
+
+              {% for qrcode in table2qr.get(table.name) %}
+
+              <a href={{ url_for('view_qrcode', qrcode_name=qrcode.split('.')[0]) }}>
+                  <span>
+                    {{qrcode.split('.')[0]}},
+                  </span>
+              </a>
+
+
+              {% endfor %}
+
+          </td>
+          <td>
+            <span>
+              <button type="button" class="btn btn-secondary">
+                <a href={{url_for('export_qrcode', table_name=table.name)}} style="color: rgb(247, 249, 252)">
+                  导出
+                </a>
+              </button>
+            </span>
+          </td>
+        </tr>
+        {% endfor %}
+
+
+
+      </tbody>
+    </table>
+
+    </div>
+
+</div>
+
+
+{% endblock %}
+
+
+{% block scripts %}
+
+
+
+<script>
+    $(document).ready(function() {
+    $('#example').DataTable();
+} );
+</script>
+
+
+<script type="text/javascript" charset="utf8" src="https://cdn.datatables.net/1.10.19/js/dataTables.bootstrap4.min.js"></script>
+<script type="text/javascript" charset="utf8" src="https://code.jquery.com/jquery-3.3.1.js"></script>
+<script type="text/javascript" charset="utf8" src="https://cdn.datatables.net/1.10.19/js/jquery.dataTables.min.js"></script>
+
+{% endblock %}

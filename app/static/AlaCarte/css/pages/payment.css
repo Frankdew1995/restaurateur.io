@@ -1,0 +1,82 @@
+body{
+}
+main{
+}
+.orderContainer{
+	color:black;
+    background: #ffffff;
+    padding: 15px;
+    display: flex;
+    justify-content: space-between;
+    border-bottom: 1px solid #dddddd;
+}
+.dishInfo{
+    width: 60%;
+}
+.amountInfo{
+    height: 36px;
+    width: 42px;
+    padding: 10px 0 10px 6px;
+    float: left;
+    background: url(../../resource/image/by.svg) 80% 50% no-repeat;
+    background-size: 24px;
+}
+.menuItemContainer{
+    border-radius: 5px;
+    padding: 0;
+    width: 98%;
+    margin: 0 auto 6px;
+    background: #fff;
+    overflow: hidden;
+}
+.itemTitle{
+	background-image:none!important;
+    padding: 5px 0;
+    height: auto;
+    text-align: center;
+}
+footer{
+	
+    z-index:5;
+    width: 100%;
+    position: fixed;
+    background: rgba(0,0,0,.8);
+    bottom: 0;
+    left: 0;
+    font-size: 15px;
+    color: white;
+    padding: 10px 0;
+    display: flex;
+    justify-content: space-between;
+}
+.btn-red{
+
+    border-radius: 30px;
+    color: #FFF;
+    padding: 8px 15px 8px 14px;
+    font-size: 1.1em;
+    margin-right: 6px;
+    background: #b92626;
+    background-size: 26px
+}
+.summe{
+	padding-left: 5px;
+	display: flex;
+	align-items: center;
+	width: 50%;
+    font-size: 1em;
+    color: #fff;
+
+}
+.orange{
+    color:#ffa200;
+}
+.price{
+    line-height: 30px;
+}
+.dishName{
+    overflow: hidden;
+    text-overflow:ellipsis;
+    white-space: nowrap;
+
+}

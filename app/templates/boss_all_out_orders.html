@@ -1,0 +1,99 @@
+{% extends 'boss.html' %}
+
+
+{% block css %}
+
+<link rel="stylesheet" type="text/css" href="https://cdn.datatables.net/1.10.19/css/jquery.dataTables.css">
+<link rel="stylesheet" type="text/css" href="https://cdnjs.cloudflare.com/ajax/libs/twitter-bootstrap/4.1.3/css/bootstrap.css">
+<link rel="stylesheet" type="text/css" href="https://cdn.datatables.net/1.10.19/css/dataTables.bootstrap4.min.css">
+
+{% endblock %}
+
+
+{% block title %}
+
+
+
+<h1 class="h3 mb-2 text-gray-800">{{ title }}</h1>
+
+<br>
+
+{% endblock %}
+
+
+
+{% block content %}
+
+
+{% with messages = get_flashed_messages() %}
+{% if messages %}
+{% for message in messages %}
+<div class="alert alert-success" role="alert">
+  <p>{{ message }}<p>
+</div>
+{% endfor %}
+{% endif %}
+{% endwith %}
+
+<div class="row">
+
+
+    <div class="col-sm-12">
+
+        <table id="example" class="table table-striped table-bordered">
+
+      <thead>
+        <tr>
+          <th scope="col">Bestell-Nr.#</th>
+          <th scope="col">生成时间</th>
+          <th scope="col">金额 EURO</th>
+          <th scope="col">操作</th>
+          <!-- <th scope="col">状态</th> -->
+        </tr>
+      </thead>
+      <tbody>
+      {% for order in orders %}
+        <tr id={{ order.id }}>
+          <th scope="row">{{ order.id }}</th>
+          <td>{{ order.timeCreated }}</td>
+          <td>{{ order.totalPrice }}</td>
+          <td>
+            <span>
+              <button type="button" class="btn btn-secondary">
+                <a href={{ url_for('boss_takeaway_order_view', order_id=order.id) }} style="color: rgb(247, 249, 252)">
+                  查看
+                </a>
+              </button>
+            </span>
+          </td>
+        </tr>
+      {% endfor %}
+      </tbody>
+    </table>
+
+    </div>
+
+</div>
+
+
+{% endblock %}
+
+
+{% block scripts %}
+
+
+
+<script>
+    $(document).ready(function() {
+    $('#example').DataTable({
+      'order': [["0", "desc"]]
+    });
+} );
+</script>
+
+
+<script type="text/javascript" charset="utf8" src="https://cdn.datatables.net/1.10.19/js/dataTables.bootstrap4.min.js"></script>
+<script type="text/javascript" charset="utf8" src="https://code.jquery.com/jquery-3.3.1.js"></script>
+<script type="text/javascript" charset="utf8" src="https://cdn.datatables.net/1.10.19/js/jquery.dataTables.min.js"></script>
+
+{% endblock %}

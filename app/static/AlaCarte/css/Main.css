@@ -1,0 +1,492 @@
+.zy_mwsk{
+	margin:0;
+	padding:0;}
+body{
+	height:100%;
+    color: white;
+}
+.bages{
+	display: none;
+	background: red;
+	color:#D14345;
+/*
+	position: absolute;
+	top: 120px;
+    left: -25px;
+*/
+}
+.menu_con{
+	position: fixed;
+	bottom: 0;
+	width: 100%;
+	height: 92vh;
+}
+.zy_top{
+	display: flex;
+	top:0;
+  height: 8vh;
+  width:100%;
+  background: #FFF;
+}
+.zy_return{
+	margin-left: 10px;
+	width: 10%;
+  float: left;
+
+  height:100%;
+}
+.zy_return a{
+	background-size: 100%;
+  background-image: url(../img/return.png);
+	background-position: left center;
+	background-repeat: no-repeat;
+  width:100%;
+  height:100%;
+  float: left;
+}
+.zy_return img{
+  width:100%;
+  height:100%;
+}
+.right_img_con{
+	min-height: 300px;
+	float: left;
+	height: auto;
+	width: 100%;
+	position: relative;
+	background-image: url(../img/right_img_bg.png);
+	background-size: 100% 100%;
+}
+.right_img{
+	top: -35%;
+	position: absolute;
+	width:100%;
+	display:flex;
+    justify-content:space-around;
+}
+.zy_right img{
+	width:80px; height:65px;}
+
+.menu{
+	position:fixed;
+	top:10%;
+	background-repeat:no-repeat;
+	background-size:100% 100%;
+	background-image:url(../img/bg.png);
+	height:90%;
+	width:100%;}
+.menu button{
+	border:none;}
+.menu .zy_left{
+	margin-top:25%;
+	float:left;
+	height:300px;
+	width:150px;}
+.menu .zy_left img{
+	margin-left:10px;
+	width:160px;
+	height:120px;}
+.menu .zy_right{
+	position:relative;
+	margin-top:5%;
+	float:right;
+	height:400px;
+	width:120px;
+	}
+.menu .zy_right img{
+	width:70px; height:60px;}
+.menu .zy_right{
+	background-position:left center;
+	background-image:url(../img/sk.jpg);
+	position:relative;
+	height:30%;
+	width:100%;
+	}
+.tableNameC{
+	opacity: 0.8;
+	z-index: 10;
+	background:black;
+	position:fixed;
+	top: 15%;
+	right:0;
+    height: auto;
+    line-height: 30px;
+    margin: 30px 3px 0 0;
+    font-size: 0.8em;
+    text-align: center;
+    border-radius: 30px;
+    color: #FFF;
+}
+.right_img button{
+	height: auto;
+	width: 20%;
+	outline: none;
+	border: none;
+	background:none;}
+.right_img button img{
+	
+}
+.zy_footer{
+	position:fixed;
+	bottom:0;
+	text-align:center;
+	width:100%;
+	height:10%;
+	background:black;
+	opacity:0.8;}
+.zy_footer_small{
+	line-height:2;
+	float:left;
+	width:25%;
+	height:100%;}
+.zy_footer_small2{
+	color:white;
+	display:block;
+	margin-top:20%;
+	width:100%;
+	height:60%;}
+
+
+
+
+
+
+/*原*/
+
+
+nav{
+
+
+    width: 100%;
+ /*   background: grey;*/
+    text-align: right;
+    padding: 20px;
+}
+.topFrame{
+    display: flex;
+    justify-content: space-between;
+}
+.tableName{
+   min-width: 120px;
+
+}
+
+main{
+    width: 100%;
+    display: flex;
+    flex-direction: column;
+    justify-content: space-between;
+    align-items: center;
+}
+.menuItemContainer{
+    width: 100%;
+}
+.menuRow{
+    align-items: center;
+    margin-top: 4px;
+    display: flex;
+    width: 100%;
+    justify-content: space-between;
+    background: white;
+}
+.titleRow{
+    display: flex;
+    justify-content: space-between;
+}
+.topLine{
+    border-top: 1px solid grey;
+}
+.coluContianer{
+    width: 100%;
+    position: absolute;
+    top:2px;
+    bottom: 0;
+
+    display: flex;
+
+}
+.detail{
+    padding: 14px;
+}
+}
+.shopName{
+
+}
+.img_bot{
+	position:fixed;
+	bottom:0px;
+	width:100%;
+	height:50%;
+}
+.img_bot img{
+	width:100%!important;
+	height:	auto!important;
+}
+.cols{
+
+	position: absolute;
+    height: 100%;
+    display: flex;
+
+}
+.shadow{
+/*    box-shadow: -3px -3px 5px black;*/
+	background-size:100% 100%;
+	background-image:url(../img/bg2.png);
+}
+.welcomImg{
+    display: flex;
+    justify-content: center;
+   align-items: center;
+    width: 100%;
+    height: 100%;
+
+
+}
+.NextRound{
+	height:25px;
+	line-height: 15px;
+	color: white;
+    font-size: 1.2em;
+}
+.mitte{
+    background: white;
+    border-radius: 10px;
+    padding: 15px;
+    text-align: center;
+    margin-top: -200px;
+}
+.JhNormalbutton{
+    width: 100px;
+    color:white;
+    border: none;
+    white-space: nowrap;
+    background: darkred !important;
+    padding: 5px;
+
+}
+.aRowCSS{
+    background: whitesmoke;
+    border-radius: 20px;
+    box-shadow: -1px -1px 1px black;
+}
+.aRow{
+    width: 80px;
+    text-align: center;
+    margin-bottom: 10px;
+    padding: 10px;
+
+
+}
+.text{
+    margin-bottom: 30px;
+}
+.itemTitle{
+	text-indent: 10px;
+	margin:0 0 1px 0;
+	background-image: url(../img/part1.jpg);
+	background-position: right center;
+	background-repeat: no-repeat;
+    text-align: left;
+    height: 35px;
+    line-height: 35px;
+    overflow: hidden;
+    width: 100%;
+    background-color:  rgb(244, 237, 227);
+    font-size:18px;
+    color: black;
+}
+.items{
+	background: white;
+	border-bottom: 1px solid #CBCBCB;
+    padding: 2px 2%;
+    width: 100%;
+    display: flex;
+}
+.itemImg{
+
+    background-position: center;
+    padding: 10px 0;
+
+}
+.itemImg img{
+    width: 100px;
+    height: 70px;
+    border-radius: 5px;
+}
+.itemDetail{
+    width: 70%;
+    padding:5px;
+}
+.itemDetailTopRow{
+    padding: 5px;
+    display: flex;
+    justify-content: space-between;
+}
+.itemDetailBottomRow{
+	font-size: 0.6em;
+    padding: 5px;
+   word-wrap: break-word;
+    color:#3a3a3a;
+
+}
+.itemPrice{
+    color: #ff5320;
+    white-space: nowrap;
+}
+.fullScreenFloatLayer{
+    transform: translateX(100%);
+    transition:  0.2s;
+  /*  visibility: hidden;*/
+    position:fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background: url(../img/bg2.png);
+		background-size: 100% 100%;
+    z-index: 4;
+}
+.contents img{
+    width: 100%;
+}
+.contents{
+	height:50vh;
+	overflow-y: scroll;	
+}
+.row{
+	background-color: rgb(187, 147, 95);
+    height: 42px;
+}
+.ftotalLine{
+	border-bottom: 1px solid #ccc;
+    width: 100%;
+		height:8%;
+    position: fixed;
+    top: 0;
+    left: 0;
+    background:white;
+}
+.ftotalLine button{
+	border:none;
+    padding: 6px 0  20px 20px;
+    font-size: 1.1em;
+    text-align: center;
+    border-radius: 10px;
+		color:white;
+}
+.left{
+	width: 100px;
+	background-color:white;
+    float: left;
+
+	background-image: url(../img/11.jpg);
+	background-position: left center;
+	background-repeat: no-repeat;
+	text-align: right;
+	font-size: 4px!important;
+ }
+.right{
+	right: 20%;
+	position: fixed;
+	bottom: 1%;
+	width: 60%!important;
+	padding:8px 20px!important;
+}
+.functionPanel{
+	font-size: 0.8em;
+    padding-top:50px;
+    padding-bottom: 20px;
+    text-align: center;
+	background: rgb(249, 248, 244);
+}
+.lan_Product_Discribe{
+	font-size:15px;
+	font-weight: bold;
+	text-indent: 10px;
+}
+.fName{
+    font-size: 20px;
+    padding: 5px;
+}
+.describe{
+	background: white;
+	position: relative;
+    padding: 5px;
+}
+.fInfo{
+    color: #999;
+    text-align: center;
+    line-height: 1.5em;
+    font-size: 1.1em;
+}
+
+#snackbar {
+ font-size: 45px;
+ /* max-height: 150px; */
+ height: auto;
+ visibility: hidden;
+ max-width: 500px;
+ margin-left: -225px;
+ background-color: #333;
+ color: #fff;
+ text-align: center;
+ border-radius: 2px;
+ padding: 16px;
+ position: fixed;
+ z-index: 10;
+ left: 45%;
+ bottom: 100px;
+}
+
+/* Show the snackbar when clicking on a button (class added with JavaScript) */
+#snackbar.show {
+    visibility: visible; /* Show the snackbar */
+
+    /* Add animation: Take 0.5 seconds to fade in and out the snackbar.
+    However, delay the fade out process for 2.5 seconds */
+    -webkit-animation: fadein 0.5s, fadeout 0.5s 2.5s;
+    animation: fadein 0.5s, fadeout 0.5s 2.5s;
+}
+
+/* Animations to fade the snackbar in and out */
+@-webkit-keyframes fadein {
+    from {bottom: 0; opacity: 0;}
+    to {bottom: 100px; opacity: 1;}
+}
+
+@keyframes fadein {
+    from {bottom: 0; opacity: 0;}
+    to {bottom: 100px; opacity: 1;}
+}
+
+@-webkit-keyframes fadeout {
+    from {bottom:100px; opacity: 1;}
+    to {bottom: 0; opacity: 0;}
+}
+
+@keyframes fadeout {
+    from {bottom: 100px; opacity: 1;}
+    to {bottom: 0; opacity: 0;}
+}
+.itemName{
+	font-weight: bold;
+	font-size: 0.9em!important;
+    width:130px;
+    color:#121212;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    display: box;
+    display: -webkit-box;
+    line-clamp: 2;
+    -webkit-line-clamp: 2;
+    -webkit-box-orient: vertical;
+}
+.controls{
+    display: flex;
+    width: 100%;
+    background: white;
+    border-radius: 5px;
+    color:black;
+    justify-content: space-between;
+}

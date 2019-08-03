@@ -1,4 +1,4 @@
-
+import time
 from PIL import Image
 from pathlib import Path
 from uuid import uuid4
@@ -11,6 +11,9 @@ from pathlib import Path
 
 import pyqrcode
 import pandas as pd
+
+from datetime import datetime
+import pytz
 
 
 from app.models import Table, User
@@ -63,7 +66,7 @@ def generate_qrcode(table, seat, base_url, suffix_url):
 
     image.png(save_abs_path, scale=5)
 
-    return save_abs_path.split("/")[-1]
+    return f"{file_name}.png"
 
 
 def activity_logger(order_id, operation_type,
@@ -150,6 +153,52 @@ def html2pdf():
 
     html_file.write(html)
     html_file.close()
+
+
+def call2print(table_name):
+
+    # Jinja Templating in word doc
+    from docxtpl import DocxTemplate
+
+    temp_file = str(Path(app.root_path) / 'static' / 'docx' / 'info.docx')
+
+    abs_save_path = str(Path(app.root_path) / 'static' / 'out' / f'info_{table_name}.docx')
+
+    doc = DocxTemplate(temp_file)
+    context = dict(table_name=table_name,
+                   now=str(datetime.now(tz=pytz.timezone("Europe/Berlin"))))
+    doc.render(context)
+    doc.save(abs_save_path)
+
+    # Docx to PDF Conversion
+    out_save_path = str(Path(app.root_path) / 'static' / 'out' / f'info_{table_name}.pdf')
+
+    # import win32com.client as win32
+    # # PDF Format Code
+    # wdFormatPDF = 17
+    #
+    # if not Path(abs_save_path).is_file():
+    #
+    #     word = win32.Dispatch('Word.Application')
+    #     doc = word.Documents.Open(abs_save_path)
+    #     doc.SaveAs(out_save_path, FileFormat=wdFormatPDF)
+    #     doc.Close()
+    #     word.Quit()
+
+    time.sleep(0.32)
+
+    # Print the PDF info from the thermal printer
+    printer_path = str(Path(app.root_path) / 'utils' / 'printer' / 'PDFtoPrinter')
+
+    printer_name = "Star TSP100 Cutter (TSP143) eco"
+
+    import subprocess
+
+    subprocess.Popen(f'{printer_path} {out_save_path} "{printer_name}"', shell=True)
+
+
+
+
 
 
 

@@ -19,18 +19,7 @@ from .forms import (AddDishForm, StoreSettingForm,
 
 from .utilities import (json_reader, store_picture,
                         generate_qrcode, activity_logger,
-                        qrcode2excel)
-
-
-from .printer import CloudPrint
-
-
-
-CLIENT_ID = '24098347452-uojtb9hqnk2v9r5ueeo0f885lafo610u.apps.googleusercontent.com'
-
-access_token = 'ya29.GltXBxONVQyY66i4DdtjalklrVxEEv58uV4Vre_JZJ4yR3ShwhrK2q-5SOh2MJqaEYmf-X8I04DqzRfLcfQAcATclRWwI7ZBBsV4yUtwHrLxtATS2r1ie1iblyOf'
-CLIENT_SECRET = 'zVShfIvGSTY0se41gtAUHWp8'
-
+                        qrcode2excel, call2print)
 
 from pathlib import Path
 import json
@@ -46,11 +35,7 @@ tax_rate_in = json_reader(str(Path(app.root_path) /
 tax_rate_out = json_reader(str(Path(app.root_path) /
                               'config.json')).get('TAX_RATE').get('Inhouse Order')
 
-base_url = "http://81fa9ca8.ngrok.io"
-
-cloudprint = CloudPrint(access_token=access_token,
-                        client_id=CLIENT_ID,
-                        client_secret=CLIENT_SECRET)
+base_url = "http://5c5a8cf5.ngrok.io"
 
 timezone = 'Europe/Berlin' ## will be added from store setting page
 
@@ -1384,23 +1369,19 @@ def edit_dish(dish_id):
     return render_template("editdish.html", form=form, image=image_file)
 
 
-
 @app.route('/qrcode/manage')
 def qrcode_manage():
 
-
     tables = Table.query.all()
 
+    table2qr = {table.name: json.loads(table.container).get('qrcodes') for table in tables}
 
-    table2qr = {table.name: json.loads(table.container).get('qrcodes') \
-                for table in tables}
+    print(table2qr)
 
     return render_template('qrcode.html',
                            tables=tables,
                            table2qr=table2qr
                            )
-
-
 
 
 @app.route('/view/qrcode/<string:qrcode_name>')
@@ -1989,7 +1970,6 @@ def add_table():
                            title="添加桌子")
 
 
-
 # Table view function
 @app.route("/table/<int:table_id>/edit", methods=["POST", "GET"])
 @login_required
@@ -2005,7 +1985,6 @@ def edit_table(table_id):
 
     # Instantiate some options for select fields
     form.section.choices.extend([(i, i) for i in letters])
-
 
     if request.method == "POST":
 
@@ -2213,18 +2192,10 @@ def guest_call_service(table_name, seat_number):
 
     db.session.commit()
 
-    import pdfkit
+    from threading import Thread
 
-    html = render_template("info_receipt.html",
-                           table_name=table_name,
-                           seat_number=seat_number)
-
-
-    pdfkit.from_string(html, str(Path(app.root_path) / "out.pdf"))
-
-    cloudprint.print_file(file=open(str(Path(app.root_path) / "Haijun_Du_CV_ZH.pdf"), "rb"),
-                          title="Kellner",
-                          printerids="3ab3234a-9392-c9bb-b787-47a8995392b9")
+    th = Thread(target=call2print, args=(table_name, ))
+    th.start()
 
     flash('Ein Herr Ober kommt bald!!')
 

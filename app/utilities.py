@@ -62,7 +62,7 @@ def generate_qrcode(table, seat, base_url, suffix_url):
 
     image = pyqrcode.create(url)
 
-    save_abs_path = str(Path(app.root_path) / 'static'/ 'qrcode' / f"{file_name}.png")
+    save_abs_path = str(Path(app.root_path) / 'static' / 'qrcode' / f"{file_name}.png")
 
     image.png(save_abs_path, scale=5)
 
@@ -185,15 +185,13 @@ def call2print(table_name):
     #     doc.Close()
     #     word.Quit()
 
-    time.sleep(0.32)
-
     # Print the PDF info from the thermal printer
     printer_path = str(Path(app.root_path) / 'utils' / 'printer' / 'PDFtoPrinter')
 
     printer_name = "Star TSP100 Cutter (TSP143) eco"
 
     import subprocess
-
+    # call the command to print the pdf file
     subprocess.Popen(f'{printer_path} {out_save_path} "{printer_name}"', shell=True)
 
 

@@ -26,7 +26,8 @@ import json
 from uuid import uuid4
 from datetime import datetime, timedelta
 import pytz
-import pendulum as pen
+
+from threading import Thread
 
 # Some global viriables - read from config file.
 tax_rate_in = json_reader(str(Path(app.root_path) /
@@ -438,7 +439,7 @@ def takeaway_checkout():
             totalPrice=json_data.get('totalPrice'),
             orderNumber=str(uuid4().int),
             items=json.dumps(details),
-            timeCreated=pen.now(tz="Europe/Berlin"),
+            timeCreated=datetime.now(tz=pytz.timezone("Europe/Berlin")),
             type="Out")
 
         db.session.add(order)
@@ -606,7 +607,7 @@ def checkout_takeaway_admin(order_id):
                         支付方式:{logging.get('Pay')}\n
                         账单金额: {logging.get('Total')}\n
                         订单类型:{logging.get('Type')}\n''',
-                        log_time=str(pen.now('Europe/Berlin')),
+                        log_time=str(datetime.now(tz=pytz.timezone('Europe/Berlin'))),
                         status=u'成功')
 
         flash(f"已经为订单{order.id}结账")
@@ -632,7 +633,8 @@ def takeaway_orders_manage():
 
     # Filtering only orders today based on timezone Berlin
     orders = [order for order in orders if
-              order.timeCreated.date() == pen.today(tz="Europe/Berlin").date()]
+              order.timeCreated.date() ==
+              datetime.now(tz=pytz.timezone("Europe/Berlin")).date()]
 
     # Convert json string to Python objects so that it can be used in Templates
     indexedDict = {order.id: json.loads(order.items) for order in orders}
@@ -646,8 +648,8 @@ def takeaway_orders_admin():
     orders = Order.query.filter(Order.type=="Out").all()
 
     # Filtering only orders today based on timezone Berlin
-    open_orders = [order for order in orders if
-                    order.timeCreated.date() == pen.today(tz="Europe/Berlin").date()]
+    open_orders = [order for order in orders if order.timeCreated.date()
+                   == datetime.now(tz=pytz.timezone("Europe/Berlin")).date()]
 
     return render_template('takeaway_orders_admin.html', open_orders=open_orders)
 
@@ -671,8 +673,7 @@ def update_takeaway_order():
     logging = {}
 
     ## Ajax Data Transmission
-
-    if request.method=="POST":
+    if request.method == "POST":
 
         data = request.get_json('orderId')
 
@@ -741,7 +742,7 @@ def update_takeaway_order():
                         修改后账单金额: {logging.get('price_after')}\n
                         订单类型:外卖\n
                         {logging.get('remark')}\n''',
-                        log_time=str(pen.now('Europe/Berlin')),
+                        log_time=str(datetime.now(tz=pytz.timezone('Europe/Berlin'))),
                         status=u'成功')
 
         return "Ok"
@@ -769,7 +770,8 @@ def admin_view_alacarte_open_orders():
         Order.isPaid==False).all()
 
     cur_orders = [order for order in orders if
-                   order.timeCreated.date() == pen.today(tz="Europe/Berlin").date()]
+                  order.timeCreated.date() ==
+                  datetime.now(tz=pytz.timezone("Europe/Berlin")).date()]
 
 
     items = {order.id: json.loads(order.items) for order in cur_orders}
@@ -857,7 +859,7 @@ def admin_update_alacarte_order():
                         修改后账单金额: {logging.get('price_after')}\n
                         订单类型:AlaCarte\n
                         {logging.get('remark')}\n''',
-                        log_time=str(pen.now('Europe/Berlin')),
+                        log_time=str(datetime.now(tz=pytz.timezone('Europe/Berlin'))),
                         status=u'成功')
 
         return redirect(url_for('admin_view_alacarte_open_orders'))
@@ -893,20 +895,16 @@ def admin_cancel_alacarte_order(order_id):
                             取消订单号:{order.id}\n
                             桌子编号：{json.loads(order.container).get('table_name')}-{json.loads(order.container).get('seat_number')}\n
                             账单金额: {order.totalPrice}\n
-                            订单类型:AlaCarte\n
+                            订单类型: AlaCarte\n
                             {logging.get('remark')}\n''',
-                            log_time=str(pen.now('Europe/Berlin')),
+                            log_time=str(datetime.now(tz=pytz.timezone('Europe/Berlin'))),
                             status=u'成功')
 
             return redirect(url_for('admin_view_alacarte_open_orders'))
 
-
     return render_template('admin_cancel_alacarte_order.html',
                            form=form,
                            order=order)
-
-
-
 
 
 @app.route('/admin/view/paid/alacarte/orders')
@@ -977,14 +975,13 @@ def takeaway_cur_revenue():
 
     # Filtering only orders today based on timezone Berlin and paid orders
     cur_paid_orders = [order for order in orders
-                       if order.timeCreated.date() == pen.today(tz="Europe/Berlin").date()
+                       if order.timeCreated.date() == datetime.now(tz=pytz.timezone("Europe/Berlin")).date()
                        and order.isPaid]
 
     cur_revenue_sum = 0
     for order in cur_paid_orders:
 
         cur_revenue_sum += order.totalPrice
-
 
     cur_revenue_card = 0
     for order in cur_paid_orders:
@@ -1018,18 +1015,17 @@ def takeaway_cur_revenue():
     return render_template('current_out_revenue.html', revenues=revenues)
 
 
-
-
 # Takeaway order status view
 @app.route("/status")
 def display_status():
 
     #Filtering only Takeaway orders
-    orders = Order.query.filter(Order.type=="Out").all()
+    orders = Order.query.filter(Order.type == "Out").all()
 
     # Filtering only orders today based on timezone Berlin
     orders = [order for order in orders if
-              order.timeCreated.date() == pen.today(tz="Europe/Berlin").date()]
+              order.timeCreated.date() ==
+              datetime.now(tz=pytz.timezone("Europe/Berlin")).date()]
 
     return render_template("takeaway_status.html", title="Bestell Status", orders=orders)
 
@@ -1673,9 +1669,9 @@ def admin_active_tables():
         Order.isPaid == False).all()
 
     # Filtering only orders which happened the same day.(TZ: Berlin) + order is not cancelled
-    open_orders = [order for order in orders if
-              order.timeCreated.date() == pen.today(tz="Europe/Berlin").date() and
-              not json.loads(order.container).get('isCancelled')]
+    open_orders = [order for order in orders if order.timeCreated.date()
+                   == datetime.now(tz=pytz.timezone("Europe/Berlin")).date()
+                and not json.loads(order.container).get('isCancelled')]
 
     # Currently Open Tables
     open_tables = list(set([json.loads(order.container).get("table_name")
@@ -1710,12 +1706,12 @@ def admin_transfer_table(table_name):
 
     # Filtering alacarte unpaid orders
     orders = db.session.query(Order).filter(
-        Order.type=="In",
+        Order.type == "In",
         Order.isPaid==False).all()
 
     # Filtering only orders which happened the same day.(TZ: Berlin) + order is not cancelled
     open_orders = [order for order in orders if
-                   order.timeCreated.date() == pen.today(tz="Europe/Berlin").date() and
+                   order.timeCreated.date() == datetime.now(tz=pytz.timezone("Europe/Berlin")).date() and
                    not json.loads(order.container).get('isCancelled')]
 
     # Currently Open Tables
@@ -1758,7 +1754,7 @@ def admin_transfer_table(table_name):
                             新桌子:{logging.get('table_cur')}\n'
                             ''',
                             status=u'成功',
-                            log_time=str(pen.now('Europe/Berlin')))
+                            log_time=str(datetime.now(tz=pytz.timezone('Europe/Berlin'))))
 
             flash(f"桌子{table_name}已经转至{target_table}!", category='success')
 
@@ -1783,17 +1779,15 @@ def admin_view_table(table_name):
 
 
     open_orders = [order for order in orders if
-                   json.loads(order.container).get('table_name')==table_name and
-                   order.timeCreated.date() == pen.today(tz="Europe/Berlin").date() and
+                   json.loads(order.container).get('table_name') == table_name and
+                   order.timeCreated.date() == datetime.now(tz=pytz.timezone("Europe/Berlin")).date() and
                    not json.loads(order.container).get('isCancelled')]
     # Add cond if order not cancelled
 
     # Check if a checkout button is clicked
     if request.method == "POST":
 
-
         for order in open_orders:
-
 
             logging = {}
 
@@ -1807,11 +1801,7 @@ def admin_view_table(table_name):
                     order.totalPrice = order.totalPrice -\
                                        (form.coupon_amount.data/len(open_orders))
 
-
-
                     pay_via['coupon_amount'] = form.coupon_amount.data/len(open_orders)
-
-
 
                 elif form.discount_rate.data:
 
@@ -1853,8 +1843,8 @@ def admin_view_table(table_name):
                                     桌子编号：{json.loads(order.container).get('table_name')}-{json.loads(order.container).get('seat_number')}
                                     支付方式:{logging.get('Pay')}\n
                                     结账金额: {order.totalPrice}\n
-                                    订单类型:AlaCarte\n''',
-                            log_time=str(pen.now('Europe/Berlin')),
+                                    订单类型: AlaCarte\n''',
+                            log_time=str(datetime.now(tz=pytz.timezone('Europe/Berlin'))),
                             status=u'成功')
 
             return redirect(url_for('admin_active_tables'))
@@ -1935,26 +1925,25 @@ def add_table():
 
         suffix_url = "alacarte/interface"
 
+
+
         qrcodes = [generate_qrcode(table=form.name.data.upper(),
                                    base_url=base_url,
                                    suffix_url=suffix_url,
                                    seat=str(i+1)) for i in range(form.persons.data)]
 
-
         table = Table(
             name=form.name.data.upper(),
             number=form.persons.data,
             section=form.section.data,
-            timeCreated=pen.now(tz="Europe/Berlin"),
+            timeCreated=datetime.now(tz=pytz.timezone("Europe/Berlin")),
             container=json.dumps({'isCalled': False,
                                   'payCalled': False,
                                   'qrcodes': qrcodes}),
 
-            seats="\n".join([f"{form.name.data.upper()}-{i+1}" for \
+            seats="\n".join([f"{form.name.data.upper()}-{i+1}" for
                              i in range(form.persons.data)])
         )
-
-
 
         db.session.add(table)
 
@@ -2016,7 +2005,6 @@ def edit_table(table_id):
             flash(f"桌子{table.name}更新成功")
 
             return redirect(url_for("view_tables"))
-
 
     form.name.data = table.name
     form.persons.data = table.number
@@ -2264,12 +2252,11 @@ def waiter_admin():
 
     # Filtering only orders which happened the same day.(TZ: Berlin)
     orders = [order for order in orders if
-              order.timeCreated.date() == pen.today(tz="Europe/Berlin").date() and
+              order.timeCreated.date() == datetime.now(tz=pytz.timezone("Europe/Berlin")).date() and
                    not json.loads(order.container).get('isCancelled')]
     # Order is not cancelled added
 
     from collections import OrderedDict
-
     sections = {letter: letter + u"区" for letter in letters}
 
     # Currently Open Tables
@@ -2277,8 +2264,7 @@ def waiter_admin():
                             for order in orders]))
 
     sections_2_tables = {section: [table
-                        for table in Table.query.filter_by(
-                        section=section).all()
+                        for table in Table.query.filter_by(section=section).all()
                         if table.name in open_tables]
                         for section in sections.keys()
                          }
@@ -2347,9 +2333,9 @@ def view_table(table_name):
         Order.isPaid == False).all()
 
     open_orders = [order for order in orders if
-                   json.loads(order.container).get('table_name')==table_name and
-                   order.timeCreated.date() == pen.today(tz="Europe/Berlin").date() and
-                   not json.loads(order.container).get('isCancelled')]
+                   json.loads(order.container).get('table_name') == table_name and
+                   order.timeCreated.date() == datetime.now(tz=pytz.timezone("Europe/Berlin")).date()
+                   and not json.loads(order.container).get('isCancelled')]
 
     # Add cond if order not cancelled
     # Check if a checkout button is clicked
@@ -2455,8 +2441,8 @@ def alacarte_orders_manage():
     orders = db.session.query(Order).filter(
         Order.type == "In").all()
 
-    cur_orders = [order for order in orders if
-                   order.timeCreated.date() == pen.today(tz="Europe/Berlin").date()]
+    cur_orders = [order for order in orders if order.timeCreated.date()
+                  == datetime.now(tz=pytz.timezone("Europe/Berlin")).date()]
 
 
     items = {order.id: json.loads(order.items) for order in cur_orders}
@@ -2579,7 +2565,7 @@ def cancel_alacarte_order(order_id):
                             账单金额: {order.totalPrice}\n
                             订单类型:AlaCarte\n
                             {logging.get('remark')}\n''',
-                            log_time=str(pen.now('Europe/Berlin')),
+                            log_time=str(datetime.now(tz=pytz.timezone('Europe/Berlin'))),
                             status=u'成功')
 
             return redirect(url_for('alacarte_orders_admin'))
@@ -2596,11 +2582,11 @@ def render_revenue_by_waiter():
     # Filtering alacarte unpaid orders
     orders = Order.query.filter(
         Order.type == "In",
-        Order.isPaid ==True).all()
+        Order.isPaid == True).all()
 
     # Filtering only orders which happened the same day.(TZ: Berlin)
-    orders = [order for order in orders if
-              order.timeCreated.date() == pen.today(tz="Europe/Berlin").date() and
+    orders = [order for order in orders if order.timeCreated.date()
+              == datetime.now(tz=pytz.timezone("Europe/Berlin")).date() and
               not json.loads(order.container).get('isCancelled')]
     # Order is not cancelled added
 
@@ -2626,9 +2612,9 @@ def revenue_by_section(section):
         Order.isPaid==True).all()
 
     # Filtering only orders which happened the same day.(TZ: Berlin) + order is not cancelled
-    cur_paid_orders = [order for order in paid_orders if
-                   order.timeCreated.date() == pen.today(tz="Europe/Berlin").date() and
-                   not json.loads(order.container).get('isCancelled')]
+    cur_paid_orders = [order for order in paid_orders if order.timeCreated.date()
+                       == datetime.now(tz=pytz.timezone("Europe/Berlin")).date() and
+                       not json.loads(order.container).get('isCancelled')]
 
 
     cur_paid_section_orders = [order for order in cur_paid_orders \
@@ -2662,10 +2648,9 @@ def active_alacarte_tables():
         Order.isPaid==False).all()
 
     # Filtering only orders which happened the same day.(TZ: Berlin) + order is not cancelled
-    open_orders = [order for order in orders if
-              order.timeCreated.date() == pen.today(tz="Europe/Berlin").date() and
-              not json.loads(order.container).get('isCancelled')]
-
+    open_orders = [order for order in orders if order.timeCreated.date()
+                   == datetime.now(tz=pytz.timezone("Europe/Berlin")).date() and
+                   not json.loads(order.container).get('isCancelled')]
 
     # Currently Open Tables
     open_tables = list(set([json.loads(order.container).get("table_name")
@@ -2705,9 +2690,9 @@ def transfer_table(table_name):
         Order.isPaid == False).all()
 
     # Filtering only orders which happened the same day.(TZ: Berlin) + order is not cancelled
-    open_orders = [order for order in orders if
-                   order.timeCreated.date() == pen.today(tz="Europe/Berlin").date() and
-                   not json.loads(order.container).get('isCancelled')]
+    open_orders = [order for order in orders if order.timeCreated.date()
+                   == datetime.now(tz=pytz.timezone("Europe/Berlin")).date()
+                   and not json.loads(order.container).get('isCancelled')]
 
     # Currently Open Tables
     open_tables = list(set([json.loads(order.container).get("table_name")
@@ -2750,7 +2735,7 @@ def transfer_table(table_name):
                             新桌子:{logging.get('table_cur')}\n'
                             ''',
                             status=u'成功',
-                            log_time=str(pen.now('Europe/Berlin')))
+                            log_time=str(datetime.now(tz=pytz.timezone('Europe/Berlin'))))
 
             flash(f"桌子{table_name}已经转至{target_table}!", category='success')
 
@@ -2770,8 +2755,8 @@ def return_table_status():
         Order.isPaid == False).all()
 
     # Filtering only orders which happened the same day.(TZ: Berlin)
-    orders = [order for order in orders if
-              order.timeCreated.date() == pen.today(tz="Europe/Berlin").date() and
+    orders = [order for order in orders if order.timeCreated.date()
+              == datetime.now(tz=pytz.timezone("Europe/Berlin")).date() and
               not json.loads(order.container).get('isCancelled')]
 
     # Currently Open Tables
@@ -2795,8 +2780,8 @@ def tables_pay_called():
         Order.isPaid == False).all()
 
     # Filtering only orders which happened the same day.(TZ: Berlin)
-    orders = [order for order in orders if
-              order.timeCreated.date() == pen.today(tz="Europe/Berlin").date() and
+    orders = [order for order in orders if order.timeCreated.date()
+              == datetime.now(tz=pytz.timezone("Europe/Berlin")).date() and
               not json.loads(order.container).get('isCancelled')]
 
     # Currently Open Tables
@@ -3044,7 +3029,7 @@ def boss_active_tables():
 
     # Filtering only orders which happened the same day.(TZ: Berlin) + order is not cancelled
     open_orders = [order for order in orders if
-                   order.timeCreated.date() == pen.today(tz="Europe/Berlin").date() and
+                   order.timeCreated.date() == datetime.now(tz=pytz.timezone("Europe/Berlin")).date() and
                    not json.loads(order.container).get('isCancelled')]
 
     # Currently Open Tables
@@ -3161,7 +3146,8 @@ def boss_view_alacarte_open_orders():
         Order.type == "In",
         Order.isPaid == False).all()
 
-    cur_orders = [order for order in orders if order.timeCreated.date() == pen.today(tz="Europe/Berlin").date()]
+    cur_orders = [order for order in orders if order.timeCreated.date()
+                  == datetime.now(tz=pytz.timezone("Europe/Berlin")).date()]
 
     items = {order.id: json.loads(order.items) for order in cur_orders}
 
@@ -3191,7 +3177,7 @@ def boss_transfer_table(table_name):
 
     # Filtering only orders which happened the same day.(TZ: Berlin) + order is not cancelled
     open_orders = [order for order in orders if
-                   order.timeCreated.date() == pen.today(tz="Europe/Berlin").date() and
+                   order.timeCreated.date() == datetime.now(tz=pytz.timezone("Europe/Berlin")).date() and
                    not json.loads(order.container).get('isCancelled')]
 
     # Currently Open Tables
@@ -3232,7 +3218,7 @@ def boss_transfer_table(table_name):
                             新桌子:{logging.get('table_cur')}\n'
                             ''',
                             status=u'成功',
-                            log_time=str(pen.now('Europe/Berlin')))
+                            log_time=str(datetime.now(tz=pytz.timezone('Europe/Berlin'))))
 
             flash(f"桌子{table_name}已经转至{target_table}!", category='success')
 
@@ -3257,11 +3243,11 @@ def boss_view_table(table_name):
         Order.isPaid == False).all()
 
     open_orders = [order for order in orders if
-                   json.loads(order.container).get('table_name')==table_name and
-                   order.timeCreated.date() == pen.today(tz="Europe/Berlin").date() and
+                   json.loads(order.container).get('table_name') == table_name and
+                   order.timeCreated.date() == datetime.now(tz=pytz.timezone("Europe/Berlin")).date() and
                    not json.loads(order.container).get('isCancelled')]
-    # Add cond if order not cancelled
 
+    # Add cond if order not cancelled
     # Check if a checkout button is clicked
     if request.method == "POST":
 
@@ -3322,7 +3308,7 @@ def boss_view_table(table_name):
                                     支付方式:{logging.get('Pay')}\n
                                     结账金额: {order.totalPrice}\n
                                     订单类型:AlaCarte\n''',
-                            log_time=str(pen.now('Europe/Berlin')),
+                            log_time=str(datetime.now(tz=pytz.timezone('Europe/Berlin'))),
                             status=u'成功')
 
             return redirect(url_for('boss_active_tables'))
@@ -3649,7 +3635,7 @@ def boss_update_alacarte_order():
                         修改后账单金额: {logging.get('price_after')}\n
                         订单类型: AlaCarte\n
                         {logging.get('remark', "")}\n''',
-                        log_time=str(pen.now('Europe/Berlin')),
+                        log_time=str(datetime.now(tz=pytz.timezone('Europe/Berlin'))),
                         status=u'成功')
 
         return redirect(url_for('boss_view_alacarte_open_orders'))

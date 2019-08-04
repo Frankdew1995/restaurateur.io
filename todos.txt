@@ -24,7 +24,7 @@ Done:
 22. Homepage's analytics graphing library
 21. URL Routing for users with different permissions.
 18. User Permission Management and Redirects: permerssion tier: 0, 1, 2, 3
-
+19. Remove pendulum usages in the code
 
 
 
@@ -36,7 +36,8 @@ To Dos:
 17. Product detail view page (width 100%)
 19. License Key to redirect to register page
 20. Remove email attr from user model
-23. Replace pandas and pendulum usages in the code
+23. Replace pandas usages
+
 
 
 

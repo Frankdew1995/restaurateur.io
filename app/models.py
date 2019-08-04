@@ -105,4 +105,8 @@ class Visit(db.Model):
     timeVisited = db.Column(db.DateTime, default=datetime.utcnow)
 
 
+# class Log(db.Model):
+#
+#     pass
+
 

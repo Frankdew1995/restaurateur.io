@@ -2,50 +2,18 @@
 <project version="4">
   <component name="ChangeListManager">
     <list default="true" id="92725ecb-b579-4e6b-96e6-ec8e3d2627cf" name="Default Changelist" comment="">
-      <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/Haijun_Du_CV_ZH.pdf" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/app.db" beforeDir="false" afterPath="$PROJECT_DIR$/app.db" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/app/Haijun_Du_CV_ZH.pdf" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/app/assets/bootstrap.bundle.min.js" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/app/assets/bootstrap.min.css" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/app/assets/jquery.min.js" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/app/assets/shop-homepage.css" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/app/routes.py" beforeDir="false" afterPath="$PROJECT_DIR$/app/routes.py" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/app/static/qrcode/A1_1.png" beforeDir="false" afterPath="$PROJECT_DIR$/app/static/qrcode/A1_1.png" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/app/static/qrcode/A1_2.png" beforeDir="false" afterPath="$PROJECT_DIR$/app/static/qrcode/A1_2.png" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/app/static/qrcode/A1_3.png" beforeDir="false" afterPath="$PROJECT_DIR$/app/static/qrcode/A1_3.png" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/app/static/qrcode/A1_4.png" beforeDir="false" afterPath="$PROJECT_DIR$/app/static/qrcode/A1_4.png" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/app/static/qrcode/A1_5.png" beforeDir="false" afterPath="$PROJECT_DIR$/app/static/qrcode/A1_5.png" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/app/static/qrcode/D1_1.png" beforeDir="false" afterPath="$PROJECT_DIR$/app/static/qrcode/D1_1.png" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/app/static/qrcode/D1_10.png" beforeDir="false" afterPath="$PROJECT_DIR$/app/static/qrcode/D1_10.png" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/app/static/qrcode/D1_11.png" beforeDir="false" afterPath="$PROJECT_DIR$/app/static/qrcode/D1_11.png" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/app/static/qrcode/D1_12.png" beforeDir="false" afterPath="$PROJECT_DIR$/app/static/qrcode/D1_12.png" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/app/static/qrcode/D1_13.png" beforeDir="false" afterPath="$PROJECT_DIR$/app/static/qrcode/D1_13.png" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/app/static/qrcode/D1_14.png" beforeDir="false" afterPath="$PROJECT_DIR$/app/static/qrcode/D1_14.png" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/app/static/qrcode/D1_15.png" beforeDir="false" afterPath="$PROJECT_DIR$/app/static/qrcode/D1_15.png" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/app/static/qrcode/D1_16.png" beforeDir="false" afterPath="$PROJECT_DIR$/app/static/qrcode/D1_16.png" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/app/static/qrcode/D1_17.png" beforeDir="false" afterPath="$PROJECT_DIR$/app/static/qrcode/D1_17.png" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/app/static/qrcode/D1_18.png" beforeDir="false" afterPath="$PROJECT_DIR$/app/static/qrcode/D1_18.png" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/app/static/qrcode/D1_19.png" beforeDir="false" afterPath="$PROJECT_DIR$/app/static/qrcode/D1_19.png" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/app/static/qrcode/D1_2.png" beforeDir="false" afterPath="$PROJECT_DIR$/app/static/qrcode/D1_2.png" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/app/static/qrcode/D1_20.png" beforeDir="false" afterPath="$PROJECT_DIR$/app/static/qrcode/D1_20.png" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/app/static/qrcode/D1_21.png" beforeDir="false" afterPath="$PROJECT_DIR$/app/static/qrcode/D1_21.png" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/app/static/qrcode/D1_22.png" beforeDir="false" afterPath="$PROJECT_DIR$/app/static/qrcode/D1_22.png" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/app/static/qrcode/D1_23.png" beforeDir="false" afterPath="$PROJECT_DIR$/app/static/qrcode/D1_23.png" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/app/static/qrcode/D1_24.png" beforeDir="false" afterPath="$PROJECT_DIR$/app/static/qrcode/D1_24.png" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/app/static/qrcode/D1_25.png" beforeDir="false" afterPath="$PROJECT_DIR$/app/static/qrcode/D1_25.png" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/app/static/qrcode/D1_3.png" beforeDir="false" afterPath="$PROJECT_DIR$/app/static/qrcode/D1_3.png" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/app/static/qrcode/D1_4.png" beforeDir="false" afterPath="$PROJECT_DIR$/app/static/qrcode/D1_4.png" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/app/static/qrcode/D1_5.png" beforeDir="false" afterPath="$PROJECT_DIR$/app/static/qrcode/D1_5.png" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/app/static/qrcode/D1_6.png" beforeDir="false" afterPath="$PROJECT_DIR$/app/static/qrcode/D1_6.png" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/app/static/qrcode/D1_7.png" beforeDir="false" afterPath="$PROJECT_DIR$/app/static/qrcode/D1_7.png" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/app/static/qrcode/D1_8.png" beforeDir="false" afterPath="$PROJECT_DIR$/app/static/qrcode/D1_8.png" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/app/static/qrcode/D1_9.png" beforeDir="false" afterPath="$PROJECT_DIR$/app/static/qrcode/D1_9.png" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/app/utilities.py" beforeDir="false" afterPath="$PROJECT_DIR$/app/utilities.py" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/requirements.txt" beforeDir="false" afterPath="$PROJECT_DIR$/requirements.txt" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/test.py" beforeDir="false" afterPath="$PROJECT_DIR$/test.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/.idea/misc.xml" afterPath="$PROJECT_DIR$/.idea/misc.xml" />
+      <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" afterPath="$PROJECT_DIR$/.idea/workspace.xml" />
+      <change beforePath="$PROJECT_DIR$/.idea/xstar_restaurant_system.iml" afterPath="$PROJECT_DIR$/.idea/xstar_restaurant_system.iml" />
+      <change beforePath="$PROJECT_DIR$/app.db" afterPath="$PROJECT_DIR$/app.db" />
+      <change beforePath="$PROJECT_DIR$/app/models.py" afterPath="$PROJECT_DIR$/app/models.py" />
+      <change beforePath="$PROJECT_DIR$/app/out.pdf" afterPath="" />
+      <change beforePath="$PROJECT_DIR$/app/routes.py" afterPath="$PROJECT_DIR$/app/routes.py" />
+      <change beforePath="$PROJECT_DIR$/app/utilities.py" afterPath="$PROJECT_DIR$/app/utilities.py" />
+      <change beforePath="$PROJECT_DIR$/requirements.txt" afterPath="$PROJECT_DIR$/requirements.txt" />
     </list>
     <option name="EXCLUDED_CONVERTED_TO_IGNORED" value="true" />
+    <option name="TRACKING_ENABLED" value="true" />
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
     <option name="HIGHLIGHT_NON_ACTIVE_CHANGELIST" value="false" />
@@ -53,20 +21,21 @@
   </component>
   <component name="FileEditorManager">
     <leaf SIDE_TABS_SIZE_LIMIT_KEY="300">
-      <file pinned="false" current-in-tab="true">
+      <file leaf-file-name="server.py" pinned="false" current-in-tab="false">
         <entry file="file://$PROJECT_DIR$/server.py">
           <provider selected="true" editor-type-id="text-editor">
-            <state relative-caret-position="120">
-              <caret line="4" lean-forward="true" selection-start-line="4" selection-end-line="4" />
+            <state relative-caret-position="96">
+              <caret line="4" column="0" lean-forward="false" selection-start-line="4" selection-start-column="0" selection-end-line="4" selection-end-column="0" />
+              <folding />
             </state>
           </provider>
         </entry>
       </file>
-      <file pinned="false" current-in-tab="false">
+      <file leaf-file-name="routes.py" pinned="false" current-in-tab="false">
         <entry file="file://$PROJECT_DIR$/app/routes.py">
           <provider selected="true" editor-type-id="text-editor">
-            <state relative-caret-position="176">
-              <caret line="2193" selection-start-line="2193" selection-end-line="2193" />
+            <state relative-caret-position="422">
+              <caret line="611" column="0" lean-forward="true" selection-start-line="611" selection-start-column="0" selection-end-line="611" selection-end-column="0" />
               <folding>
                 <element signature="e#0#163#0" expanded="true" />
               </folding>
@@ -74,28 +43,24 @@
           </provider>
         </entry>
       </file>
-      <file pinned="false" current-in-tab="false">
-        <entry file="file://$PROJECT_DIR$/app/static/qrcode/A1_1.png">
-          <provider selected="true" editor-type-id="images" />
-        </entry>
-      </file>
-      <file pinned="false" current-in-tab="false">
-        <entry file="file://$PROJECT_DIR$/app/utilities.py">
+      <file leaf-file-name="models.py" pinned="false" current-in-tab="true">
+        <entry file="file://$PROJECT_DIR$/app/models.py">
           <provider selected="true" editor-type-id="text-editor">
-            <state relative-caret-position="321">
-              <caret line="186" selection-start-line="175" selection-start-column="6" selection-end-line="186" />
+            <state relative-caret-position="425">
+              <caret line="111" column="0" lean-forward="true" selection-start-line="111" selection-start-column="0" selection-end-line="111" selection-end-column="0" />
               <folding>
-                <element signature="e#0#11#0" expanded="true" />
+                <element signature="e#0#25#0" expanded="true" />
               </folding>
             </state>
           </provider>
         </entry>
       </file>
-      <file pinned="false" current-in-tab="false">
+      <file leaf-file-name="config.py" pinned="false" current-in-tab="false">
         <entry file="file://$PROJECT_DIR$/config.py">
           <provider selected="true" editor-type-id="text-editor">
-            <state relative-caret-position="261">
-              <caret line="20" selection-start-line="20" selection-end-line="20" />
+            <state relative-caret-position="192">
+              <caret line="8" column="0" lean-forward="false" selection-start-line="8" selection-start-column="0" selection-end-line="8" selection-end-column="0" />
+              <folding />
             </state>
           </provider>
         </entry>
@@ -107,6 +72,7 @@
       <find>edit_table</find>
       <find>qrcode</find>
       <find>service/call</find>
+      <find>activity</find>
     </findStrings>
   </component>
   <component name="Git.Settings">
@@ -118,61 +84,54 @@
         <option value="$PROJECT_DIR$/server.py" />
         <option value="$PROJECT_DIR$/test.py" />
         <option value="$PROJECT_DIR$/config.py" />
+        <option value="$PROJECT_DIR$/requirements.txt" />
         <option value="$PROJECT_DIR$/app/routes.py" />
         <option value="$PROJECT_DIR$/app/utilities.py" />
+        <option value="$PROJECT_DIR$/app/models.py" />
       </list>
     </option>
   </component>
-  <component name="ProjectFrameBounds" extendedState="6">
-    <option name="x" value="10" />
-    <option name="y" value="20" />
-    <option name="width" value="1346" />
-    <option name="height" value="688" />
+  <component name="ProjectFrameBounds">
+    <option name="y" value="23" />
+    <option name="width" value="1280" />
+    <option name="height" value="723" />
   </component>
   <component name="ProjectLevelVcsManager" settingsEditedManually="true">
     <ConfirmationsSetting value="1" id="Add" />
   </component>
   <component name="ProjectView">
-    <navigator proportions="" version="1">
+    <navigator currentView="ProjectPane" proportions="" version="1">
+      <flattenPackages />
+      <showMembers />
+      <showModules />
+      <showLibraryContents />
+      <hideEmptyPackages />
+      <abbreviatePackageNames />
+      <autoscrollToSource />
+      <autoscrollFromSource />
+      <sortByType />
+      <manualOrder />
       <foldersAlwaysOnTop value="true" />
     </navigator>
     <panes>
-      <pane id="Scope" />
+      <pane id="Scratches" />
       <pane id="ProjectPane">
         <subPane>
           <expand>
             <path>
-              <item name="xstar_restaurant_system" type="b2602c69:ProjectViewProjectNode" />
-              <item name="xstar_restaurant_system" type="462c0819:PsiDirectoryNode" />
+              <item name="xstar" type="b2602c69:ProjectViewProjectNode" />
+              <item name="xstar" type="462c0819:PsiDirectoryNode" />
             </path>
             <path>
-              <item name="xstar_restaurant_system" type="b2602c69:ProjectViewProjectNode" />
-              <item name="xstar_restaurant_system" type="462c0819:PsiDirectoryNode" />
+              <item name="xstar" type="b2602c69:ProjectViewProjectNode" />
+              <item name="xstar" type="462c0819:PsiDirectoryNode" />
               <item name="app" type="462c0819:PsiDirectoryNode" />
-            </path>
-            <path>
-              <item name="xstar_restaurant_system" type="b2602c69:ProjectViewProjectNode" />
-              <item name="xstar_restaurant_system" type="462c0819:PsiDirectoryNode" />
-              <item name="app" type="462c0819:PsiDirectoryNode" />
-              <item name="static" type="462c0819:PsiDirectoryNode" />
-            </path>
-            <path>
-              <item name="xstar_restaurant_system" type="b2602c69:ProjectViewProjectNode" />
-              <item name="xstar_restaurant_system" type="462c0819:PsiDirectoryNode" />
-              <item name="app" type="462c0819:PsiDirectoryNode" />
-              <item name="static" type="462c0819:PsiDirectoryNode" />
-              <item name="out" type="462c0819:PsiDirectoryNode" />
-            </path>
-            <path>
-              <item name="xstar_restaurant_system" type="b2602c69:ProjectViewProjectNode" />
-              <item name="xstar_restaurant_system" type="462c0819:PsiDirectoryNode" />
-              <item name="app" type="462c0819:PsiDirectoryNode" />
-              <item name="utils" type="462c0819:PsiDirectoryNode" />
             </path>
           </expand>
           <select />
         </subPane>
       </pane>
+      <pane id="Scope" />
     </panes>
   </component>
   <component name="PropertiesComponent">
@@ -191,9 +150,8 @@
       </list>
     </option>
   </component>
-  <component name="RunManager" selected="Python.utilities">
+  <component name="RunManager" selected="Python.server">
     <configuration name="server" type="PythonConfigurationType" factoryName="Python" temporary="true">
-      <module name="xstar_restaurant_system" />
       <option name="INTERPRETER_OPTIONS" value="" />
       <option name="PARENT_ENVS" value="true" />
       <envs>
@@ -204,17 +162,14 @@
       <option name="IS_MODULE_SDK" value="true" />
       <option name="ADD_CONTENT_ROOTS" value="true" />
       <option name="ADD_SOURCE_ROOTS" value="true" />
+      <module name="xstar_restaurant_system" />
       <option name="SCRIPT_NAME" value="$PROJECT_DIR$/server.py" />
       <option name="PARAMETERS" value="" />
       <option name="SHOW_COMMAND_LINE" value="false" />
       <option name="EMULATE_TERMINAL" value="false" />
       <option name="MODULE_MODE" value="false" />
-      <option name="REDIRECT_INPUT" value="false" />
-      <option name="INPUT_FILE" value="" />
-      <method v="2" />
     </configuration>
     <configuration name="test" type="PythonConfigurationType" factoryName="Python">
-      <module name="xstar_restaurant_system" />
       <option name="INTERPRETER_OPTIONS" value="" />
       <option name="PARENT_ENVS" value="true" />
       <envs>
@@ -225,17 +180,14 @@
       <option name="IS_MODULE_SDK" value="true" />
       <option name="ADD_CONTENT_ROOTS" value="true" />
       <option name="ADD_SOURCE_ROOTS" value="true" />
+      <module name="xstar_restaurant_system" />
       <option name="SCRIPT_NAME" value="$PROJECT_DIR$/test.py" />
       <option name="PARAMETERS" value="" />
       <option name="SHOW_COMMAND_LINE" value="false" />
       <option name="EMULATE_TERMINAL" value="false" />
       <option name="MODULE_MODE" value="false" />
-      <option name="REDIRECT_INPUT" value="false" />
-      <option name="INPUT_FILE" value="" />
-      <method v="2" />
     </configuration>
     <configuration name="utilities" type="PythonConfigurationType" factoryName="Python" temporary="true">
-      <module name="xstar_restaurant_system" />
       <option name="INTERPRETER_OPTIONS" value="" />
       <option name="PARENT_ENVS" value="true" />
       <envs>
@@ -246,21 +198,26 @@
       <option name="IS_MODULE_SDK" value="true" />
       <option name="ADD_CONTENT_ROOTS" value="true" />
       <option name="ADD_SOURCE_ROOTS" value="true" />
+      <module name="xstar_restaurant_system" />
       <option name="SCRIPT_NAME" value="$PROJECT_DIR$/app/utilities.py" />
       <option name="PARAMETERS" value="" />
       <option name="SHOW_COMMAND_LINE" value="false" />
       <option name="EMULATE_TERMINAL" value="false" />
       <option name="MODULE_MODE" value="false" />
-      <option name="REDIRECT_INPUT" value="false" />
-      <option name="INPUT_FILE" value="" />
-      <method v="2" />
     </configuration>
+    <list size="3">
+      <item index="0" class="java.lang.String" itemvalue="Python.test" />
+      <item index="1" class="java.lang.String" itemvalue="Python.server" />
+      <item index="2" class="java.lang.String" itemvalue="Python.utilities" />
+    </list>
     <recent_temporary>
-      <list>
-        <item itemvalue="Python.server" />
-        <item itemvalue="Python.utilities" />
+      <list size="1">
+        <item index="0" class="java.lang.String" itemvalue="Python.server" />
       </list>
     </recent_temporary>
+  </component>
+  <component name="ShelveChangesManager" show_recycled="false">
+    <option name="remove_strategy" value="false" />
   </component>
   <component name="SvnConfiguration">
     <configuration />
@@ -276,64 +233,48 @@
     <servers />
   </component>
   <component name="ToolWindowManager">
-    <frame x="-8" y="-8" width="1382" height="744" extended-state="6" />
+    <frame x="0" y="23" width="1280" height="723" extended-state="0" />
     <editor active="true" />
     <layout>
-      <window_info content_ui="combo" id="Project" order="0" weight="0.2470238" />
-      <window_info id="Structure" order="1" side_tool="true" weight="0.25" />
-      <window_info id="Favorites" order="2" side_tool="true" />
-      <window_info anchor="bottom" id="Message" order="0" />
-      <window_info anchor="bottom" id="Find" order="1" weight="0.3289689" />
-      <window_info anchor="bottom" id="Run" order="2" weight="0.95090014" />
-      <window_info anchor="bottom" id="Debug" order="3" weight="0.39934534" />
-      <window_info anchor="bottom" id="Cvs" order="4" weight="0.25" />
-      <window_info anchor="bottom" id="Inspection" order="5" weight="0.4" />
-      <window_info anchor="bottom" id="TODO" order="6" />
-      <window_info anchor="bottom" id="Version Control" order="7" />
-      <window_info anchor="bottom" id="Terminal" order="8" weight="0.95090014" />
-      <window_info anchor="bottom" id="Event Log" order="9" side_tool="true" />
-      <window_info anchor="bottom" id="Python Console" order="10" />
-      <window_info anchor="right" id="Commander" internal_type="SLIDING" order="0" type="SLIDING" weight="0.4" />
-      <window_info anchor="right" id="Ant Build" order="1" weight="0.25" />
-      <window_info anchor="right" content_ui="combo" id="Hierarchy" order="2" weight="0.25" />
+      <window_info id="Project" active="false" anchor="left" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" show_stripe_button="true" weight="0.24960127" sideWeight="0.5" order="0" side_tool="false" content_ui="combo" />
+      <window_info id="TODO" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" show_stripe_button="true" weight="0.33" sideWeight="0.5" order="6" side_tool="false" content_ui="tabs" />
+      <window_info id="Event Log" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" show_stripe_button="true" weight="0.33" sideWeight="0.5" order="-1" side_tool="true" content_ui="tabs" />
+      <window_info id="Find" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" show_stripe_button="true" weight="0.3294893" sideWeight="0.5" order="1" side_tool="false" content_ui="tabs" />
+      <window_info id="Run" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" show_stripe_button="true" weight="0.3294893" sideWeight="0.5" order="2" side_tool="false" content_ui="tabs" />
+      <window_info id="Version Control" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" show_stripe_button="true" weight="0.33" sideWeight="0.5" order="-1" side_tool="false" content_ui="tabs" />
+      <window_info id="Python Console" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" show_stripe_button="true" weight="0.33" sideWeight="0.5" order="-1" side_tool="false" content_ui="tabs" />
+      <window_info id="Structure" active="false" anchor="left" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" show_stripe_button="true" weight="0.25" sideWeight="0.5" order="1" side_tool="false" content_ui="tabs" />
+      <window_info id="Terminal" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" show_stripe_button="true" weight="0.66886324" sideWeight="0.5" order="-1" side_tool="false" content_ui="tabs" />
+      <window_info id="Debug" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" show_stripe_button="true" weight="0.4" sideWeight="0.5" order="3" side_tool="false" content_ui="tabs" />
+      <window_info id="Favorites" active="false" anchor="left" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" show_stripe_button="true" weight="0.33" sideWeight="0.5" order="-1" side_tool="true" content_ui="tabs" />
+      <window_info id="Cvs" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" show_stripe_button="true" weight="0.25" sideWeight="0.5" order="4" side_tool="false" content_ui="tabs" />
+      <window_info id="Hierarchy" active="false" anchor="right" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" show_stripe_button="true" weight="0.25" sideWeight="0.5" order="2" side_tool="false" content_ui="combo" />
+      <window_info id="Message" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" show_stripe_button="true" weight="0.33" sideWeight="0.5" order="0" side_tool="false" content_ui="tabs" />
+      <window_info id="Commander" active="false" anchor="right" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" show_stripe_button="true" weight="0.4" sideWeight="0.5" order="0" side_tool="false" content_ui="tabs" />
+      <window_info id="Inspection" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" show_stripe_button="true" weight="0.4" sideWeight="0.5" order="5" side_tool="false" content_ui="tabs" />
+      <window_info id="Ant Build" active="false" anchor="right" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" show_stripe_button="true" weight="0.25" sideWeight="0.5" order="1" side_tool="false" content_ui="tabs" />
     </layout>
   </component>
+  <component name="VcsContentAnnotationSettings">
+    <option name="myLimit" value="2678400000" />
+  </component>
+  <component name="XDebuggerManager">
+    <breakpoint-manager />
+    <watches-manager />
+  </component>
   <component name="editorHistoryManager">
-    <entry file="file://D:/Projects/Xstar/venv/Lib/site-packages/docx/opc/phys_pkg.py">
+    <entry file="file://$PROJECT_DIR$/server.py">
       <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="113">
-          <caret line="30" selection-start-line="30" selection-end-line="30" />
+        <state relative-caret-position="96">
+          <caret line="4" column="0" lean-forward="true" selection-start-line="4" selection-start-column="0" selection-end-line="4" selection-end-column="0" />
+          <folding />
         </state>
       </provider>
-    </entry>
-    <entry file="file://$PROJECT_DIR$/config.py">
-      <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="261">
-          <caret line="20" selection-start-line="20" selection-end-line="20" />
-        </state>
-      </provider>
-    </entry>
-    <entry file="file://$PROJECT_DIR$/test.py">
-      <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="120">
-          <caret line="4" selection-start-line="3" selection-end-line="18" selection-end-column="15" />
-        </state>
-      </provider>
-    </entry>
-    <entry file="file://$PROJECT_DIR$/app/templates/qrcode.html">
-      <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="360">
-          <caret line="81" selection-start-line="81" selection-end-line="81" />
-        </state>
-      </provider>
-    </entry>
-    <entry file="file://$PROJECT_DIR$/app/static/qrcode/A1_1.png">
-      <provider selected="true" editor-type-id="images" />
     </entry>
     <entry file="file://$PROJECT_DIR$/app/routes.py">
       <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="176">
-          <caret line="2193" selection-start-line="2193" selection-end-line="2193" />
+        <state relative-caret-position="52632">
+          <caret line="2193" column="0" lean-forward="false" selection-start-line="2193" selection-start-column="0" selection-end-line="2193" selection-end-column="0" />
           <folding>
             <element signature="e#0#163#0" expanded="true" />
           </folding>
@@ -342,18 +283,100 @@
     </entry>
     <entry file="file://$PROJECT_DIR$/app/utilities.py">
       <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="321">
-          <caret line="186" selection-start-line="175" selection-start-column="6" selection-end-line="186" />
+        <state relative-caret-position="4032">
+          <caret line="186" column="0" lean-forward="false" selection-start-line="175" selection-start-column="6" selection-end-line="186" selection-end-column="0" />
           <folding>
             <element signature="e#0#11#0" expanded="true" />
           </folding>
         </state>
       </provider>
     </entry>
+    <entry file="file://$PROJECT_DIR$/config.py">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="480">
+          <caret line="20" column="0" lean-forward="false" selection-start-line="20" selection-start-column="0" selection-end-line="20" selection-end-column="0" />
+          <folding />
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://D:/Projects/Xstar/venv/Lib/site-packages/docx/opc/phys_pkg.py" />
+    <entry file="file://$PROJECT_DIR$/test.py" />
+    <entry file="file://$PROJECT_DIR$/app/templates/qrcode.html">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="360">
+          <caret line="81" column="0" lean-forward="false" selection-start-line="81" selection-start-column="0" selection-end-line="81" selection-end-column="0" />
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/requirements.txt">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="458">
+          <caret line="37" column="12" lean-forward="false" selection-start-line="37" selection-start-column="12" selection-end-line="37" selection-end-column="12" />
+          <folding />
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/app/__init__.py">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="0">
+          <caret line="0" column="0" lean-forward="false" selection-start-line="0" selection-start-column="0" selection-end-line="0" selection-end-column="0" />
+          <folding>
+            <element signature="e#0#169#0" expanded="false" />
+          </folding>
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/config.py">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="192">
+          <caret line="8" column="0" lean-forward="false" selection-start-line="8" selection-start-column="0" selection-end-line="8" selection-end-column="0" />
+          <folding />
+        </state>
+      </provider>
+    </entry>
     <entry file="file://$PROJECT_DIR$/server.py">
       <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="120">
-          <caret line="4" lean-forward="true" selection-start-line="4" selection-end-line="4" />
+        <state relative-caret-position="96">
+          <caret line="4" column="0" lean-forward="false" selection-start-line="4" selection-start-column="0" selection-end-line="4" selection-end-column="0" />
+          <folding />
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/todos.txt">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="-67">
+          <caret line="0" column="0" lean-forward="false" selection-start-line="0" selection-start-column="0" selection-end-line="0" selection-end-column="0" />
+          <folding />
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/app/utilities.py">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="300">
+          <caret line="156" column="0" lean-forward="false" selection-start-line="156" selection-start-column="0" selection-end-line="156" selection-end-column="0" />
+          <folding>
+            <element signature="e#0#11#0" expanded="true" />
+          </folding>
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/app/routes.py">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="422">
+          <caret line="611" column="0" lean-forward="true" selection-start-line="611" selection-start-column="0" selection-end-line="611" selection-end-column="0" />
+          <folding>
+            <element signature="e#0#163#0" expanded="true" />
+          </folding>
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/app/models.py">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="425">
+          <caret line="111" column="0" lean-forward="true" selection-start-line="111" selection-start-column="0" selection-end-line="111" selection-end-column="0" />
+          <folding>
+            <element signature="e#0#25#0" expanded="true" />
+          </folding>
         </state>
       </provider>
     </entry>

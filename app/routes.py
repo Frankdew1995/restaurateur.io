@@ -36,9 +36,10 @@ tax_rate_in = json_reader(str(Path(app.root_path) /
 tax_rate_out = json_reader(str(Path(app.root_path) /
                               'config.json')).get('TAX_RATE').get('Inhouse Order')
 
-base_url = "http://5c5a8cf5.ngrok.io"
+base_url = "http://b665007f.ngrok.io"
 
-timezone = 'Europe/Berlin' ## will be added from store setting page
+timezone = 'Europe/Berlin'
+# will be added from store setting page
 
 
 # Login Route
@@ -214,13 +215,13 @@ def return_analytics():
     # cur month
     cur_year = int(today.strftime("%Y"))
 
-    cur_mon = int(today.strftime("%-m"))
+    cur_mon = int(today.strftime("%m"))
 
     start_cur_month = datetime(cur_year, cur_mon, 1).date()
 
     mon_range = 31
 
-    cur_mon_dates = [int((start_cur_month + timedelta(days=n)).strftime("%-d")) \
+    cur_mon_dates = [int((start_cur_month + timedelta(days=n)).strftime("%d")) \
                         for n in range(mon_range)]
 
     cur_mon_revenue_by_dates = [sum([order.totalPrice \
@@ -249,7 +250,7 @@ def return_analytics():
 
         start_last_mon = datetime(cur_year, last_mon, 1).date()
 
-        data['last_mon_dates'] = [int((start_last_mon + timedelta(days=n)).strftime("%-d")) \
+        data['last_mon_dates'] = [int((start_last_mon + timedelta(days=n)).strftime("%d")) \
                                     for n in range(mon_range)]
 
         data['last_mon_revenue_by_dates'] = [
@@ -263,7 +264,7 @@ def return_analytics():
 
         start_last_mon = datetime(cur_year - 1, last_mon, 1).date()
 
-        data['last_mon_dates'] = [int((start_last_mon + timedelta(days=n)).strftime("%-d")) \
+        data['last_mon_dates'] = [int((start_last_mon + timedelta(days=n)).strftime("%d")) \
                                   for n in range(mon_range)]
 
         data['last_mon_revenue_by_dates'] = [
@@ -2950,7 +2951,7 @@ def revenue_by_month():
 
     cur_year = int(today.strftime("%Y"))
 
-    cur_mon = int(today.strftime("%-m"))
+    cur_mon = int(today.strftime("%m"))
 
     start = datetime(cur_year, cur_mon, 1).date()
 
@@ -2960,7 +2961,7 @@ def revenue_by_month():
 
     ordered_days2revenue = {
 
-        (start + timedelta(days=n)).strftime("%-d"):
+        (start + timedelta(days=n)).strftime("%d"):
 
                  {"Total": sum([order.totalPrice for order in paid_orders if\
                             order.timeCreated.date() == start + timedelta(days=n)]),
@@ -2992,14 +2993,14 @@ def revenue_by_year():
         str(month):
 
             {"Total": sum([order.totalPrice for order in paid_orders if\
-                           order.timeCreated.date().strftime("%-m") == str(month)]),
+                           order.timeCreated.date().strftime("%m") == str(month)]),
 
              "Total_Cash": sum([order.totalPrice for order in paid_orders if \
-                                order.timeCreated.date().strftime("%-m") == str(month) \
+                                order.timeCreated.date().strftime("%m") == str(month) \
                                 and json.loads(order.pay_via).get('method') == "Cash"]),
 
              "Total_Card": sum([order.totalPrice for order in paid_orders if \
-                                order.timeCreated.date().strftime("%-m") == str(month) \
+                                order.timeCreated.date().strftime("%m") == str(month) \
                                 and json.loads(order.pay_via).get('method') == "Card"]),
              } for month in range(1, 13)}
 
@@ -3620,7 +3621,7 @@ def boss_update_alacarte_order():
         order.totalPrice = sum(prices)
         order.items = json.dumps(details)
 
-        # db.session.commit()
+        db.session.commit()
 
         # Init a log object
         log = Log()

@@ -14,6 +14,8 @@ import pandas as pd
 
 from datetime import datetime
 import pytz
+from win32com import client
+
 
 
 from app.models import Table, User
@@ -155,6 +157,60 @@ def html2pdf():
     html_file.close()
 
 
+
+# Word to PDF Converter
+def docx2pdf(doc_in, pdf_out):
+
+    """
+    :word to pdf
+    :param doc_in word file path
+    :param pdf_out pdf file save path
+    """
+    try:
+        word = client.DispatchEx("Word.Application")
+        if os.path.exists(pdf_out):
+            os.remove(pdf_out)
+
+        doc = word.Documents.Open(doc_in, ReadOnly=1)
+        doc.SaveAs(pdf_out, FileFormat=17)
+        doc.Close()
+        return pdf_out
+
+    except Exception as e:
+        return str(e)
+
+
+
+
+def receipt_templating(context):
+
+    from docxtpl import DocxTemplate
+
+    temp_file = str(Path(app.root_path) / 'static' / 'docx' / 'receipt_temp.docx')
+
+    doc = DocxTemplate(temp_file)
+
+    logo = str(Path(app.root_path) / 'static' / 'img' / 'logo.png')
+
+    # If logo existing, then inserts the LOGO into receipt
+    if Path(logo).exists():
+
+        p = doc.tables[0].rows[0].cells[0].add_paragraph()
+
+        r = p.add_run()
+
+        r.add_picture(logo)
+
+    doc.render(context)
+
+    abs_save_path = str(Path(app.root_path) / 'static' / 'out' / 'receipts' / f'receipt.docx')
+    out_save_path = str(Path(app.root_path) / 'static' / 'out' / 'receipts' / f'receipt.pdf')
+
+    doc.save(abs_save_path)
+
+    docx2pdf(doc_in=abs_save_path,
+             pdf_out=out_save_path)
+
 def call2print(table_name):
 
     # Jinja Templating in word doc
@@ -173,17 +229,11 @@ def call2print(table_name):
     # Docx to PDF Conversion
     out_save_path = str(Path(app.root_path) / 'static' / 'out' / f'info_{table_name}.pdf')
 
-    # import win32com.client as win32
-    # # PDF Format Code
-    # wdFormatPDF = 17
-    #
-    # if not Path(abs_save_path).is_file():
-    #
-    #     word = win32.Dispatch('Word.Application')
-    #     doc = word.Documents.Open(abs_save_path)
-    #     doc.SaveAs(out_save_path, FileFormat=wdFormatPDF)
-    #     doc.Close()
-    #     word.Quit()
+    # if the pdf info file doesn't exist
+    if not Path(out_save_path).is_file():
+
+        docx2pdf(doc_in=abs_save_path,
+                 pdf_out=out_save_path)
 
     # Print the PDF info from the thermal printer
     printer_path = str(Path(app.root_path) / 'utils' / 'printer' / 'PDFtoPrinter')

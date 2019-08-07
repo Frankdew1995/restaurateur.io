@@ -5,7 +5,7 @@ from app import (app, db, render_template,
 
 from flask_login import current_user, login_user, login_required, logout_user
 
-from .models import User, Table, Food, Order, Visit
+from .models import User, Table, Food, Order, Visit, Log
 
 
 from .forms import (AddDishForm, StoreSettingForm,
@@ -3620,23 +3620,27 @@ def boss_update_alacarte_order():
         order.totalPrice = sum(prices)
         order.items = json.dumps(details)
 
-        db.session.commit()
+        # db.session.commit()
 
-        # Writing logs to the csv file
-        activity_logger(order_id=order.id,
-                        operation_type=u'订单修改',
-                        page_name=u'老板界面 > 餐桌情况(未结账) >订单修改',
-                        descr=f'''
-                        修改订单号: {order.id}\n
-                        桌子编号：{json.loads(order.container).get('table_name')}-{json.loads(order.container).get('seat_number')}\n
-                        修改前明细: {logging.get('before')}\n
-                        修改后明细: {logging.get('after')}\n
-                        修改前账单金额: {logging.get('price_before')}\n
-                        修改后账单金额: {logging.get('price_after')}\n
-                        订单类型: AlaCarte\n
-                        {logging.get('remark', "")}\n''',
-                        log_time=str(datetime.now(tz=pytz.timezone('Europe/Berlin'))),
-                        status=u'成功')
+        # Init a log object
+        log = Log()
+        log.order_id = order.id
+        log.operation = u'订单修改'
+        log.page = u'老板界面 > 餐桌情况(未结账) >订单修改'
+        log.desc = f'''
+                    修改订单号: {order.id}\n
+                    桌子编号：{json.loads(order.container).get('table_name')}-{json.loads(order.container).get('seat_number')}\n
+                    修改前明细: {logging.get('before')}\n
+                    修改后明细: {logging.get('after')}\n
+                    修改前账单金额: {logging.get('price_before')}\n
+                    修改后账单金额: {logging.get('price_after')}\n
+                    订单类型: AlaCarte\n
+                    {logging.get('remark', "")}\n'''
+        log.time = str(datetime.now(tz=pytz.timezone('Europe/Berlin')))
+        log.status = 'Erfolgreich'
+
+        db.session.add(log)
+        db.session.commit()
 
         return redirect(url_for('boss_view_alacarte_open_orders'))
 

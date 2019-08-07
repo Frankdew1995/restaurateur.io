@@ -1,26 +1,16 @@
-from app.models import User, Order
-
+from app.models import User, Order, Log
+from pathlib import Path
 
 from datetime import datetime
 
-from app import db
+from app import db, app
 
 import json
 
-users = db.session.query(User).all()
-
-orders = Order.query.all()
+import pandas as pd
 
 
 
+logs = Log.query.all()
 
-
-
-# for order in orders:
-#
-#     for time in time_objects:
-#
-#         print(order.timeCreated.time() < time)
-
-
-print(datetime.now().time())
+print(logs)

@@ -105,8 +105,18 @@ class Visit(db.Model):
     timeVisited = db.Column(db.DateTime, default=datetime.utcnow)
 
 
-# class Log(db.Model):
-#
-#     pass
+class Log(db.Model):
+
+    id = db.Column(db.Integer, primary_key=True, unique=True, index=True)
+    order_id = db.Column(db.Integer, unique=True)
+    operation = db.Column(db.String(100))
+    page = db.Column(db.String(100))
+    desc = db.Column(db.String(500))
+    status = db.Column(db.String(500))
+    time = db.Column(db.String(500))
+
+
+
+
 
 

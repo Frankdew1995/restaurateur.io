@@ -82,7 +82,6 @@ def login():
 
             return render_template('suspension_error.html', referrer=referrer)
 
-
     elif form.validate_on_submit():
 
         user = User.query.filter_by(username=form.username.data).first()
@@ -541,14 +540,9 @@ def checkout_takeaway_admin(order_id):
 
     logging['Order ID'] = order.id
 
-
-
-
     if request.method == "POST":
 
-
         pay_via = {}
-
 
         # Pay via cash
         if form.cash_submit.data:
@@ -559,13 +553,11 @@ def checkout_takeaway_admin(order_id):
                 pay_via['coupon_amount'] = form.coupon_amount.data
                 logging['Total'] = order.totalPrice
 
-
             elif form.discount_rate.data:
 
                 order.totalPrice = form.grandtotal.data * form.discount_rate.data
                 pay_via['discount_rate'] = form.discount_rate.data
                 logging['Total'] = order.totalPrice
-
 
             pay_via["method"] = "Cash"
 
@@ -673,7 +665,7 @@ def update_takeaway_order():
 
     logging = {}
 
-    ## Ajax Data Transmission
+    # Ajax Data Transmission
     if request.method == "POST":
 
         data = request.get_json('orderId')

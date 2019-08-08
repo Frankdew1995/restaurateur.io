@@ -95,9 +95,6 @@ def activity_logger(order_id, operation_type,
 def qrcode2excel(tables):
 
     import json
-
-    # for table_name in tables:
-
     import xlsxwriter
 
     save_abs_path = str(Path(app.root_path) / 'Downloads' / 'qrcode.xlsx')
@@ -128,8 +125,7 @@ def qrcode2excel(tables):
 
             # Insert an image.
             worksheet.write(f'A{row}', items[0])
-            worksheet.insert_image(f'B{row}',
-                                    img_path)
+            worksheet.insert_image(f'B{row}', img_path)
 
             row += 12
 
@@ -157,7 +153,6 @@ def html2pdf():
     html_file.close()
 
 
-
 # Word to PDF Converter
 def docx2pdf(doc_in, pdf_out):
 
@@ -180,13 +175,10 @@ def docx2pdf(doc_in, pdf_out):
         return str(e)
 
 
-
-
-def receipt_templating(context):
+def receipt_templating(context,
+                       temp_file):
 
     from docxtpl import DocxTemplate
-
-    temp_file = str(Path(app.root_path) / 'static' / 'docx' / 'receipt_temp.docx')
 
     doc = DocxTemplate(temp_file)
 
@@ -195,7 +187,7 @@ def receipt_templating(context):
     # If logo existing, then inserts the LOGO into receipt
     if Path(logo).exists():
 
-        p = doc.tables[0].rows[0].cells[0].add_paragraph()
+        p = doc.tables[1].rows[0].cells[0].add_paragraph()
 
         r = p.add_run()
 
@@ -210,6 +202,7 @@ def receipt_templating(context):
 
     docx2pdf(doc_in=abs_save_path,
              pdf_out=out_save_path)
+
 
 def call2print(table_name):
 

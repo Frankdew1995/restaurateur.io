@@ -16,25 +16,34 @@ from .forms import (AddDishForm, StoreSettingForm,
                     TableSectionQueryForm, SearchTableForm,
                     DatePickForm, AddUserForm, EditUserForm)
 
-
 from .utilities import (json_reader, store_picture,
                         generate_qrcode, activity_logger,
-                        qrcode2excel, call2print)
+                        qrcode2excel, call2print, receipt_templating)
 
 from pathlib import Path
 import json
 from uuid import uuid4
 from datetime import datetime, timedelta
 import pytz
-
 from threading import Thread
 
 # Some global viriables - read from config file.
-tax_rate_in = json_reader(str(Path(app.root_path) /
-                              'config.json')).get('TAX_RATE').get('Takeaway')
 
-tax_rate_out = json_reader(str(Path(app.root_path) /
-                              'config.json')).get('TAX_RATE').get('Inhouse Order')
+info = json_reader(str(Path(app.root_path) / 'config.json'))
+
+
+company_info = {
+            "tax_rate_in": info.get('TAX_RATE').get('takeaway'),
+            "tax_rate_out": info.get('TAX_RATE').get('Inhouse Order'),
+            "company_name": info.get('STORE_NAME'),
+            "address": f'{info.get("STREET")} {info.get("STREET NO.")}, {info.get("ZIP")} {info.get("CITY")}',
+            "tax_id": info.get('TAX_ID')
+        }
+
+
+tax_rate_in = json_reader(str(Path(app.root_path) / 'config.json')).get('TAX_RATE').get('takeaway')
+
+tax_rate_out = json_reader(str(Path(app.root_path) / 'config.json')).get('TAX_RATE').get('Inhouse Order')
 
 base_url = "http://b665007f.ngrok.io"
 
@@ -412,8 +421,11 @@ def food_frontview():
 
     categories = list(set([dish.category for dish in dishes]))
 
-    return render_template('foodfrontview.html', dishes=dishes,
-                           categories=categories, title='Xstar Bar', tel="+ 49 555555")
+    return render_template('foodfrontview.html',
+                           dishes=dishes,
+                           categories=categories,
+                           title='Xstar Bar',
+                           tel="+ 49 555555")
 
 
 @app.route("/takeout/checkout", methods=["POST", "GET"])
@@ -456,18 +468,13 @@ def takeaway_checkout():
 app.route("/order/pickup", methods=["POST"])
 def pickup_order():
 
-
     if request.method == "POST":
 
-
         json_data = request.get_json()
-
 
         print(json_data)
 
     return redirect(url_for('takeaway_orders_manage'))
-
-
 
 
 # Checkout a takeaway order ????
@@ -506,12 +513,10 @@ def checkout_order(order_id):
 
             return redirect(url_for('takeaway_orders_manage'))
 
-
     return redirect(url_for('takeaway_orders_manage'))
 
 
-
-@app.route("/takeaway/order/<string:order_id>/checkout", methods=["POST","GET"])
+@app.route("/takeaway/order/<int:order_id>/checkout", methods=["POST", "GET"])
 def checkout_takeaway_admin(order_id):
 
     form = CheckoutForm()
@@ -592,6 +597,27 @@ def checkout_takeaway_admin(order_id):
 
         db.session.commit()
 
+        details = {key: {'quantity': items.get('quantity'),
+                         'total': items.get('quantity') * items.get('price')}
+                   for key, items in json.loads(order.items).items()}
+
+        context = {"details": details,
+                     "company_name": company_info.get('company_name', ''),
+                     "address": company_info.get('address'),
+                     "now": datetime.now().strftime("%Y-%m-%d %H:%M:%S"),
+                     "tax_id": company_info.get('tax_id'),
+                     "wait_number": order.id,
+                     "total": order.totalPrice,
+                     "pay_via": json.loads(order.pay_via).get('method', ""),
+                     "VAT": round((order.totalPrice / 1.07)*0.07, 2)}
+
+        temp_file = str(Path(app.root_path) / 'static' / 'docx' / 'receipt_temp_out.docx')
+        save_as = f"receipt_{order.id}"
+
+        # Printing receipt here
+        th = Thread(target=receipt_templating, args=(context, temp_file, save_as, ))
+        th.start()
+
         # Writing logs to the csv file
         activity_logger(order_id=order.id,
                         operation_type=u'结账',
@@ -661,6 +687,7 @@ def takeaway_order_edit(order_id):
 
 # Handling data transmissioned via Ajax
 @app.route("/takeaway/order/update", methods=["POST"])
+@login_required
 def update_takeaway_order():
 
     logging = {}
@@ -680,7 +707,6 @@ def update_takeaway_order():
 
         logging['price_before'] = order.totalPrice
 
-
         if len(details) > 0:
 
             price_dict = {
@@ -693,7 +719,6 @@ def update_takeaway_order():
                     {'quantity': int(detail.get('quantity')),
                      'price': float(price_dict.get(detail.get('item')))}
                 for detail in details}
-
 
             logging['after'] = "\n".join([f"{key}x{items.get('quantity')}" for (key, items) in details.items()])
 
@@ -708,7 +733,6 @@ def update_takeaway_order():
             logging['price_after'] = order.totalPrice
 
             flash(f"已经修改订单:{order_id}", category="success")
-
 
         else:
 
@@ -741,7 +765,6 @@ def update_takeaway_order():
         return "Ok"
 
 
-
 @app.route("/admin/takeaway/orders/all")
 @login_required
 def all_out_orders():
@@ -750,7 +773,6 @@ def all_out_orders():
     orders = Order.query.filter(Order.type=="Out").all()
 
     return render_template('all_out_orders.html', title=u'外卖订单', orders=orders)
-
 
 
 @app.route('/admin/view/open/alacarte/orders')
@@ -766,11 +788,9 @@ def admin_view_alacarte_open_orders():
                   order.timeCreated.date() ==
                   datetime.now(tz=pytz.timezone("Europe/Berlin")).date()]
 
-
     items = {order.id: json.loads(order.items) for order in cur_orders}
 
     containers = {order.id: json.loads(order.container) for order in cur_orders}
-
 
     return render_template("admin_view_alalcarte_open_orders.html",
                            open_orders=cur_orders,
@@ -1008,11 +1028,11 @@ def takeaway_cur_revenue():
     return render_template('current_out_revenue.html', revenues=revenues)
 
 
-# Takeaway order status view
+# takeaway order status view
 @app.route("/status")
 def display_status():
 
-    #Filtering only Takeaway orders
+    #Filtering only takeaway orders
     orders = Order.query.filter(Order.type == "Out").all()
 
     # Filtering only orders today based on timezone Berlin
@@ -1423,7 +1443,7 @@ def set_store():
           "COUNTRY": form.country.data,
           "ZIP": form.zip.data,
           "TAX_ID": form.tax_id.data,
-          "TAX_RATE": {"Takeaway": form.tax_rate_takeaway.data,
+          "TAX_RATE": {"takeaway": form.tax_rate_takeaway.data,
                        "Inhouse Order": form.tax_rate_InHouse.data}
                },
 
@@ -1446,7 +1466,7 @@ def set_store():
         form.city.data = data.get('CITY')
         form.tax_id.data = data.get('TAX_ID')
         form.tax_rate_InHouse.data = data.get("TAX_RATE").get("Inhouse Order")
-        form.tax_rate_takeaway.data = data.get("TAX_RATE").get("Takeaway")
+        form.tax_rate_takeaway.data = data.get("TAX_RATE").get("takeaway")
         form.logo.data = data.get('LOGO')
 
 
@@ -1492,7 +1512,7 @@ def add_user():
     letter_string = string.ascii_uppercase
     letters = [letter for letter in letter_string]
 
-    holder = [("Takeaway", u"外卖")]
+    holder = [("takeaway", u"外卖")]
 
     holder.extend([(i, i) for i in letters])
 
@@ -1546,7 +1566,7 @@ def edit_user(user_id):
     letter_string = string.ascii_uppercase
     letters = [letter for letter in letter_string]
 
-    holder = [("Takeaway", u"外卖")]
+    holder = [("takeaway", u"外卖")]
 
     holder.extend([(i, i) for i in letters])
 

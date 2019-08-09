@@ -67,7 +67,7 @@ class AddDishForm(FlaskForm):
     image = FileField(u"上传图片", validators=[FileAllowed(["jpg", "jpeg", "png"])])
     eat_manner = SelectField(u"用餐方式", choices=[("Please select", u"请选择用餐方式"),
                                                 ("Buffet", u"自助餐"),
-                                               ("Takeaway", u"外卖"),
+                                               ("takeaway", u"外卖"),
                                                ("AlaKarte", u"单点")])
     submit = SubmitField(u"确认添加")
 
@@ -127,7 +127,7 @@ class EditDishForm(FlaskForm):
     image = FileField(u"上传图片", validators=[FileAllowed(["jpg", "jpeg", "png"])])
     eat_manner = SelectField(u"用餐方式", choices=[("Please select", u"请选择用餐方式"),
                                                ("Buffet", u"自助餐"),
-                                               ("Takeaway", u"外卖"),
+                                               ("takeaway", u"外卖"),
                                                ("AlaKarte", u"单点")])
     submit = SubmitField(u"确认更新")
 

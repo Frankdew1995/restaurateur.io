@@ -9,8 +9,11 @@ import json
 
 import pandas as pd
 
+orders = Order.query.all()
 
+for order in orders:
 
-logs = Log.query.all()
-
-print(logs)
+    details = {key: {'qty': items.get('quantity'),
+                     'total': items.get('quantity') * items.get('price')}
+                        for key, items in json.loads(order.items).items()}
+    print(details)

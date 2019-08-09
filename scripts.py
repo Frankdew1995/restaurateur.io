@@ -32,8 +32,13 @@ receipt_templating(
                          "pay_via": "KARTE",
                          "VAT": round((455 / 1.07)*0.07, 2)
                          },
-                temp_file=temp_file1)
+                temp_file=temp_file,
+                save_as="receipt_01")
 
 end = time.time()
 
 print("Took", end - start)
+
+# import win32print
+# printers = win32print.EnumPrinters(5)
+# print(printers)

@@ -694,7 +694,6 @@ def update_takeaway_order():
                      'price': float(price_dict.get(detail.get('item')))}
                 for detail in details}
 
-
             logging['after'] = "\n".join([f"{key}x{items.get('quantity')}" for (key, items) in details.items()])
 
             prices = [i[1].get('quantity') * i[1].get('price') for i in details.items()]

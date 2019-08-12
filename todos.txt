@@ -27,8 +27,10 @@ Done:
 
 
 
-
 To Dos:
+24. Build the python pandoc usage for docx to pdf conversion
+25. takeout order printing
+26. AlaKarte order printing
 
 10. Render Flashing MSGs in all front pages
 12. Takeaway Categories > sub categories > single items

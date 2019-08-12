@@ -634,26 +634,33 @@ def checkout_takeaway_admin(order_id):
         temp_file = str(Path(app.root_path) / 'static' / 'docx' / 'receipt_temp_out.docx')
         save_as = f"receipt_{order.id}"
 
-        printer = "Star TSP100 Cutter (TSP143) eco"
-        printer_kitchen = "Star TSP100 Cutter (TSP143)"
-        printer_bar = printer
+        # Read the printer setting data from the json file
+        with open(str(Path(app.root_path) / "settings" / "printer.json"), encoding="utf8") as file:
+
+            data = file.read()
+
+        data = json.loads(data)
 
         def master_printer():
 
             # Print Receipt
-            receipt_templating(context, temp_file, save_as, printer)
+            receipt_templating(context=context,
+                               temp_file=temp_file,
+                               save_as=save_as,
+                               printer=data.get('receipt').get('printer')
+                               )
 
             # Print to kitchen
-            kitchen_templating(context_kitchen,
-                               kitchen_temp,
-                               save_as_kitchen,
-                               printer_kitchen)
+            kitchen_templating(context=context_kitchen,
+                               temp_file=kitchen_temp,
+                               save_as=save_as_kitchen,
+                               printer=data.get('kitchen').get('printer'))
 
             # Print to bar
-            bar_templating(context_bar,
-                               bar_temp,
-                               save_as_bar,
-                               printer_bar)
+            bar_templating(context=context_bar,
+                           temp_file=bar_temp,
+                           save_as=save_as_bar,
+                           printer=data.get('bar').get('printer'))
 
         # Start the thread
         th = Thread(target=master_printer)
@@ -3766,7 +3773,7 @@ def printers_manage():
 @login_required
 def edit_printer(terminal):
 
-    referrer = request.headers.get("Refer")
+    referrer = request.headers.get("Referer")
 
     form = EditPrinterForm()
 
@@ -3778,7 +3785,13 @@ def edit_printer(terminal):
 
     if request.method == "POST":
 
-        pass
+        data[terminal]['printer'] = form.terminal.data
+
+        # Writing the new settings to the json data file
+        with open(str(Path(app.root_path) / "settings" / "printer.json"), 'w', encoding="utf8") as file:
+            json.dump(data, file, indent=2)
+
+        return redirect(url_for('printers_manage'))
 
     form.printer.data = data.get(terminal).get('printer')
     form.terminal.data = data.get(terminal).get('cn_key')

@@ -291,9 +291,7 @@ class EditPrinterForm(FlaskForm):
 
     terminal = StringField(u"终端名称", validators=[DataRequired()])
 
-    printer = SelectField(u'打印机名称',
-                          choices=[("Please select section", u"请选择分区")],
-                          validators=[DataRequired()])
+    printer = StringField(u'打印机名称', validators=[DataRequired()])
 
     submit = SubmitField(u"确认更新")
 

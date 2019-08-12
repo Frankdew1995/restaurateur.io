@@ -11,7 +11,7 @@
 
   "receipt": {"printer": "Star TSP100 Cutter (TSP143) eco",
               "cn_key": "票据",
-              "is_on": true},
+              "is_on": false},
 
   "terminal": {"printer": "Star TSP100 Cutter (TSP143) eco",
                 "cn_key": "外卖终端",

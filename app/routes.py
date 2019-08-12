@@ -13,7 +13,8 @@ from .forms import (AddDishForm, StoreSettingForm,
                     CheckoutForm, AddTableForm,
                     EditTableForm, ConfirmForm,
                     TableSectionQueryForm, SearchTableForm,
-                    DatePickForm, AddUserForm, EditUserForm)
+                    DatePickForm, AddUserForm, EditUserForm,
+                    EditPrinterForm)
 
 from .utilities import (json_reader, store_picture,
                         generate_qrcode, activity_logger,
@@ -27,7 +28,7 @@ from datetime import datetime, timedelta
 import pytz
 from threading import Thread
 
-# Some global viriables - read from config file.
+# Some global variables - read from config file.
 
 info = json_reader(str(Path(app.root_path) / 'config.json'))
 
@@ -3744,3 +3745,45 @@ def boss_takeaway_order_view(order_id):
                            ordered_items=ordered_items,
                            prices=prices,
                            referrer=referrer)
+
+
+# Printer section for managing, delete and add etc.
+@app.route("/printers/manage")
+@login_required
+def printers_manage():
+
+    with open(str(Path(app.root_path) / "settings" / "printer.json"), encoding="utf8") as file:
+
+        data = file.read()
+
+    data = json.loads(data)
+
+    return render_template("printer_manage.html",
+                           data=data)
+
+
+@app.route("/printers/<string:terminal>/edit", methods=["GET", "POST"])
+@login_required
+def edit_printer(terminal):
+
+    referrer = request.headers.get("Refer")
+
+    form = EditPrinterForm()
+
+    with open(str(Path(app.root_path) / "settings" / "printer.json"), encoding="utf8") as file:
+
+        data = file.read()
+
+    data = json.loads(data)
+
+    if request.method == "POST":
+
+        pass
+
+    form.printer.data = data.get(terminal).get('printer')
+    form.terminal.data = data.get(terminal).get('cn_key')
+
+    return render_template("edit_printer.html",
+                           form=form,
+                           referrer=referrer)
+

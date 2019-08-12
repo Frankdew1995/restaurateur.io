@@ -1,0 +1,105 @@
+{% extends "base.html" %}
+
+
+{% block title %}
+
+
+<h2>修改打印设置</h2>
+<hr>
+
+{% endblock %}
+
+
+{% block content %}
+
+
+<button type="button" class="btn btn-danger">
+  <a href={{ referrer }} style="color: rgb(247, 249, 252)">
+    返回
+  </a>
+</button>
+
+<hr>
+
+<form action='' method="POST" enctype="multipart/form-data">
+
+
+    {{ form.hidden_tag() }}
+
+    <div class='form-group'>
+
+
+        <p>
+            {{ form.terminal.label }} <br>
+            {{ form.terminal(
+              class='form-control',
+              style="width: 50%",
+              readonly="readonly") }}
+        </p>
+
+
+        <p>
+
+          {{ form.printer.label }}<br>
+          {{ form.printer(
+              class='form-control',
+              style="width: 50%",
+              placeholder="请输入相应打印终端的打印机名称") }}
+
+        </p>
+
+
+        <p>
+
+            {{ form.section.label }}<br>
+            {{ form.section(
+              class='form-control',
+              style='width: 50%')}}
+
+
+
+        </p>
+        桌子：
+
+          {% if seats %}
+          {{seats}}
+          {% endif %}
+
+
+        <p>
+
+
+
+
+        </p>
+
+
+
+        <p>
+
+            {{ form.submit(class='btn btn-danger')}}
+            <button type="button" class="btn btn-secondary">
+              <a href={{ url_for('view_tables') }} style="color: rgb(247, 249, 252)">
+                取消
+              </a>
+            </button>
+        </p>
+
+
+
+    </div>
+
+
+
+
+
+
+
+</form>
+
+
+
+
+
+
+{% endblock %}

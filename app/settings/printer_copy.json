@@ -1,20 +1,16 @@
 {
 
   "kitchen": {"printer": "Star TSP100 Cutter (TSP143) eco",
-              "cn_key": "厨房",
               "is_on": true},
 
   "bar": {"printer": "Star TSP100 Cutter (TSP143)",
-          "cn_key": "水吧",
           "is_on": true
           },
 
   "receipt": {"printer": "Star TSP100 Cutter (TSP143) eco",
-              "cn_key": "票据",
               "is_on": true},
 
   "terminal": {"printer": "Star TSP100 Cutter (TSP143) eco",
-                "cn_key": "外卖终端",
                 "is_on":  true}
 
 }

@@ -1,14 +1,14 @@
 [
   {
     "STORE_NAME": "Xstar Resturant",
-    "CITY": "Cologne",
+    "CITY": "Koeln",
     "STREET": "Maxmann Strasse",
     "STREET NO.": "555",
-    "COUNTRY": "UK",
+    "COUNTRY": "DE",
     "ZIP": "47447",
     "TAX_ID": "2324234324",
     "TAX_RATE": {
-      "Takeaway": 0.07,
+      "takeaway": 0.07,
       "Inhouse Order": 0.19
     }
   }

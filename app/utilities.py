@@ -219,11 +219,9 @@ def receipt_templating(context,
     # Print the PDF info from the thermal printer
     printer_path = str(Path(app.root_path) / 'utils' / 'printer' / 'PDFtoPrinter')
 
-    printer_name = "Star TSP100 Cutter (TSP143) eco"
-
     import subprocess
     # call the command to print the pdf file
-    subprocess.Popen(f'{printer_path} {out_save_path} "{printer}"', shell=True)
+    # subprocess.Popen(f'{printer_path} {out_save_path} "{printer}"', shell=True)
 
     return "ok"
 
@@ -257,11 +255,10 @@ def kitchen_templating(context,
     # Print the PDF info from the thermal printer
     printer_path = str(Path(app.root_path) / 'utils' / 'printer' / 'PDFtoPrinter')
 
-    printer_name = "Star TSP100 Cutter (TSP143) eco"
 
     import subprocess
     # call the command to print the pdf file
-    subprocess.Popen(f'{printer_path} {out_save_path} "{printer}"', shell=True)
+    # subprocess.Popen(f'{printer_path} {out_save_path} "{printer}"', shell=True)
 
     return "ok"
 
@@ -296,11 +293,9 @@ def bar_templating(context,
     # Print the PDF info from the thermal printer
     printer_path = str(Path(app.root_path) / 'utils' / 'printer' / 'PDFtoPrinter')
 
-    printer_name = "Star TSP100 Cutter (TSP143) eco"
-
     import subprocess
     # call the command to print the pdf file
-    subprocess.Popen(f'{printer_path} {out_save_path} "{printer}"', shell=True)
+    # subprocess.Popen(f'{printer_path} {out_save_path} "{printer}"', shell=True)
 
     return "ok"
 

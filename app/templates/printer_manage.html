@@ -1,0 +1,103 @@
+{% extends 'base.html' %}
+
+
+{% block css %}
+
+<link rel="stylesheet" type="text/css" href="https://cdn.datatables.net/1.10.19/css/jquery.dataTables.css">
+<link rel="stylesheet" type="text/css" href="https://cdnjs.cloudflare.com/ajax/libs/twitter-bootstrap/4.1.3/css/bootstrap.css">
+<link rel="stylesheet" type="text/css" href="https://cdn.datatables.net/1.10.19/css/dataTables.bootstrap4.min.css">
+<link rel="stylesheet" href={{ url_for('static', filename='css/table_switch.css') }}>
+
+
+{% endblock %}
+
+
+
+{% block title %}
+
+
+<h1 class="h3 mb-2 text-gray-800">打印设置</h1>
+<br>
+
+{% endblock %}
+
+
+{% block content %}
+
+
+
+<button type="button" class="btn btn-secondary">
+  <a href="#" style="color: rgb(247, 249, 252)">
+    新增打印机
+  </a>
+</button>
+
+<hr>
+
+<div class="row">
+
+
+    <div class="col-sm-12">
+
+
+        <table id="example" class="table table-striped table-bordered">
+
+      <thead>
+        <tr>
+          <th scope="col">打印终端</th>
+          <th scope="col">打印机名称</th>
+          <th scope="col">状态</th>
+          <th scope="col">操作</th>
+        </tr>
+      </thead>
+      <tbody>
+      {% for key, items in data.items() %}
+        <tr>
+          <th scope="row">{{ items.get('cn_key', '') }}</th>
+          <td>{{ items.get('printer', '') }}</td>
+          <td>
+            <div class="onoffswitch">
+              {% if items.get('is_on') %}
+              <input type="checkbox" name="onoffswitch" checked class="onoffswitch-checkbox" id={{ key }}>
+              {% else %}
+              <input type="checkbox" name="onoffswitch" class="onoffswitch-checkbox" id={{ key }}>
+              {% endif %}
+              <label class="onoffswitch-label" for={{ key }} >
+                  <span class="onoffswitch-inner"></span>
+                  <span class="onoffswitch-switch"></span>
+              </label>
+            </div>
+          </td>
+          <td>
+            <span>
+              <button type="button" class="btn btn-secondary"><a style="color: rgb(247, 249, 252)" href="#">修改</a></button>
+            </span>
+          </td>
+        </tr>
+      {% endfor %}
+      </tbody>
+    </table>
+
+    </div>
+
+</div>
+
+
+{% endblock %}
+
+
+{% block scripts %}
+
+
+
+<script>
+    $(document).ready(function() {
+    $('#example').DataTable();
+} );
+</script>
+
+<script type="text/javascript" charset="utf8" src="https://cdn.datatables.net/1.10.19/js/dataTables.bootstrap4.min.js"></script>
+<script type="text/javascript" charset="utf8" src="https://code.jquery.com/jquery-3.3.1.js"></script>
+<script type="text/javascript" charset="utf8" src="https://cdn.datatables.net/1.10.19/js/jquery.dataTables.min.js"></script>
+<script type="text/javascript" src={{ url_for('static', filename='js/toggle_table.js') }}></script>
+{% endblock %}

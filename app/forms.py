@@ -35,8 +35,6 @@ class RegistrationForm(FlaskForm):
         u'重复密码', validators=[DataRequired(), EqualTo('password')])
     submit = SubmitField(u'注册账号')
 
-
-
     def validate_username(self, username):
         user = User.query.filter_by(username=username.data).first()
         if user is not None:
@@ -46,8 +44,6 @@ class RegistrationForm(FlaskForm):
         user = User.query.filter_by(email=email.data).first()
         if user is not None:
             raise ValidationError(u'邮件地址已存在')
-
-
 
 
 # Add Dish Form
@@ -72,9 +68,7 @@ class AddDishForm(FlaskForm):
     submit = SubmitField(u"确认添加")
 
 
-
 class EditCategoryForm(FlaskForm):
-
 
     name_class = SelectField(u"菜品类型",
                              choices=[("Please select", u"请选择菜品类型")])
@@ -91,7 +85,6 @@ class EditCategoryForm(FlaskForm):
     submit = SubmitField(u"确定修改")
 
 
-
 class AddCategoryForm(FlaskForm):
 
     name_class = SelectField(u"菜品类型",
@@ -103,7 +96,6 @@ class AddCategoryForm(FlaskForm):
                                 choices=[("Please select", u"请选择菜品种类")])
 
     new_category = StringField(u"添加新种类")
-
 
     unit_en = StringField(u"计量单位 zh")
 
@@ -150,7 +142,6 @@ class StoreSettingForm(FlaskForm):
 
 class CheckoutForm(FlaskForm):
 
-
     payment = SelectField(u'支付方式', choices=[("-","-"),("Cash","Cash"), ("Card", "Card")])
     coupon_amount = FloatField(u"代金券€")
     discount_rate = FloatField(u"打折")
@@ -171,11 +162,7 @@ class AddTableForm(FlaskForm):
                           choices=[("Please select section", u"请选择分区")],
                           validators=[DataRequired()])
 
-
-
-
     submit = SubmitField(u"确认添加")
-
 
 
 class EditTableForm(FlaskForm):
@@ -191,17 +178,9 @@ class EditTableForm(FlaskForm):
     submit = SubmitField(u"确认更新")
 
 
-
 class ConfirmForm(FlaskForm):
 
     submit = SubmitField("确定")
-
-
-
-class BuffetPriceForm(FlaskForm):
-
-
-    pass
 
 
 class TableSectionQueryForm(FlaskForm):
@@ -217,10 +196,7 @@ class TableSectionQueryForm(FlaskForm):
     submit = SubmitField(u"确认")
 
 
-
-
 class SearchTableForm(FlaskForm):
-
 
     select_table = SelectField(u'搜索桌号',
                         choices=[("Please select section", u"请选择桌子号码")],
@@ -247,7 +223,6 @@ class DatePickForm(FlaskForm):
     end_date = DateField(u'截止日期', validators=[DataRequired()])
 
     submit = SubmitField(u'搜索')
-
 
 
 # Registration Form
@@ -281,7 +256,6 @@ class AddUserForm(FlaskForm):
             raise ValidationError(u'用户名已存在')
 
 
-
 # Edit User Form
 class EditUserForm(FlaskForm):
 
@@ -313,5 +287,13 @@ class EditUserForm(FlaskForm):
             raise ValidationError(u'用户名已存在')
 
 
+class EditPrinterForm(FlaskForm):
 
+    terminal = StringField(u"终端名称", validators=[DataRequired()])
+
+    printer = SelectField(u'打印机名称',
+                          choices=[("Please select section", u"请选择分区")],
+                          validators=[DataRequired()])
+
+    submit = SubmitField(u"确认更新")
 

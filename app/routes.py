@@ -7,7 +7,6 @@ from flask_login import current_user, login_user, login_required, logout_user
 
 from .models import User, Table, Food, Order, Visit, Log
 
-
 from .forms import (AddDishForm, StoreSettingForm,
                     RegistrationForm, LoginForm,
                     EditDishForm, EditCategoryForm,
@@ -16,25 +15,35 @@ from .forms import (AddDishForm, StoreSettingForm,
                     TableSectionQueryForm, SearchTableForm,
                     DatePickForm, AddUserForm, EditUserForm)
 
-
 from .utilities import (json_reader, store_picture,
                         generate_qrcode, activity_logger,
-                        qrcode2excel, call2print)
+                        qrcode2excel, call2print, receipt_templating,
+                        bar_templating, kitchen_templating)
 
 from pathlib import Path
 import json
 from uuid import uuid4
 from datetime import datetime, timedelta
 import pytz
-
 from threading import Thread
 
 # Some global viriables - read from config file.
-tax_rate_in = json_reader(str(Path(app.root_path) /
-                              'config.json')).get('TAX_RATE').get('Takeaway')
 
-tax_rate_out = json_reader(str(Path(app.root_path) /
-                              'config.json')).get('TAX_RATE').get('Inhouse Order')
+info = json_reader(str(Path(app.root_path) / 'config.json'))
+
+
+company_info = {
+            "tax_rate_in": info.get('TAX_RATE').get('takeaway'),
+            "tax_rate_out": info.get('TAX_RATE').get('Inhouse Order'),
+            "company_name": info.get('STORE_NAME'),
+            "address": f'{info.get("STREET")} {info.get("STREET NO.")}, {info.get("ZIP")} {info.get("CITY")}',
+            "tax_id": info.get('TAX_ID')
+        }
+
+
+tax_rate_in = json_reader(str(Path(app.root_path) / 'config.json')).get('TAX_RATE').get('Takeaway')
+
+tax_rate_out = json_reader(str(Path(app.root_path) / 'config.json')).get('TAX_RATE').get('Inhouse Order')
 
 base_url = "http://b665007f.ngrok.io"
 
@@ -402,18 +411,21 @@ def food_frontview():
 
     dishes = Food.query.all()
 
-    for dish in dishes:
-
-        # Rewrite dish's image name
-        dish.image = dish.image.split("/")[-1]
-
-    # Commit the changes from the ORM Operation
-    db.session.commit()
+    # for dish in dishes:
+    #
+    #     # Rewrite dish's image name
+    #     dish.image = dish.image.split("/")[-1]
+    #
+    # # Commit the changes from the ORM Operation
+    # db.session.commit()
 
     categories = list(set([dish.category for dish in dishes]))
 
-    return render_template('foodfrontview.html', dishes=dishes,
-                           categories=categories, title='Xstar Bar', tel="+ 49 555555")
+    return render_template('foodfrontview.html',
+                           dishes=dishes,
+                           categories=categories,
+                           title='Xstar Bar',
+                           tel="+ 49 555555")
 
 
 @app.route("/takeout/checkout", methods=["POST", "GET"])
@@ -456,18 +468,13 @@ def takeaway_checkout():
 app.route("/order/pickup", methods=["POST"])
 def pickup_order():
 
-
     if request.method == "POST":
 
-
         json_data = request.get_json()
-
 
         print(json_data)
 
     return redirect(url_for('takeaway_orders_manage'))
-
-
 
 
 # Checkout a takeaway order ????
@@ -506,12 +513,10 @@ def checkout_order(order_id):
 
             return redirect(url_for('takeaway_orders_manage'))
 
-
     return redirect(url_for('takeaway_orders_manage'))
 
 
-
-@app.route("/takeaway/order/<string:order_id>/checkout", methods=["POST","GET"])
+@app.route("/takeaway/order/<int:order_id>/checkout", methods=["POST", "GET"])
 def checkout_takeaway_admin(order_id):
 
     form = CheckoutForm()
@@ -592,6 +597,67 @@ def checkout_takeaway_admin(order_id):
 
         db.session.commit()
 
+        details = {key: {'quantity': items.get('quantity'),
+                         'total': items.get('quantity') * items.get('price')}
+                            for key, items in json.loads(order.items).items()}
+
+        details_kitchen = {key: {'quantity': items.get('quantity'),
+                                 'total': items.get('quantity') * items.get('price')}
+                                    for key, items in order_items.items() if items.get("class_name") == "Food"}
+
+        details_bar = {key: {'quantity': items.get('quantity'),
+                             'total': items.get('quantity') * items.get('price')}
+                                for key, items in order_items.items() if items.get("class_name") == "Drinks"}
+
+        context_kitchen = {"details": details_kitchen,
+                           "wait_number": order.id}
+
+        kitchen_temp = str(Path(app.root_path) / 'static' / 'docx' / 'kitchen.docx')
+        save_as_kitchen = f"meallist_kitchen_{order.id}"
+
+        context_bar = {"details": details_bar,
+                       "wait_number": order.id}
+
+        bar_temp = str(Path(app.root_path) / 'static' / 'docx' / 'bar.docx')
+        save_as_bar = f"meallist_bar_{order.id}"
+
+        context = {"details": details,
+                     "company_name": company_info.get('company_name', ''),
+                     "address": company_info.get('address'),
+                     "now": datetime.now().strftime("%Y-%m-%d %H:%M:%S"),
+                     "tax_id": company_info.get('tax_id'),
+                     "wait_number": order.id,
+                     "total": order.totalPrice,
+                     "pay_via": json.loads(order.pay_via).get('method', ""),
+                     "VAT": round((order.totalPrice / 1.07)*0.07, 2)}
+        temp_file = str(Path(app.root_path) / 'static' / 'docx' / 'receipt_temp_out.docx')
+        save_as = f"receipt_{order.id}"
+
+        printer = "Star TSP100 Cutter (TSP143) eco"
+        printer_kitchen = "Star TSP100 Cutter (TSP143)"
+        printer_bar = printer
+
+        def master_printer():
+
+            # Print Receipt
+            receipt_templating(context, temp_file, save_as, printer)
+
+            # Print to kitchen
+            kitchen_templating(context_kitchen,
+                               kitchen_temp,
+                               save_as_kitchen,
+                               printer_kitchen)
+
+            # Print to bar
+            bar_templating(context_bar,
+                               bar_temp,
+                               save_as_bar,
+                               printer_bar)
+
+        # Start the thread
+        th = Thread(target=master_printer)
+        th.start()
+
         # Writing logs to the csv file
         activity_logger(order_id=order.id,
                         operation_type=u'结账',
@@ -661,6 +727,7 @@ def takeaway_order_edit(order_id):
 
 # Handling data transmissioned via Ajax
 @app.route("/takeaway/order/update", methods=["POST"])
+@login_required
 def update_takeaway_order():
 
     logging = {}
@@ -679,7 +746,6 @@ def update_takeaway_order():
         logging['before'] = "\n".join([f"{key}x{items.get('quantity')}" for (key, items) in json.loads(order.items).items()])
 
         logging['price_before'] = order.totalPrice
-
 
         if len(details) > 0:
 
@@ -707,7 +773,6 @@ def update_takeaway_order():
             logging['price_after'] = order.totalPrice
 
             flash(f"已经修改订单:{order_id}", category="success")
-
 
         else:
 
@@ -740,7 +805,6 @@ def update_takeaway_order():
         return "Ok"
 
 
-
 @app.route("/admin/takeaway/orders/all")
 @login_required
 def all_out_orders():
@@ -749,7 +813,6 @@ def all_out_orders():
     orders = Order.query.filter(Order.type=="Out").all()
 
     return render_template('all_out_orders.html', title=u'外卖订单', orders=orders)
-
 
 
 @app.route('/admin/view/open/alacarte/orders')
@@ -765,11 +828,9 @@ def admin_view_alacarte_open_orders():
                   order.timeCreated.date() ==
                   datetime.now(tz=pytz.timezone("Europe/Berlin")).date()]
 
-
     items = {order.id: json.loads(order.items) for order in cur_orders}
 
     containers = {order.id: json.loads(order.container) for order in cur_orders}
-
 
     return render_template("admin_view_alalcarte_open_orders.html",
                            open_orders=cur_orders,
@@ -1007,11 +1068,11 @@ def takeaway_cur_revenue():
     return render_template('current_out_revenue.html', revenues=revenues)
 
 
-# Takeaway order status view
+# takeaway order status view
 @app.route("/status")
 def display_status():
 
-    #Filtering only Takeaway orders
+    #Filtering only takeaway orders
     orders = Order.query.filter(Order.type == "Out").all()
 
     # Filtering only orders today based on timezone Berlin
@@ -1214,16 +1275,12 @@ def add_dish():
 
     categories = json.loads(data)
 
-
-
     class_names = list(set([i.get("Class") for i in categories]))
     sub_categories = list(set([i.get("Subcategory") for i in categories]))
-
 
     # Extend new  labels and values to form class_name and category
     form.class_name.choices.extend([(i, i) for i in class_names])
     form.category.choices.extend([(i, i) for i in sub_categories])
-
 
     if request.method == "POST" and form.validate_on_submit():
 
@@ -1238,10 +1295,8 @@ def add_dish():
         image_path = None
 
         if file:
-
             # If file selected or existing and reset the image path again
             image_path = store_picture(file=file)
-
 
         dish = Food(name=name,
                     category=category,
@@ -1259,7 +1314,6 @@ def add_dish():
         flash(f"添加新菜品: {name}成功!")
 
         return redirect(url_for('all_dishes'))
-
 
     return render_template("adddish.html",
                            title=u"添加菜品",
@@ -1281,9 +1335,6 @@ def remove_dish(dish_id):
     flash(f"菜品{food.name}被删除!")
 
     return redirect(url_for("all_dishes"))
-
-
-
 
 # Edit Dish
 @app.route('/dish/<int:dish_id>/edit', methods=["GET", "POST"])
@@ -1422,7 +1473,7 @@ def set_store():
           "COUNTRY": form.country.data,
           "ZIP": form.zip.data,
           "TAX_ID": form.tax_id.data,
-          "TAX_RATE": {"Takeaway": form.tax_rate_takeaway.data,
+          "TAX_RATE": {"takeaway": form.tax_rate_takeaway.data,
                        "Inhouse Order": form.tax_rate_InHouse.data}
                },
 
@@ -1445,7 +1496,7 @@ def set_store():
         form.city.data = data.get('CITY')
         form.tax_id.data = data.get('TAX_ID')
         form.tax_rate_InHouse.data = data.get("TAX_RATE").get("Inhouse Order")
-        form.tax_rate_takeaway.data = data.get("TAX_RATE").get("Takeaway")
+        form.tax_rate_takeaway.data = data.get("TAX_RATE").get("takeaway")
         form.logo.data = data.get('LOGO')
 
 
@@ -1491,7 +1542,7 @@ def add_user():
     letter_string = string.ascii_uppercase
     letters = [letter for letter in letter_string]
 
-    holder = [("Takeaway", u"外卖")]
+    holder = [("takeaway", u"外卖")]
 
     holder.extend([(i, i) for i in letters])
 
@@ -1545,7 +1596,7 @@ def edit_user(user_id):
     letter_string = string.ascii_uppercase
     letters = [letter for letter in letter_string]
 
-    holder = [("Takeaway", u"外卖")]
+    holder = [("takeaway", u"外卖")]
 
     holder.extend([(i, i) for i in letters])
 
@@ -2329,6 +2380,32 @@ def view_table(table_name):
                    order.timeCreated.date() == datetime.now(tz=pytz.timezone("Europe/Berlin")).date()
                    and not json.loads(order.container).get('isCancelled')]
 
+    # Calculate the total price for this table
+    total_price = sum([order.totalPrice for order in open_orders])
+
+    dish_varieties = [[key for key in (json.loads(order.items).keys())] for order in open_orders]
+
+    varieties = []
+    for x in dish_varieties:
+        varieties.extend(x)
+
+    varieties = list(set(varieties))
+
+    dishes = {
+        dish:
+            {
+                'quantity': sum([json.loads(order.items).get(dish).get('quantity')
+                                 for order in open_orders if json.loads(order.items).get(dish)]),
+
+                'price': Food.query.filter_by(name=dish).first_or_404().price_gross,
+
+                'class_name': Food.query.filter_by(name=dish).first_or_404().class_name,
+                'total': (sum([json.loads(order.items).get(dish).get('quantity')
+                                 for order in open_orders if json.loads(order.items).get(dish)])) \
+                                    * Food.query.filter_by(name=dish).first_or_404().price_gross,
+
+            } for dish in varieties}
+
     # Add cond if order not cancelled
     # Check if a checkout button is clicked
     if request.method == "POST":
@@ -2393,32 +2470,33 @@ def view_table(table_name):
                             log_time=str(datetime.now(pytz.timezone('Europe/Berlin'))),
                             status=u'成功')
 
-            return redirect(url_for('waiter_admin'))
+        random_order_id = open_orders[0].id
+        context = {"details": dishes,
+                   "company_name": company_info.get('company_name', ''),
+                   "address": company_info.get('address'),
+                   "now": datetime.now().strftime("%Y-%m-%d %H:%M:%S"),
+                   "tax_id": company_info.get('tax_id'),
+                   "order_id": '-'.join([order.id for order in open_orders]),
+                   "table_name": table_name,
+                   "total": total_price,
+                   "pay_via": json.loads(Order.query.filter(id=random_order_id).first_or_404().pay_via).get('method', ""),
+                   "VAT": round((total_price / 1.19) * 0.19, 2)}
+
+        temp_file = str(Path(app.root_path) / 'static' / 'docx' / 'receipt_temp_inhouse.docx')
+        save_as = f"receipt_{ '-'.join([order.id for order in open_orders])}"
+
+        def master_printer():
+
+            receipt_templating(context=context,
+                               temp_file=temp_file,
+                               save_as=save_as,
+                               printer="")
+
+        return redirect(url_for('waiter_admin'))
+
+
 
     # Else just render page as get method
-    # Calculate the total price for this table
-    total_price = sum([order.totalPrice for order in open_orders])
-
-    dish_varieties = [[key for key in (json.loads(order.items).keys())] for order in open_orders]
-
-    varieties = []
-    for x in dish_varieties:
-        varieties.extend(x)
-
-    varieties = list(set(varieties))
-
-    dishes = {
-        dish:
-            {
-            'quantity': sum([json.loads(order.items).get(dish).get('quantity')
-                             for order in open_orders if json.loads(order.items).get(dish)]),
-
-            'price': Food.query.filter_by(name=dish).first_or_404().price_gross,
-
-            'class_name': Food.query.filter_by(name=dish).first_or_404().class_name,
-
-             } for dish in varieties}
-
     return render_template('view_table_summary.html',
                            dishes=dishes,
                            table_name=table_name,

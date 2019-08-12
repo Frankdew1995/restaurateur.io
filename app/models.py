@@ -26,8 +26,6 @@ class Food(db.Model):
 
         return f"Food: {self.name}"
 
-
-
 class Table(db.Model):
 
     id = db.Column(db.Integer, primary_key=True, unique=True, index=True)
@@ -39,23 +37,17 @@ class Table(db.Model):
     timeCreated = db.Column(db.DateTime, default=datetime.utcnow)
     container = db.Column(db.String(300))
 
-
     def __repr__(self):
 
         return f"Table No.: {self.number}"
-
-
 
 @login.user_loader
 def load_user(id):
 
     return User.query.get(int(id))
 
-
-
 # Create User Class and inherits from UserMixin
 class User(UserMixin, db.Model):
-
 
     id = db.Column(db.Integer, primary_key=True)
     username = db.Column(db.String(64), index=True, unique=True, nullable=False)
@@ -69,11 +61,9 @@ class User(UserMixin, db.Model):
 
         return f'User: {self.username}>'
 
-
     def set_password(self, password):
 
         self.password_hash = generate_password_hash(password=password)
-
 
     def check_password(self, password):
 

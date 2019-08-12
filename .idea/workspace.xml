@@ -2,9 +2,22 @@
 <project version="4">
   <component name="ChangeListManager">
     <list default="true" id="92725ecb-b579-4e6b-96e6-ec8e3d2627cf" name="Default Changelist" comment="">
+<<<<<<< HEAD
       <change beforePath="$PROJECT_DIR$/.idea/inspectionProfiles/Project_Default.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/inspectionProfiles/Project_Default.xml" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/app/routes.py" beforeDir="false" afterPath="$PROJECT_DIR$/app/routes.py" afterDir="false" />
+=======
+      <change beforePath="$PROJECT_DIR$/app.db" beforeDir="false" afterPath="$PROJECT_DIR$/app.db" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/app/forms.py" beforeDir="false" afterPath="$PROJECT_DIR$/app/forms.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/app/logging.csv" beforeDir="false" afterPath="$PROJECT_DIR$/app/logging.csv" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/app/routes.py" beforeDir="false" afterPath="$PROJECT_DIR$/app/routes.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/app/static/docx/receipt_temp_out.docx" beforeDir="false" afterPath="$PROJECT_DIR$/app/static/docx/receipt_temp_out.docx" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/app/static/out/receipts/receipt.docx" beforeDir="false" afterPath="$PROJECT_DIR$/app/static/out/receipts/receipt.docx" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/app/static/out/receipts/receipt.pdf" beforeDir="false" afterPath="$PROJECT_DIR$/app/static/out/receipts/receipt.pdf" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/app/utilities.py" beforeDir="false" afterPath="$PROJECT_DIR$/app/utilities.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/database.py" beforeDir="false" afterPath="$PROJECT_DIR$/database.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/scripts.py" beforeDir="false" afterPath="$PROJECT_DIR$/scripts.py" afterDir="false" />
+>>>>>>> 15313af60a9715778a0ac112bf8cb622ad60eedd
     </list>
     <option name="EXCLUDED_CONVERTED_TO_IGNORED" value="true" />
     <option name="SHOW_DIALOG" value="false" />
@@ -17,8 +30,13 @@
       <file pinned="false" current-in-tab="false">
         <entry file="file://$PROJECT_DIR$/server.py">
           <provider selected="true" editor-type-id="text-editor">
+<<<<<<< HEAD
             <state relative-caret-position="30">
               <caret line="1" selection-start-line="1" selection-end-line="1" />
+=======
+            <state relative-caret-position="96">
+              <caret line="4" column="20" selection-start-line="4" selection-start-column="20" selection-end-line="4" selection-end-column="20" />
+>>>>>>> 15313af60a9715778a0ac112bf8cb622ad60eedd
             </state>
           </provider>
         </entry>
@@ -33,34 +51,44 @@
         </entry>
       </file>
       <file pinned="false" current-in-tab="false">
-        <entry file="file://$PROJECT_DIR$/app/models.py">
-          <provider selected="true" editor-type-id="text-editor">
-            <state relative-caret-position="501">
-              <caret line="47" selection-start-line="47" selection-end-line="47" />
-              <folding>
-                <element signature="e#0#25#0" expanded="true" />
-              </folding>
-            </state>
-          </provider>
-        </entry>
-      </file>
-      <file pinned="false" current-in-tab="false">
-        <entry file="file://$PROJECT_DIR$/app/utilities.py">
-          <provider selected="true" editor-type-id="text-editor">
-            <state relative-caret-position="5940">
-              <caret line="207" selection-start-line="207" selection-end-line="207" />
-              <folding>
-                <element signature="e#0#11#0" expanded="true" />
-              </folding>
-            </state>
-          </provider>
-        </entry>
-      </file>
-      <file pinned="false" current-in-tab="false">
         <entry file="file://$PROJECT_DIR$/app/routes.py">
           <provider selected="true" editor-type-id="text-editor">
-            <state relative-caret-position="120">
-              <caret line="4" lean-forward="true" selection-start-line="4" selection-end-line="4" />
+<<<<<<< HEAD
+            <state relative-caret-position="501">
+              <caret line="47" selection-start-line="47" selection-end-line="47" />
+=======
+            <state relative-caret-position="219">
+              <caret line="617" column="19" lean-forward="true" selection-start-line="617" selection-start-column="19" selection-end-line="617" selection-end-column="19" />
+>>>>>>> 15313af60a9715778a0ac112bf8cb622ad60eedd
+              <folding>
+                <element signature="e#0#163#0" expanded="true" />
+              </folding>
+            </state>
+          </provider>
+        </entry>
+      </file>
+      <file pinned="false" current-in-tab="false">
+        <entry file="file://$PROJECT_DIR$/app/config.json">
+          <provider selected="true" editor-type-id="text-editor">
+            <state relative-caret-position="24">
+              <caret line="1" column="3" selection-start-line="1" selection-start-column="3" selection-end-line="1" selection-end-column="3" />
+            </state>
+          </provider>
+        </entry>
+      </file>
+      <file pinned="false" current-in-tab="false">
+        <entry file="file://$PROJECT_DIR$/database.py">
+          <provider selected="true" editor-type-id="text-editor">
+<<<<<<< HEAD
+            <state relative-caret-position="5940">
+              <caret line="207" selection-start-line="207" selection-end-line="207" />
+=======
+            <state relative-caret-position="371">
+              <caret line="18" column="18" selection-start-line="18" selection-start-column="18" selection-end-line="18" selection-end-column="18" />
+>>>>>>> 15313af60a9715778a0ac112bf8cb622ad60eedd
+              <folding>
+                <element signature="e#0#39#0" expanded="true" />
+              </folding>
             </state>
           </provider>
         </entry>
@@ -68,10 +96,35 @@
       <file pinned="false" current-in-tab="false">
         <entry file="file://$PROJECT_DIR$/scripts.py">
           <provider selected="true" editor-type-id="text-editor">
-            <state relative-caret-position="270">
-              <caret line="34" column="37" selection-start-line="34" selection-start-column="37" selection-end-line="34" selection-end-column="37" />
+<<<<<<< HEAD
+            <state relative-caret-position="120">
+              <caret line="4" lean-forward="true" selection-start-line="4" selection-end-line="4" />
+=======
+            <state relative-caret-position="515">
+              <caret line="34" column="36" lean-forward="true" selection-start-line="34" selection-start-column="36" selection-end-line="34" selection-end-column="36" />
               <folding>
                 <element signature="e#1#48#0" expanded="true" />
+              </folding>
+>>>>>>> 15313af60a9715778a0ac112bf8cb622ad60eedd
+            </state>
+          </provider>
+        </entry>
+      </file>
+<<<<<<< HEAD
+      <file pinned="false" current-in-tab="false">
+        <entry file="file://$PROJECT_DIR$/scripts.py">
+          <provider selected="true" editor-type-id="text-editor">
+            <state relative-caret-position="270">
+              <caret line="34" column="37" selection-start-line="34" selection-start-column="37" selection-end-line="34" selection-end-column="37" />
+=======
+      <file pinned="false" current-in-tab="true">
+        <entry file="file://$PROJECT_DIR$/app/utilities.py">
+          <provider selected="true" editor-type-id="text-editor">
+            <state relative-caret-position="395">
+              <caret line="219" lean-forward="true" selection-start-line="219" selection-end-line="219" />
+>>>>>>> 15313af60a9715778a0ac112bf8cb622ad60eedd
+              <folding>
+                <element signature="e#0#11#0" expanded="true" />
               </folding>
             </state>
           </provider>
@@ -90,6 +143,10 @@
       <find>.csv</find>
       <find>logging</find>
       <find>base_url</find>
+      <find>takeaway</find>
+      <find>/takeaway/order/</find>
+      <find>.utilit</find>
+      <find>/takeaway/</find>
     </findStrings>
   </component>
   <component name="Git.Settings">
@@ -103,17 +160,23 @@
         <option value="$PROJECT_DIR$/requirements.txt" />
         <option value="$PROJECT_DIR$/todos.txt" />
         <option value="$PROJECT_DIR$/app/models.py" />
-        <option value="$PROJECT_DIR$/database.py" />
         <option value="$PROJECT_DIR$/server.py" />
+<<<<<<< HEAD
+=======
+        <option value="$PROJECT_DIR$/database.py" />
+        <option value="$PROJECT_DIR$/app/routes.py" />
+>>>>>>> 15313af60a9715778a0ac112bf8cb622ad60eedd
         <option value="$PROJECT_DIR$/scripts.py" />
         <option value="$PROJECT_DIR$/app/utilities.py" />
         <option value="$PROJECT_DIR$/app/routes.py" />
       </list>
     </option>
   </component>
-  <component name="ProjectFrameBounds" extendedState="7">
-    <option name="width" value="1920" />
-    <option name="height" value="1080" />
+  <component name="ProjectFrameBounds" extendedState="6">
+    <option name="x" value="15" />
+    <option name="y" value="30" />
+    <option name="width" value="1890" />
+    <option name="height" value="960" />
   </component>
   <component name="ProjectLevelVcsManager" settingsEditedManually="true">
     <ConfirmationsSetting value="1" id="Add" />
@@ -123,6 +186,7 @@
       <foldersAlwaysOnTop value="true" />
     </navigator>
     <panes>
+      <pane id="Scope" />
       <pane id="ProjectPane">
         <subPane>
           <expand>
@@ -135,18 +199,49 @@
               <item name="xstar" type="462c0819:PsiDirectoryNode" />
               <item name="app" type="462c0819:PsiDirectoryNode" />
             </path>
+<<<<<<< HEAD
+=======
+            <path>
+              <item name="xstar" type="b2602c69:ProjectViewProjectNode" />
+              <item name="xstar" type="462c0819:PsiDirectoryNode" />
+              <item name="app" type="462c0819:PsiDirectoryNode" />
+              <item name="static" type="462c0819:PsiDirectoryNode" />
+            </path>
+            <path>
+              <item name="xstar" type="b2602c69:ProjectViewProjectNode" />
+              <item name="xstar" type="462c0819:PsiDirectoryNode" />
+              <item name="app" type="462c0819:PsiDirectoryNode" />
+              <item name="static" type="462c0819:PsiDirectoryNode" />
+              <item name="out" type="462c0819:PsiDirectoryNode" />
+            </path>
+            <path>
+              <item name="xstar" type="b2602c69:ProjectViewProjectNode" />
+              <item name="xstar" type="462c0819:PsiDirectoryNode" />
+              <item name="app" type="462c0819:PsiDirectoryNode" />
+              <item name="static" type="462c0819:PsiDirectoryNode" />
+              <item name="out" type="462c0819:PsiDirectoryNode" />
+              <item name="receipts" type="462c0819:PsiDirectoryNode" />
+            </path>
+>>>>>>> 15313af60a9715778a0ac112bf8cb622ad60eedd
           </expand>
           <select />
         </subPane>
       </pane>
-      <pane id="Scope" />
     </panes>
   </component>
   <component name="PropertiesComponent">
+<<<<<<< HEAD
     <property name="last_opened_file_path" value="$PROJECT_DIR$" />
     <property name="settings.editor.selected.configurable" value="com.jetbrains.python.configuration.PyActiveSdkModuleConfigurable" />
+=======
+    <property name="last_opened_file_path" value="C:/Projects/video_generator" />
+    <property name="settings.editor.selected.configurable" value="editor.preferences.fonts.default" />
+>>>>>>> 15313af60a9715778a0ac112bf8cb622ad60eedd
   </component>
   <component name="RecentsManager">
+    <key name="MoveFile.RECENT_KEYS">
+      <recent name="C:\Users\Entwicklung2\Desktop\xstar\app\static\out" />
+    </key>
     <key name="CopyFile.RECENT_KEYS">
       <recent name="C:\Users\Entwicklung2\Desktop\xstar\app\static\docx" />
       <recent name="C:\Users\Entwicklung2\Desktop\xstar\app\static\img" />
@@ -306,14 +401,19 @@
       <window_info id="Favorites" order="2" side_tool="true" />
       <window_info anchor="bottom" id="Message" order="0" />
       <window_info anchor="bottom" id="Find" order="1" weight="0.3285968" />
-      <window_info active="true" anchor="bottom" id="Run" order="2" visible="true" weight="0.94671404" />
+      <window_info anchor="bottom" id="Run" order="2" weight="0.94671404" />
       <window_info anchor="bottom" id="Debug" order="3" weight="0.4" />
       <window_info anchor="bottom" id="Cvs" order="4" weight="0.25" />
       <window_info anchor="bottom" id="Inspection" order="5" weight="0.4" />
       <window_info anchor="bottom" id="TODO" order="6" />
       <window_info anchor="bottom" id="Version Control" order="7" weight="0.3286119" />
+<<<<<<< HEAD
       <window_info anchor="bottom" id="Terminal" order="8" weight="0.95090014" />
       <window_info anchor="bottom" id="Event Log" order="9" side_tool="true" />
+=======
+      <window_info anchor="bottom" id="Terminal" order="8" weight="0.94671404" />
+      <window_info anchor="bottom" id="Event Log" order="9" side_tool="true" weight="0.3285968" />
+>>>>>>> 15313af60a9715778a0ac112bf8cb622ad60eedd
       <window_info anchor="bottom" id="Python Console" order="10" weight="0.3286119" />
       <window_info anchor="right" id="Commander" order="0" weight="0.4" />
       <window_info anchor="right" id="Ant Build" order="1" weight="0.25" />
@@ -355,16 +455,6 @@
       </provider>
     </entry>
     <entry file="file://$PROJECT_DIR$/app/printer.py" />
-    <entry file="file://$PROJECT_DIR$/database.py">
-      <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="324">
-          <caret line="12" lean-forward="true" selection-start-line="12" selection-end-line="12" />
-          <folding>
-            <element signature="e#0#39#0" expanded="true" />
-          </folding>
-        </state>
-      </provider>
-    </entry>
     <entry file="file://$PROJECT_DIR$/todos.txt">
       <provider selected="true" editor-type-id="text-editor">
         <state relative-caret-position="484">
@@ -372,16 +462,9 @@
         </state>
       </provider>
     </entry>
-    <entry file="file://$PROJECT_DIR$/app/config.json">
-      <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="27">
-          <caret line="1" column="3" lean-forward="true" selection-start-line="1" selection-start-column="3" selection-end-line="1" selection-end-column="3" />
-        </state>
-      </provider>
-    </entry>
     <entry file="file://$PROJECT_DIR$/app/models.py">
       <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="501">
+        <state relative-caret-position="24">
           <caret line="47" selection-start-line="47" selection-end-line="47" />
           <folding>
             <element signature="e#0#25#0" expanded="true" />
@@ -389,16 +472,75 @@
         </state>
       </provider>
     </entry>
+    <entry file="file://$PROJECT_DIR$/server.py">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="96">
+          <caret line="4" column="20" selection-start-line="4" selection-start-column="20" selection-end-line="4" selection-end-column="20" />
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/app/config.json">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="24">
+          <caret line="1" column="3" selection-start-line="1" selection-start-column="3" selection-end-line="1" selection-end-column="3" />
+        </state>
+      </provider>
+    </entry>
+<<<<<<< HEAD
+    <entry file="file://$PROJECT_DIR$/app/models.py">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="501">
+          <caret line="47" selection-start-line="47" selection-end-line="47" />
+=======
+    <entry file="file://$PROJECT_DIR$/database.py">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="371">
+          <caret line="18" column="18" selection-start-line="18" selection-start-column="18" selection-end-line="18" selection-end-column="18" />
+          <folding>
+            <element signature="e#0#39#0" expanded="true" />
+          </folding>
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/scripts.py">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="515">
+          <caret line="34" column="36" lean-forward="true" selection-start-line="34" selection-start-column="36" selection-end-line="34" selection-end-column="36" />
+>>>>>>> 15313af60a9715778a0ac112bf8cb622ad60eedd
+          <folding>
+            <element signature="e#1#48#0" expanded="true" />
+          </folding>
+        </state>
+      </provider>
+    </entry>
+<<<<<<< HEAD
     <entry file="file://$PROJECT_DIR$/app/utilities.py">
       <provider selected="true" editor-type-id="text-editor">
         <state relative-caret-position="5940">
           <caret line="207" selection-start-line="207" selection-end-line="207" />
+=======
+    <entry file="file://$PROJECT_DIR$/app/routes.py">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="219">
+          <caret line="617" column="19" lean-forward="true" selection-start-line="617" selection-start-column="19" selection-end-line="617" selection-end-column="19" />
+          <folding>
+            <element signature="e#0#163#0" expanded="true" />
+          </folding>
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/app/utilities.py">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="395">
+          <caret line="219" lean-forward="true" selection-start-line="219" selection-end-line="219" />
+>>>>>>> 15313af60a9715778a0ac112bf8cb622ad60eedd
           <folding>
             <element signature="e#0#11#0" expanded="true" />
           </folding>
         </state>
       </provider>
     </entry>
+<<<<<<< HEAD
     <entry file="file://$PROJECT_DIR$/scripts.py">
       <provider selected="true" editor-type-id="text-editor">
         <state relative-caret-position="270">
@@ -430,5 +572,7 @@
         </state>
       </provider>
     </entry>
+=======
+>>>>>>> 15313af60a9715778a0ac112bf8cb622ad60eedd
   </component>
 </project>

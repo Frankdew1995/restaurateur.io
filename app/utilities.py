@@ -44,7 +44,7 @@ def store_picture(file):
     i.thumbnail(output_size)
     i.save(save_abs_path)
 
-    return save_abs_path
+    return full_filename
 
 
 def json_reader(file):
@@ -157,26 +157,38 @@ def html2pdf():
 def docx2pdf(doc_in, pdf_out):
 
     """
-    :word to pdf
     :param doc_in word file path
     :param pdf_out pdf file save path
     """
+    import comtypes.client
+
+    pdf_format_code = 17
+
     try:
-        word = client.DispatchEx("Word.Application")
+        word = comtypes.client.CreateObject("word.Application")
         if os.path.exists(pdf_out):
             os.remove(pdf_out)
 
         doc = word.Documents.Open(doc_in, ReadOnly=1)
-        doc.SaveAs(pdf_out, FileFormat=17)
+        doc.SaveAs(pdf_out, FileFormat=pdf_format_code)
         doc.Close()
-        return pdf_out
+        word.Quit()
 
     except Exception as e:
         return str(e)
 
 
 def receipt_templating(context,
-                       temp_file):
+                       temp_file,
+                       save_as,
+                       printer):
+
+    '''
+    :param context: a dictionary key-value pair
+    :param temp_file: template file path for receipt printing(Takeout and InHouse)
+    :param save_as: the file name without file extension
+    :return: "ok. if successfully printed
+     '''
 
     from docxtpl import DocxTemplate
 
@@ -195,13 +207,102 @@ def receipt_templating(context,
 
     doc.render(context)
 
-    abs_save_path = str(Path(app.root_path) / 'static' / 'out' / 'receipts' / f'receipt.docx')
-    out_save_path = str(Path(app.root_path) / 'static' / 'out' / 'receipts' / f'receipt.pdf')
+    abs_save_path = str(Path(app.root_path) / 'static' / 'out' / 'receipts' / f'{save_as}.docx')
+
+    out_save_path = str(Path(app.root_path) / 'static' / 'out' / 'receipts' / f'{save_as}.pdf')
 
     doc.save(abs_save_path)
 
     docx2pdf(doc_in=abs_save_path,
              pdf_out=out_save_path)
+
+    # Print the PDF info from the thermal printer
+    printer_path = str(Path(app.root_path) / 'utils' / 'printer' / 'PDFtoPrinter')
+
+    printer_name = "Star TSP100 Cutter (TSP143) eco"
+
+    import subprocess
+    # call the command to print the pdf file
+    subprocess.Popen(f'{printer_path} {out_save_path} "{printer}"', shell=True)
+
+    return "ok"
+
+def kitchen_templating(context,
+                       temp_file,
+                       save_as,
+                       printer):
+
+    '''
+    :param context: a dictionary key-value pair
+    :param temp_file: template file path for receipt printing(Takeout and InHouse)
+    :param save_as: the file name without file extension
+    :return: "ok. if successfully printed
+     '''
+
+    from docxtpl import DocxTemplate
+
+    doc = DocxTemplate(temp_file)
+
+    doc.render(context)
+
+    abs_save_path = str(Path(app.root_path) / 'static' / 'out' / 'receipts' / f'{save_as}.docx')
+
+    out_save_path = str(Path(app.root_path) / 'static' / 'out' / 'receipts' / f'{save_as}.pdf')
+
+    doc.save(abs_save_path)
+
+    docx2pdf(doc_in=abs_save_path,
+             pdf_out=out_save_path)
+
+    # Print the PDF info from the thermal printer
+    printer_path = str(Path(app.root_path) / 'utils' / 'printer' / 'PDFtoPrinter')
+
+    printer_name = "Star TSP100 Cutter (TSP143) eco"
+
+    import subprocess
+    # call the command to print the pdf file
+    subprocess.Popen(f'{printer_path} {out_save_path} "{printer}"', shell=True)
+
+    return "ok"
+
+
+def bar_templating(context,
+                   temp_file,
+                   save_as,
+                   printer):
+
+    '''
+    :param context: a dictionary key-value pair
+    :param temp_file: template file path for receipt printing(Takeout and InHouse)
+    :param save_as: the file name without file extension
+    :return: "ok. if successfully printed
+     '''
+
+    from docxtpl import DocxTemplate
+
+    doc = DocxTemplate(temp_file)
+
+    doc.render(context)
+
+    abs_save_path = str(Path(app.root_path) / 'static' / 'out' / 'receipts' / f'{save_as}.docx')
+
+    out_save_path = str(Path(app.root_path) / 'static' / 'out' / 'receipts' / f'{save_as}.pdf')
+
+    doc.save(abs_save_path)
+
+    docx2pdf(doc_in=abs_save_path,
+             pdf_out=out_save_path)
+
+    # Print the PDF info from the thermal printer
+    printer_path = str(Path(app.root_path) / 'utils' / 'printer' / 'PDFtoPrinter')
+
+    printer_name = "Star TSP100 Cutter (TSP143) eco"
+
+    import subprocess
+    # call the command to print the pdf file
+    subprocess.Popen(f'{printer_path} {out_save_path} "{printer}"', shell=True)
+
+    return "ok"
 
 
 def call2print(table_name):

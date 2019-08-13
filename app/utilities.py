@@ -17,6 +17,7 @@ import pytz
 
 from app.models import Table, User
 
+import subprocess
 
 # Save Image and return image path
 def store_picture(file):
@@ -157,7 +158,6 @@ def docx2pdf(doc_in, pdf_out):
     :param doc_in word file path
     :param pdf_out pdf file save path
     """
-    import win32com.client
     import comtypes.client
 
     pdf_format_code = 17
@@ -172,20 +172,23 @@ def docx2pdf(doc_in, pdf_out):
         doc.Close()
         word.Quit()
 
+        return pdf_out
+
+    # If failing natively, then call LibreOffice to convert the docx to pdf
     except Exception as e:
 
-        word = comtypes.client.CreateObject("word.Application")
-        if os.path.exists(pdf_out):
-            os.remove(pdf_out)
+        file = doc_in
 
-        doc = word.Documents.Open(doc_in, ReadOnly=1)
-        doc.SaveAs(pdf_out, FileFormat=pdf_format_code)
-        doc.Close()
-        word.Quit()
+        out_folder = str(Path(app.root_path) / 'static' / 'out' / 'receipts')
 
-        return str(e)
+        LIBRE_OFFICE = r"C:\Program Files\LibreOffice\program\soffice.exe"
 
-    return pdf_out
+        subprocess.Popen([LIBRE_OFFICE, '--headless', '--convert-to', 'pdf', '--outdir',
+                              out_folder, file])
+
+        print([LIBRE_OFFICE, '--convert-to', 'pdf', file])
+
+        return pdf_out
 
 
 def receipt_templating(context,
@@ -241,7 +244,17 @@ def receipt_templating(context,
 
         import subprocess
         # call the command to print the pdf file
-        # subprocess.Popen(f'{printer_path} {out_save_path} "{printer}"', shell=True)
+        wait_start = time.time()
+        while True:
+            if not Path(out_save_path).exists():
+                time.sleep(0.5)
+                wait_end = time.time()
+
+                if wait_end - wait_start > 15:
+                    break
+            else:
+                subprocess.Popen(f'{printer_path} {out_save_path} "{printer}"', shell=True)
+                break
 
         return "ok"
 
@@ -287,7 +300,17 @@ def kitchen_templating(context,
 
         import subprocess
         # call the command to print the pdf file
-        subprocess.Popen(f'{printer_path} {out_save_path} "{printer}"', shell=True)
+        wait_start = time.time()
+        while True:
+            if not Path(out_save_path).exists():
+                time.sleep(0.5)
+                wait_end = time.time()
+
+                if wait_end - wait_start > 15:
+                    break
+            else:
+                subprocess.Popen(f'{printer_path} {out_save_path} "{printer}"', shell=True)
+                break
 
         return "ok"
 
@@ -333,7 +356,17 @@ def bar_templating(context,
 
         import subprocess
         # call the command to print the pdf file
-        subprocess.Popen(f'{printer_path} {out_save_path} "{printer}"', shell=True)
+        wait_start = time.time()
+        while True:
+            if not Path(out_save_path).exists():
+                time.sleep(0.5)
+                wait_end = time.time()
+
+                if wait_end - wait_start > 15:
+                    break
+            else:
+                subprocess.Popen(f'{printer_path} {out_save_path} "{printer}"', shell=True)
+                break
 
         return "ok"
 

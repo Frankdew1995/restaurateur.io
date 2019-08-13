@@ -2138,8 +2138,6 @@ def alacarte_navigate(table_name, seat_number):
         return render_template('table404.html', msg=msg)
 
 
-
-
 # Guest Table Facing Order Interface by A LA CARTE
 @app.route("/table/order/alacarte/<string:table_name>/<string:seat_number>")
 def order_alacarte(table_name, seat_number):
@@ -2170,7 +2168,6 @@ def order_alacarte(table_name, seat_number):
         return render_template('table404.html', msg=msg)
 
 
-
 @app.route("/alacarte/guest/checkout", methods=["GET", "POST"])
 def alacarte_guest_checkout():
 
@@ -2192,17 +2189,16 @@ def alacarte_guest_checkout():
                           Food.query.get_or_404(int(i.get('itemId'))).price_gross
                       for i in details}
 
-
         details = {
             Food.query.get_or_404(int(i.get('itemId'))).name:
                {'quantity': int(i.get('itemQuantity')),
-                'price': float(price_dict.get(Food.query.get_or_404(int(i.get('itemId'))).name))}
+                'price': float(price_dict.get(Food.query.get_or_404(int(i.get('itemId'))).name)),
+                'class_name': Food.query.get_or_404(int(i.get('itemId'))).class_name}
                    for i in details}
 
         container = {'table_name': table_name,
                      'seat_number': seat_number,
                      'isCancelled': False}
-
 
         order = Order(
             totalPrice=total_price,
@@ -2214,6 +2210,54 @@ def alacarte_guest_checkout():
 
         db.session.add(order)
         db.session.commit()
+
+        details_kitchen = {key: {'quantity': items.get('quantity'),
+                                 'total': items.get('quantity') * items.get('price')}
+                           for key, items in details.items() if items.get("class_name") == "Food"}
+
+        details_bar = {key: {'quantity': items.get('quantity'),
+                             'total': items.get('quantity') * items.get('price')}
+                       for key, items in details.items() if items.get("class_name") == "Drinks"}
+
+        context_kitchen = {"details": details_kitchen,
+                           "seat_number": seat_number,
+                           "table_name": table_name,
+                           "now": datetime.now().strftime("%Y-%m-%d %H:%M:%S")}
+
+        kitchen_temp = str(Path(app.root_path) / 'static' / 'docx' / 'kitchen_alacarte.docx')
+        save_as_kitchen = f"alacarte_meallist_kitchen_{order.id}"
+
+        context_bar = {"details": details_bar,
+                       "seat_number": seat_number,
+                       "table_name": table_name,
+                       "now": datetime.now().strftime("%Y-%m-%d %H:%M:%S")}
+
+        bar_temp = str(Path(app.root_path) / 'static' / 'docx' / 'bar_alacarte.docx')
+        save_as_bar = f"alacarte_meallist_bar_{order.id}"
+
+        # Read the printer setting data from the json file
+        with open(str(Path(app.root_path) / "settings" / "printer.json"), encoding="utf8") as file:
+            data = file.read()
+
+        data = json.loads(data)
+
+        def master_printer():
+
+            # Print to kitchen
+            kitchen_templating(context=context_kitchen,
+                               temp_file=kitchen_temp,
+                               save_as=save_as_kitchen,
+                               printer=data.get('kitchen').get('printer'))
+
+            # Print to bar
+            bar_templating(context=context_bar,
+                           temp_file=bar_temp,
+                           save_as=save_as_bar,
+                           printer=data.get('bar').get('printer'))
+
+        # Start the thread
+        th = Thread(target=master_printer)
+        th.start()
 
         return jsonify({"status_code": 200})
 
@@ -3810,3 +3854,27 @@ def edit_printer(terminal):
                            form=form,
                            referrer=referrer)
 
+
+@app.route("/printer/switch", methods=["POST"])
+def switch_printer():
+
+    # Handle Data From Ajax
+    if request.method == "POST":
+        data = request.json
+
+        terminal = data.get('terminalName')
+
+        status = data.get('isOn')
+
+        with open(str(Path(app.root_path) / "settings" / "printer.json"), encoding="utf8") as file:
+            data = file.read()
+
+        data = json.loads(data)
+
+        data[terminal]['is_on'] = status
+
+        # Writing the new settings to the json data file
+        with open(str(Path(app.root_path) / "settings" / "printer.json"), 'w', encoding="utf8") as file:
+            json.dump(data, file, indent=2)
+
+        return jsonify({'status': 200})

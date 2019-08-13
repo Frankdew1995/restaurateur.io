@@ -46,7 +46,7 @@ tax_rate_in = json_reader(str(Path(app.root_path) / 'config.json')).get('TAX_RAT
 
 tax_rate_out = json_reader(str(Path(app.root_path) / 'config.json')).get('TAX_RATE').get('Inhouse Order')
 
-base_url = "http://b665007f.ngrok.io"
+base_url = "http://a6d6fd65.ngrok.io"
 
 timezone = 'Europe/Berlin'
 # will be added from store setting page
@@ -2484,25 +2484,35 @@ def view_table(table_name):
                    "address": company_info.get('address'),
                    "now": datetime.now().strftime("%Y-%m-%d %H:%M:%S"),
                    "tax_id": company_info.get('tax_id'),
-                   "order_id": '-'.join([order.id for order in open_orders]),
+                   "order_id": '-'.join([str(order.id) for order in open_orders]),
                    "table_name": table_name,
                    "total": total_price,
-                   "pay_via": json.loads(Order.query.filter(id=random_order_id).first_or_404().pay_via).get('method', ""),
+                   "pay_via": json.loads(Order.query.filter_by(id=random_order_id).first_or_404().pay_via).get('method', ""),
                    "VAT": round((total_price / 1.19) * 0.19, 2)}
 
         temp_file = str(Path(app.root_path) / 'static' / 'docx' / 'receipt_temp_inhouse.docx')
-        save_as = f"receipt_{ '-'.join([order.id for order in open_orders])}"
+        save_as = f"receipt_{ '-'.join([str(order.id) for order in open_orders])}"
+
+        with open(str(Path(app.root_path) / "settings" / "printer.json"), encoding="utf8") as file:
+
+            data = file.read()
+
+        data = json.loads(data)
+
+        printer = data.get('receipt').get('printer')
 
         def master_printer():
 
             receipt_templating(context=context,
                                temp_file=temp_file,
                                save_as=save_as,
-                               printer="")
+                               printer=printer)
+
+        th = Thread(target=master_printer)
+
+        th.start()
 
         return redirect(url_for('waiter_admin'))
-
-
 
     # Else just render page as get method
     return render_template('view_table_summary.html',
@@ -3785,7 +3795,7 @@ def edit_printer(terminal):
 
     if request.method == "POST":
 
-        data[terminal]['printer'] = form.terminal.data
+        data[terminal]['printer'] = form.printer.data
 
         # Writing the new settings to the json data file
         with open(str(Path(app.root_path) / "settings" / "printer.json"), 'w', encoding="utf8") as file:

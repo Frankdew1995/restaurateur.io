@@ -199,8 +199,7 @@ def receipt_templating(context,
     :param save_as: the file name without file extension
     :param printer: the printer name for printing the receipt
     :return: "ok. if successfully printed
-
-     '''
+    '''
 
     # Read the printer setting data from the json file
     with open(str(Path(app.root_path) / "settings" / "printer.json"), encoding="utf8") as file:
@@ -242,7 +241,7 @@ def receipt_templating(context,
 
         import subprocess
         # call the command to print the pdf file
-        subprocess.Popen(f'{printer_path} {out_save_path} "{printer}"', shell=True)
+        # subprocess.Popen(f'{printer_path} {out_save_path} "{printer}"', shell=True)
 
         return "ok"
 

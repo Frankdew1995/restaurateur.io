@@ -24,19 +24,23 @@ Done:
 21. URL Routing for users with different permissions.
 18. User Permission Management and Redirects: permerssion tier: 0, 1, 2, 3
 19. Remove pendulum usages in the code
+26. AlaKarte order printing
+23. Replace pandas usages
 
 
 
 
 To Dos:
 
+25. takeout order printing
 10. Render Flashing MSGs in all front pages
 12. Takeaway Categories > sub categories > single items
 17. Product detail view page (width 100%)
 19. License Key to redirect to register page
 20. Remove email attr from user model
-23. Replace pandas usages
-
+26. User Avatar >> Default
+27. Logout Function admin,waite and takeaway
+28. revenue by waiters and sections in waiter admin 
 
 
 

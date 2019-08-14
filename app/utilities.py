@@ -1,6 +1,5 @@
 import time
 from PIL import Image
-from pathlib import Path
 from uuid import uuid4
 import os
 import json
@@ -10,16 +9,13 @@ from app import app
 from pathlib import Path
 
 import pyqrcode
-import pandas as pd
 
 from datetime import datetime
 import pytz
-from win32com import client
-
-
 
 from app.models import Table, User
 
+import subprocess
 
 # Save Image and return image path
 def store_picture(file):
@@ -73,23 +69,16 @@ def generate_qrcode(table, seat, base_url, suffix_url):
 
 def activity_logger(order_id, operation_type,
                     page_name, descr,
-                    status, log_time,
-                    **kwargs):
+                    status, log_time):
+    import csv
 
-    df = pd.read_csv(str(Path(app.root_path) / 'logging.csv'))
+    row = (order_id, operation_type, page_name, descr, status, log_time)
 
-    dff = pd.DataFrame({'Order ID':[order_id],
-                       'Operation': [operation_type],
-                       'Page': [page_name],
-                       'Description': [descr],
-                       'Status': [status],
-                       'Time': [log_time]})
+    with open(str(Path(app.root_path) / 'logging.csv'), "a", encoding="utf8") as file:
+        writer = csv.writer(file)
+        writer.writerow(row)
 
-    df = df.append(dff)
-
-    df.to_csv(str(Path(app.root_path) / 'logging.csv'), index=False)
-
-    return df
+    file.close()
 
 
 def qrcode2excel(tables):
@@ -174,8 +163,23 @@ def docx2pdf(doc_in, pdf_out):
         doc.Close()
         word.Quit()
 
+        return pdf_out
+
+    # If failing natively, then call LibreOffice to convert the docx to pdf
     except Exception as e:
-        return str(e)
+
+        file = doc_in
+
+        out_folder = str(Path(app.root_path) / 'static' / 'out' / 'receipts')
+
+        LIBRE_OFFICE = r"C:\Program Files\LibreOffice\program\soffice.exe"
+
+        subprocess.Popen([LIBRE_OFFICE, '--headless', '--convert-to', 'pdf', '--outdir',
+                              out_folder, file])
+
+        print([LIBRE_OFFICE, '--convert-to', 'pdf', file])
+
+        return pdf_out
 
 
 def receipt_templating(context,
@@ -187,43 +191,64 @@ def receipt_templating(context,
     :param context: a dictionary key-value pair
     :param temp_file: template file path for receipt printing(Takeout and InHouse)
     :param save_as: the file name without file extension
+    :param printer: the printer name for printing the receipt
     :return: "ok. if successfully printed
-     '''
+    '''
 
-    from docxtpl import DocxTemplate
+    # Read the printer setting data from the json file
+    with open(str(Path(app.root_path) / "settings" / "printer.json"), encoding="utf8") as file:
+        data = file.read()
 
-    doc = DocxTemplate(temp_file)
+    data = json.loads(data)
 
-    logo = str(Path(app.root_path) / 'static' / 'img' / 'logo.png')
+    # if the printer is on
+    if data.get('receipt').get('is_on'):
 
-    # If logo existing, then inserts the LOGO into receipt
-    if Path(logo).exists():
+        from docxtpl import DocxTemplate
 
-        p = doc.tables[1].rows[0].cells[0].add_paragraph()
+        doc = DocxTemplate(temp_file)
 
-        r = p.add_run()
+        logo = str(Path(app.root_path) / 'static' / 'img' / 'logo.png')
 
-        r.add_picture(logo)
+        # If logo existing, then inserts the LOGO into receipt
+        if Path(logo).exists():
 
-    doc.render(context)
+            p = doc.tables[1].rows[0].cells[0].add_paragraph()
 
-    abs_save_path = str(Path(app.root_path) / 'static' / 'out' / 'receipts' / f'{save_as}.docx')
+            r = p.add_run()
 
-    out_save_path = str(Path(app.root_path) / 'static' / 'out' / 'receipts' / f'{save_as}.pdf')
+            r.add_picture(logo)
 
-    doc.save(abs_save_path)
+        doc.render(context)
 
-    docx2pdf(doc_in=abs_save_path,
-             pdf_out=out_save_path)
+        abs_save_path = str(Path(app.root_path) / 'static' / 'out' / 'receipts' / f'{save_as}.docx')
 
-    # Print the PDF info from the thermal printer
-    printer_path = str(Path(app.root_path) / 'utils' / 'printer' / 'PDFtoPrinter')
+        out_save_path = str(Path(app.root_path) / 'static' / 'out' / 'receipts' / f'{save_as}.pdf')
 
-    import subprocess
-    # call the command to print the pdf file
-    # subprocess.Popen(f'{printer_path} {out_save_path} "{printer}"', shell=True)
+        doc.save(abs_save_path)
 
-    return "ok"
+        docx2pdf(doc_in=abs_save_path,
+                 pdf_out=out_save_path)
+
+        # Print the PDF info from the thermal printer
+        printer_path = str(Path(app.root_path) / 'utils' / 'printer' / 'PDFtoPrinter')
+
+        import subprocess
+        # call the command to print the pdf file
+        wait_start = time.time()
+        while True:
+            if not Path(out_save_path).exists():
+                time.sleep(0.5)
+                wait_end = time.time()
+
+                if wait_end - wait_start > 15:
+                    break
+            else:
+                subprocess.Popen(f'{printer_path} {out_save_path} "{printer}"', shell=True)
+                break
+
+        return "ok"
+
 
 def kitchen_templating(context,
                        temp_file,
@@ -237,30 +262,48 @@ def kitchen_templating(context,
     :return: "ok. if successfully printed
      '''
 
-    from docxtpl import DocxTemplate
+    # Read the printer setting data from the json file
+    with open(str(Path(app.root_path) / "settings" / "printer.json"), encoding="utf8") as file:
+        data = file.read()
 
-    doc = DocxTemplate(temp_file)
+    data = json.loads(data)
 
-    doc.render(context)
+    # if the printer is on
+    if data.get('kitchen').get('is_on'):
 
-    abs_save_path = str(Path(app.root_path) / 'static' / 'out' / 'receipts' / f'{save_as}.docx')
+        from docxtpl import DocxTemplate
 
-    out_save_path = str(Path(app.root_path) / 'static' / 'out' / 'receipts' / f'{save_as}.pdf')
+        doc = DocxTemplate(temp_file)
 
-    doc.save(abs_save_path)
+        doc.render(context)
 
-    docx2pdf(doc_in=abs_save_path,
-             pdf_out=out_save_path)
+        abs_save_path = str(Path(app.root_path) / 'static' / 'out' / 'receipts' / f'{save_as}.docx')
 
-    # Print the PDF info from the thermal printer
-    printer_path = str(Path(app.root_path) / 'utils' / 'printer' / 'PDFtoPrinter')
+        out_save_path = str(Path(app.root_path) / 'static' / 'out' / 'receipts' / f'{save_as}.pdf')
 
+        doc.save(abs_save_path)
 
-    import subprocess
-    # call the command to print the pdf file
-    # subprocess.Popen(f'{printer_path} {out_save_path} "{printer}"', shell=True)
+        docx2pdf(doc_in=abs_save_path,
+                 pdf_out=out_save_path)
 
-    return "ok"
+        # Print the PDF info from the thermal printer
+        printer_path = str(Path(app.root_path) / 'utils' / 'printer' / 'PDFtoPrinter')
+
+        import subprocess
+        # call the command to print the pdf file
+        wait_start = time.time()
+        while True:
+            if not Path(out_save_path).exists():
+                time.sleep(0.5)
+                wait_end = time.time()
+
+                if wait_end - wait_start > 15:
+                    break
+            else:
+                subprocess.Popen(f'{printer_path} {out_save_path} "{printer}"', shell=True)
+                break
+
+        return "ok"
 
 
 def bar_templating(context,
@@ -269,35 +312,54 @@ def bar_templating(context,
                    printer):
 
     '''
-    :param context: a dictionary key-value pair
-    :param temp_file: template file path for receipt printing(Takeout and InHouse)
-    :param save_as: the file name without file extension
-    :return: "ok. if successfully printed
-     '''
+   :param context: a dictionary key-value pair
+   :param temp_file: template file path for receipt printing(Takeout and InHouse)
+   :param save_as: the file name without file extension
+   :return: "ok. if successfully printed
+    '''
 
-    from docxtpl import DocxTemplate
+    # Read the printer setting data from the json file
+    with open(str(Path(app.root_path) / "settings" / "printer.json"), encoding="utf8") as file:
+        data = file.read()
 
-    doc = DocxTemplate(temp_file)
+    data = json.loads(data)
 
-    doc.render(context)
+    # if the printer is on
+    if data.get('bar').get('is_on'):
 
-    abs_save_path = str(Path(app.root_path) / 'static' / 'out' / 'receipts' / f'{save_as}.docx')
+        from docxtpl import DocxTemplate
 
-    out_save_path = str(Path(app.root_path) / 'static' / 'out' / 'receipts' / f'{save_as}.pdf')
+        doc = DocxTemplate(temp_file)
 
-    doc.save(abs_save_path)
+        doc.render(context)
 
-    docx2pdf(doc_in=abs_save_path,
-             pdf_out=out_save_path)
+        abs_save_path = str(Path(app.root_path) / 'static' / 'out' / 'receipts' / f'{save_as}.docx')
 
-    # Print the PDF info from the thermal printer
-    printer_path = str(Path(app.root_path) / 'utils' / 'printer' / 'PDFtoPrinter')
+        out_save_path = str(Path(app.root_path) / 'static' / 'out' / 'receipts' / f'{save_as}.pdf')
 
-    import subprocess
-    # call the command to print the pdf file
-    # subprocess.Popen(f'{printer_path} {out_save_path} "{printer}"', shell=True)
+        doc.save(abs_save_path)
 
-    return "ok"
+        docx2pdf(doc_in=abs_save_path,
+                 pdf_out=out_save_path)
+
+        # Printer EXE Path
+        printer_path = str(Path(app.root_path) / 'utils' / 'printer' / 'PDFtoPrinter')
+
+        import subprocess
+        # call the command to print the pdf file
+        wait_start = time.time()
+        while True:
+            if not Path(out_save_path).exists():
+                time.sleep(0.5)
+                wait_end = time.time()
+
+                if wait_end - wait_start > 15:
+                    break
+            else:
+                subprocess.Popen(f'{printer_path} {out_save_path} "{printer}"', shell=True)
+                break
+
+        return "ok"
 
 
 def call2print(table_name):

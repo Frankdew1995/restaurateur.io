@@ -53,9 +53,9 @@
       </thead>
       <tbody>
 
-        {% for i in range(df.shape[0]) %}
+        {% for line in lines %}
         <tr>
-          {% for data in df.iloc[i] %}
+          {% for data in line %}
 
             <td>{{ data }}</td>
 

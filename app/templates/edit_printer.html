@@ -48,38 +48,11 @@
 
         </p>
 
-
-        <p>
-
-            {{ form.section.label }}<br>
-            {{ form.section(
-              class='form-control',
-              style='width: 50%')}}
-
-
-
-        </p>
-        桌子：
-
-          {% if seats %}
-          {{seats}}
-          {% endif %}
-
-
-        <p>
-
-
-
-
-        </p>
-
-
-
         <p>
 
             {{ form.submit(class='btn btn-danger')}}
             <button type="button" class="btn btn-secondary">
-              <a href={{ url_for('view_tables') }} style="color: rgb(247, 249, 252)">
+              <a href={{ referrer }} style="color: rgb(247, 249, 252)">
                 取消
               </a>
             </button>

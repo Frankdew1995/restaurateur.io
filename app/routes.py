@@ -1,7 +1,6 @@
 from app import (app, db, render_template,
                  redirect, url_for, request,
-                 flash, jsonify, make_response,
-                 send_file)
+                 flash, jsonify, send_file)
 
 from flask_login import current_user, login_user, login_required, logout_user
 
@@ -9,7 +8,7 @@ from .models import User, Table, Food, Order, Visit, Log
 
 from .forms import (AddDishForm, StoreSettingForm,
                     RegistrationForm, LoginForm,
-                    EditDishForm, EditCategoryForm,
+                    EditDishForm,
                     CheckoutForm, AddTableForm,
                     EditTableForm, ConfirmForm,
                     TableSectionQueryForm, SearchTableForm,
@@ -30,7 +29,7 @@ from threading import Thread
 
 # Some global variables - read from config file.
 
-info = json_reader(str(Path(app.root_path) / 'config.json'))
+info = json_reader(str(Path.cwd() / 'app' / 'settings' / 'config.json'))
 
 
 company_info = {
@@ -42,11 +41,11 @@ company_info = {
         }
 
 
-tax_rate_in = json_reader(str(Path(app.root_path) / 'config.json')).get('TAX_RATE').get('Takeaway')
+tax_rate_in = json_reader(str(Path.cwd() / 'app' / 'settings' / 'config.json')).get('TAX_RATE').get('Takeaway')
 
-tax_rate_out = json_reader(str(Path(app.root_path) / 'config.json')).get('TAX_RATE').get('Inhouse Order')
+tax_rate_out = json_reader(str(Path.cwd() / 'app' / 'settings' / 'config.json')).get('TAX_RATE').get('Inhouse Order')
 
-base_url = "http://b665007f.ngrok.io"
+base_url = "http://a6d6fd65.ngrok.io"
 
 timezone = 'Europe/Berlin'
 # will be added from store setting page
@@ -634,26 +633,33 @@ def checkout_takeaway_admin(order_id):
         temp_file = str(Path(app.root_path) / 'static' / 'docx' / 'receipt_temp_out.docx')
         save_as = f"receipt_{order.id}"
 
-        printer = "Star TSP100 Cutter (TSP143) eco"
-        printer_kitchen = "Star TSP100 Cutter (TSP143)"
-        printer_bar = printer
+        # Read the printer setting data from the json file
+        with open(str(Path(app.root_path) / "settings" / "printer.json"), encoding="utf8") as file:
+
+            data = file.read()
+
+        data = json.loads(data)
 
         def master_printer():
 
             # Print Receipt
-            receipt_templating(context, temp_file, save_as, printer)
+            receipt_templating(context=context,
+                               temp_file=temp_file,
+                               save_as=save_as,
+                               printer=data.get('receipt').get('printer')
+                               )
 
             # Print to kitchen
-            kitchen_templating(context_kitchen,
-                               kitchen_temp,
-                               save_as_kitchen,
-                               printer_kitchen)
+            kitchen_templating(context=context_kitchen,
+                               temp_file=kitchen_temp,
+                               save_as=save_as_kitchen,
+                               printer=data.get('kitchen').get('printer'))
 
             # Print to bar
-            bar_templating(context_bar,
-                               bar_temp,
-                               save_as_bar,
-                               printer_bar)
+            bar_templating(context=context_bar,
+                           temp_file=bar_temp,
+                           save_as=save_as_bar,
+                           printer=data.get('bar').get('printer'))
 
         # Start the thread
         th = Thread(target=master_printer)
@@ -1084,13 +1090,11 @@ def display_status():
     return render_template("takeaway_status.html", title="Bestell Status", orders=orders)
 
 
-
-
 @app.route("/categories/view")
 @login_required
 def categories_view():
 
-    with open(str(Path(app.root_path) / "categories.json")) as file:
+    with open(str(Path(app.root_path) / 'settings' / "categories.json")) as file:
 
         data = file.read()
 
@@ -1105,7 +1109,7 @@ def categories_view():
 @login_required
 def add_category():
 
-    with open(str(Path(app.root_path) / "categories.json")) as file:
+    with open(str(Path(app.root_path) / 'settings' / "categories.json")) as file:
 
         data = file.read()
 
@@ -1115,11 +1119,9 @@ def add_category():
 
     all_categories = list(set([i.get('Subcategory') for i in categories]))
 
-
     from .forms import AddCategoryForm
 
     form = AddCategoryForm()
-
 
     form.name_class .choices.extend([(i, i) for i in all_classes])
     form.name_category.choices.extend([(i, i) for i in all_categories])
@@ -1158,29 +1160,22 @@ def add_category():
                     'Unit': form.unit_en.data
                 })
 
-
-        with open(str(Path(app.root_path) / "categories.json"), 'w') as file:
+        with open(str(Path(app.root_path) / 'settings' / "categories.json"), 'w') as file:
 
             json.dump(categories, file, indent=2)
 
-
         return redirect(url_for('categories_view'))
-
-
-
 
     return render_template('add_category.html',
                            title=u"添加菜品种类",
                            form=form)
 
 
-
-
 @app.route("/categories/edit", methods=['POST', "GET"])
 @login_required
 def edit_category():
 
-    with open(str(Path(app.root_path) / "categories.json")) as file:
+    with open(str(Path(app.root_path) / 'settings' / "categories.json")) as file:
 
         data = file.read()
 
@@ -1233,22 +1228,15 @@ def edit_category():
                     'Unit': form.unit_en.data
                 })
 
-
-        with open(str(Path(app.root_path) / "categories.json"), 'w') as file:
+        with open(str(Path(app.root_path) / 'settings' / "categories.json"), 'w') as file:
 
             json.dump(categories, file, indent=2)
 
-
         return redirect(url_for('categories_view'))
-
 
     return render_template('edit_category.html',
                            title=u"添加菜品种类",
                            form=form)
-
-
-
-
 
 
 # All dish view route
@@ -1269,8 +1257,7 @@ def add_dish():
 
     form = AddDishForm()
 
-
-    with open(str(Path(app.root_path) / "categories.json")) as file:
+    with open(str(Path(app.root_path) / 'settings' / "categories.json")) as file:
 
         data = file.read()
 
@@ -1345,7 +1332,7 @@ def edit_dish(dish_id):
     form = EditDishForm()
 
     # Loading Json Data from categories.json config file
-    with open(str(Path(app.root_path) / "categories.json")) as file:
+    with open(str(Path(app.root_path) / 'settings' / "categories.json")) as file:
 
         data = file.read()
 
@@ -1478,7 +1465,7 @@ def set_store():
                        "Inhouse Order": form.tax_rate_InHouse.data}
                },
 
-        with open(str(Path.cwd() / 'app' / 'config.json'), 'w') as f:
+        with open(str(Path.cwd() / 'app' / 'settings' / 'config.json'), 'w') as f:
 
             json.dump(data, f, indent=2)
 
@@ -1488,7 +1475,7 @@ def set_store():
 
     elif request.method == "GET":
 
-        data = json_reader(file=str(Path.cwd() / 'app' / 'config.json'))
+        data = json_reader(file=str(Path.cwd() / 'app' / 'settings' / 'config.json'))
         form.store_name.data = data.get("STORE_NAME")
         form.street_no.data = data.get("STREET NO.")
         form.street.data = data.get("STREET")
@@ -2131,8 +2118,6 @@ def alacarte_navigate(table_name, seat_number):
         return render_template('table404.html', msg=msg)
 
 
-
-
 # Guest Table Facing Order Interface by A LA CARTE
 @app.route("/table/order/alacarte/<string:table_name>/<string:seat_number>")
 def order_alacarte(table_name, seat_number):
@@ -2163,7 +2148,6 @@ def order_alacarte(table_name, seat_number):
         return render_template('table404.html', msg=msg)
 
 
-
 @app.route("/alacarte/guest/checkout", methods=["GET", "POST"])
 def alacarte_guest_checkout():
 
@@ -2185,17 +2169,16 @@ def alacarte_guest_checkout():
                           Food.query.get_or_404(int(i.get('itemId'))).price_gross
                       for i in details}
 
-
         details = {
             Food.query.get_or_404(int(i.get('itemId'))).name:
                {'quantity': int(i.get('itemQuantity')),
-                'price': float(price_dict.get(Food.query.get_or_404(int(i.get('itemId'))).name))}
+                'price': float(price_dict.get(Food.query.get_or_404(int(i.get('itemId'))).name)),
+                'class_name': Food.query.get_or_404(int(i.get('itemId'))).class_name}
                    for i in details}
 
         container = {'table_name': table_name,
                      'seat_number': seat_number,
                      'isCancelled': False}
-
 
         order = Order(
             totalPrice=total_price,
@@ -2207,6 +2190,54 @@ def alacarte_guest_checkout():
 
         db.session.add(order)
         db.session.commit()
+
+        details_kitchen = {key: {'quantity': items.get('quantity'),
+                                 'total': items.get('quantity') * items.get('price')}
+                           for key, items in details.items() if items.get("class_name") == "Food"}
+
+        details_bar = {key: {'quantity': items.get('quantity'),
+                             'total': items.get('quantity') * items.get('price')}
+                       for key, items in details.items() if items.get("class_name") == "Drinks"}
+
+        context_kitchen = {"details": details_kitchen,
+                           "seat_number": seat_number,
+                           "table_name": table_name,
+                           "now": datetime.now().strftime("%Y-%m-%d %H:%M:%S")}
+
+        kitchen_temp = str(Path(app.root_path) / 'static' / 'docx' / 'kitchen_alacarte.docx')
+        save_as_kitchen = f"alacarte_meallist_kitchen_{order.id}"
+
+        context_bar = {"details": details_bar,
+                       "seat_number": seat_number,
+                       "table_name": table_name,
+                       "now": datetime.now().strftime("%Y-%m-%d %H:%M:%S")}
+
+        bar_temp = str(Path(app.root_path) / 'static' / 'docx' / 'bar_alacarte.docx')
+        save_as_bar = f"alacarte_meallist_bar_{order.id}"
+
+        # Read the printer setting data from the json file
+        with open(str(Path(app.root_path) / "settings" / "printer.json"), encoding="utf8") as file:
+            data = file.read()
+
+        data = json.loads(data)
+
+        def master_printer():
+
+            # Print to kitchen
+            kitchen_templating(context=context_kitchen,
+                               temp_file=kitchen_temp,
+                               save_as=save_as_kitchen,
+                               printer=data.get('kitchen').get('printer'))
+
+            # Print to bar
+            bar_templating(context=context_bar,
+                           temp_file=bar_temp,
+                           save_as=save_as_bar,
+                           printer=data.get('bar').get('printer'))
+
+        # Start the thread
+        th = Thread(target=master_printer)
+        th.start()
 
         return jsonify({"status_code": 200})
 
@@ -2322,7 +2353,7 @@ def waiter_admin():
     # If form submitted
     if form.validate_on_submit():
 
-        with open(str(Path(app.root_path) / 'table_section.json')) as file:
+        with open(str(Path(app.root_path) / 'settings' / 'table_section.json')) as file:
             data = file.read()
 
         data = json.loads(data)
@@ -2331,7 +2362,7 @@ def waiter_admin():
         data['END'] = form.end_section.data.upper()
 
         # Update Json Data
-        with open(str(Path(app.root_path) / 'table_section.json'), 'w') as file:
+        with open(str(Path(app.root_path) / 'settings' / 'table_section.json'), 'w') as file:
             json.dump(data, file, indent=2)
 
         start_index = keys2index.get(form.start_section.data.upper())
@@ -2345,7 +2376,7 @@ def waiter_admin():
                                selected_sections=selected_sections)
 
     # Read the table config json data
-    with open(str(Path(app.root_path) / 'table_section.json')) as file:
+    with open(str(Path(app.root_path) / 'settings' / 'table_section.json')) as file:
         data = file.read()
 
     data = json.loads(data)
@@ -2477,25 +2508,35 @@ def view_table(table_name):
                    "address": company_info.get('address'),
                    "now": datetime.now().strftime("%Y-%m-%d %H:%M:%S"),
                    "tax_id": company_info.get('tax_id'),
-                   "order_id": '-'.join([order.id for order in open_orders]),
+                   "order_id": '-'.join([str(order.id) for order in open_orders]),
                    "table_name": table_name,
                    "total": total_price,
-                   "pay_via": json.loads(Order.query.filter(id=random_order_id).first_or_404().pay_via).get('method', ""),
+                   "pay_via": json.loads(Order.query.filter_by(id=random_order_id).first_or_404().pay_via).get('method', ""),
                    "VAT": round((total_price / 1.19) * 0.19, 2)}
 
         temp_file = str(Path(app.root_path) / 'static' / 'docx' / 'receipt_temp_inhouse.docx')
-        save_as = f"receipt_{ '-'.join([order.id for order in open_orders])}"
+        save_as = f"receipt_{ '-'.join([str(order.id) for order in open_orders])}"
+
+        with open(str(Path(app.root_path) / "settings" / "printer.json"), encoding="utf8") as file:
+
+            data = file.read()
+
+        data = json.loads(data)
+
+        printer = data.get('receipt').get('printer')
 
         def master_printer():
 
             receipt_templating(context=context,
                                temp_file=temp_file,
                                save_as=save_as,
-                               printer="")
+                               printer=printer)
+
+        th = Thread(target=master_printer)
+
+        th.start()
 
         return redirect(url_for('waiter_admin'))
-
-
 
     # Else just render page as get method
     return render_template('view_table_summary.html',
@@ -2870,18 +2911,17 @@ def tables_pay_called():
 @login_required
 def view_log():
 
-    import pandas as pd
+    import csv
+    with open(str(Path(app.root_path) / 'logging.csv'), "r", encoding="utf8") as file:
+        reader = csv.reader(file)
+        lines = list(reader)
 
-    df = pd.read_csv(str(Path(app.root_path) / 'logging.csv'))
-
-    df['Time'] = pd.to_datetime(df['Time'])
-
-    df.sort_values('Time', ascending=False, inplace=True)
-
-    return render_template('view_log.html', df=df)
+    file.close()
+    # Exclude the header line from the csv file
+    return render_template('view_log.html', lines=lines[1:])
 
 
-@app.route('/revenue/by/days' , methods=["POST", "GET"])
+@app.route('/revenue/by/days', methods=["POST", "GET"])
 @login_required
 def revenue_by_days():
 
@@ -3062,15 +3102,15 @@ def revenue_by_year():
 
         str(month):
 
-            {"Total": sum([order.totalPrice for order in paid_orders if\
-                           order.timeCreated.date().strftime("%m") == str(month)]),
+            {"Total": sum([order.totalPrice for order in paid_orders if
+                           str(int(order.timeCreated.date().strftime("%m"))) == str(month)]),
 
-             "Total_Cash": sum([order.totalPrice for order in paid_orders if \
-                                order.timeCreated.date().strftime("%m") == str(month) \
+             "Total_Cash": sum([order.totalPrice for order in paid_orders if
+                                str(int(order.timeCreated.date().strftime("%m"))) == str(month)
                                 and json.loads(order.pay_via).get('method') == "Cash"]),
 
-             "Total_Card": sum([order.totalPrice for order in paid_orders if \
-                                order.timeCreated.date().strftime("%m") == str(month) \
+             "Total_Card": sum([order.totalPrice for order in paid_orders if
+                                str(int(order.timeCreated.date().strftime("%m"))) == str(month)
                                 and json.loads(order.pay_via).get('method') == "Card"]),
              } for month in range(1, 13)}
 
@@ -3766,7 +3806,7 @@ def printers_manage():
 @login_required
 def edit_printer(terminal):
 
-    referrer = request.headers.get("Refer")
+    referrer = request.headers.get("Referer")
 
     form = EditPrinterForm()
 
@@ -3778,7 +3818,13 @@ def edit_printer(terminal):
 
     if request.method == "POST":
 
-        pass
+        data[terminal]['printer'] = form.printer.data
+
+        # Writing the new settings to the json data file
+        with open(str(Path(app.root_path) / "settings" / "printer.json"), 'w', encoding="utf8") as file:
+            json.dump(data, file, indent=2)
+
+        return redirect(url_for('printers_manage'))
 
     form.printer.data = data.get(terminal).get('printer')
     form.terminal.data = data.get(terminal).get('cn_key')
@@ -3787,3 +3833,27 @@ def edit_printer(terminal):
                            form=form,
                            referrer=referrer)
 
+
+@app.route("/printer/switch", methods=["POST"])
+def switch_printer():
+
+    # Handle Data From Ajax
+    if request.method == "POST":
+        data = request.json
+
+        terminal = data.get('terminalName')
+
+        status = data.get('isOn')
+
+        with open(str(Path(app.root_path) / "settings" / "printer.json"), encoding="utf8") as file:
+            data = file.read()
+
+        data = json.loads(data)
+
+        data[terminal]['is_on'] = status
+
+        # Writing the new settings to the json data file
+        with open(str(Path(app.root_path) / "settings" / "printer.json"), 'w', encoding="utf8") as file:
+            json.dump(data, file, indent=2)
+
+        return jsonify({'status': 200})

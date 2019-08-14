@@ -3123,15 +3123,15 @@ def revenue_by_year():
 
         str(month):
 
-            {"Total": sum([order.totalPrice for order in paid_orders if\
-                           order.timeCreated.date().strftime("%m") == str(month)]),
+            {"Total": sum([order.totalPrice for order in paid_orders if
+                           str(int(order.timeCreated.date().strftime("%m"))) == str(month)]),
 
-             "Total_Cash": sum([order.totalPrice for order in paid_orders if \
-                                order.timeCreated.date().strftime("%m") == str(month) \
+             "Total_Cash": sum([order.totalPrice for order in paid_orders if
+                                str(int(order.timeCreated.date().strftime("%m"))) == str(month)
                                 and json.loads(order.pay_via).get('method') == "Cash"]),
 
-             "Total_Card": sum([order.totalPrice for order in paid_orders if \
-                                order.timeCreated.date().strftime("%m") == str(month) \
+             "Total_Card": sum([order.totalPrice for order in paid_orders if
+                                str(int(order.timeCreated.date().strftime("%m"))) == str(month)
                                 and json.loads(order.pay_via).get('method') == "Card"]),
              } for month in range(1, 13)}
 

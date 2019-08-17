@@ -39,8 +39,10 @@ To Dos:
 19. License Key to redirect to register page
 20. Remove email attr from user model
 26. User Avatar >> Default
-27. Logout Function admin,waite and takeaway
-28. revenue by waiters and sections in waiter admin 
+27. Logout Function admin,waiter and takeaway
+28. revenue by waiters and sections in waiter admin
+29. Serialize orders daily.
+
 
 
 

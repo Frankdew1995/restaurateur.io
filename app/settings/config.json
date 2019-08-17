@@ -10,6 +10,7 @@
     "TAX_RATE": {
       "takeaway": 0.07,
       "Inhouse Order": 0.19
-    }
+    },
+    "LOGO": "logo.png"
   }
 ]

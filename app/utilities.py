@@ -22,7 +22,7 @@ def store_picture(file):
 
     '''
     :param file: souce file where the input file is located - String
-    :return: return the save_path as a String obj
+    :return: return the file name + extension as a String object
     '''
 
     file_name, file_extension = os.path.splitext(file.filename)

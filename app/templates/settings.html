@@ -3,6 +3,18 @@
 
 {% block title %}
 
+{% block css %}
+
+<style>
+
+    form {
+      width:50%;
+    }
+
+</style>
+
+{% endblock %}
+
 
 
 <h1 class="h3 mb-2 text-gray-800">餐馆设置</h1>
@@ -25,19 +37,19 @@
 
         <p>
             {{ form.store_name.label }} <br>
-            {{ form.store_name()}}
+            {{ form.store_name(class="form-control")}}
         </p>
 
 
         <p>
             {{ form.city.label }}<br>
-            {{ form.city()}}
+            {{ form.city(class="form-control")}}
         </p>
 
         <p>
 
             {{ form.street.label }}<br>
-            {{ form.street()}}
+            {{ form.street(class="form-control")}}
 
         </p>
 
@@ -46,7 +58,7 @@
         <p>
 
             {{ form.street_no.label }}<br>
-            {{ form.street_no()}}
+            {{ form.street_no(class="form-control")}}
 
         </p>
 
@@ -54,14 +66,14 @@
 
         <p>
             {{ form.country.label }}<br>
-            {{ form.country() }}
+            {{ form.country(class="form-control") }}
         </p>
 
 
         <p>
 
             {{ form.zip.label }}<br>
-            {{ form.zip()}}
+            {{ form.zip(class="form-control")}}
 
         </p>
 
@@ -69,18 +81,18 @@
         <p>
 
             {{ form.tax_id.label }}<br>
-            {{ form.tax_id() }}
+            {{ form.tax_id(class="form-control") }}
         </p>
 
 
         <p>
             {{ form.tax_rate_takeaway.label }}税率<br>
-            {{ form.tax_rate_takeaway(placeholder='请输入小数')}}
+            {{ form.tax_rate_takeaway(placeholder='请输入小数', class="form-control")}}
         </p>
 
         <p>
             {{ form.tax_rate_InHouse.label }}税率<br>
-            {{ form.tax_rate_InHouse(placeholder='请输入小数')}}
+            {{ form.tax_rate_InHouse(placeholder='请输入小数', class="form-control")}}
         </p>
 
          <p>
@@ -88,7 +100,18 @@
             {{ form.logo()}}
         </p>
 
+        <p>
+          <span>当前LOGO</span><br>
 
+          <span>
+
+            <img src={{ url_for('static', filename="img/" + logo ) }} alt="">
+
+          </span>
+
+
+        </p>
+        <br>
 
         <p>
 

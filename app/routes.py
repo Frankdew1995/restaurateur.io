@@ -26,6 +26,7 @@ from uuid import uuid4
 from datetime import datetime, timedelta
 import pytz
 from threading import Thread
+from werkzeug.utils import secure_filename
 
 # Some global variables - read from config file.
 
@@ -33,17 +34,17 @@ info = json_reader(str(Path.cwd() / 'app' / 'settings' / 'config.json'))
 
 
 company_info = {
-            "tax_rate_in": info.get('TAX_RATE').get('takeaway'),
-            "tax_rate_out": info.get('TAX_RATE').get('Inhouse Order'),
+            "tax_rate_out": info.get('TAX_RATE').get('takeaway'),
+            "tax_rate_in": info.get('TAX_RATE').get('Inhouse Order'),
             "company_name": info.get('STORE_NAME'),
             "address": f'{info.get("STREET")} {info.get("STREET NO.")}, {info.get("ZIP")} {info.get("CITY")}',
             "tax_id": info.get('TAX_ID')
         }
 
 
-tax_rate_in = json_reader(str(Path.cwd() / 'app' / 'settings' / 'config.json')).get('TAX_RATE').get('Takeaway')
+tax_rate_in = company_info.get('tax_rate_in')
 
-tax_rate_out = json_reader(str(Path.cwd() / 'app' / 'settings' / 'config.json')).get('TAX_RATE').get('Inhouse Order')
+tax_rate_out = company_info.get('tax_rate_out')
 
 base_url = "http://a6d6fd65.ngrok.io"
 
@@ -1249,7 +1250,6 @@ def all_dishes():
     return render_template('alldishes.html', dishes=dishes)
 
 
-
 # Add Dish
 @app.route("/adddish", methods=["GET", "POST"])
 @login_required
@@ -1308,8 +1308,7 @@ def add_dish():
                            form=form)
 
 
-
-#Remove a dish
+# Remove a dish
 @app.route('/dish/<int:dish_id>/remove', methods=["GET", "POST"])
 @login_required
 def remove_dish(dish_id):
@@ -1452,6 +1451,10 @@ def set_store():
 
     if form.validate_on_submit():
 
+        # Save the logo file
+        logo_file = form.logo.data
+        logo_file.save(str(Path(app.root_path) / 'static' / 'img' / f'{logo_file.filename}'))
+
         # Transmitting data in the form into the dictionary
         data = {
           "STORE_NAME": form.store_name.data,
@@ -1462,7 +1465,8 @@ def set_store():
           "ZIP": form.zip.data,
           "TAX_ID": form.tax_id.data,
           "TAX_RATE": {"takeaway": form.tax_rate_takeaway.data,
-                       "Inhouse Order": form.tax_rate_InHouse.data}
+                       "Inhouse Order": form.tax_rate_InHouse.data},
+           "LOGO": secure_filename(logo_file.filename)
                },
 
         with open(str(Path.cwd() / 'app' / 'settings' / 'config.json'), 'w') as f:
@@ -1485,12 +1489,13 @@ def set_store():
         form.tax_id.data = data.get('TAX_ID')
         form.tax_rate_InHouse.data = data.get("TAX_RATE").get("Inhouse Order")
         form.tax_rate_takeaway.data = data.get("TAX_RATE").get("takeaway")
-        form.logo.data = data.get('LOGO')
 
+        logo = data.get('LOGO')
 
-    return render_template("settings.html",
-                           form=form,
-                           title=u'餐馆设置')
+        return render_template("settings.html",
+                               form=form,
+                               logo=logo,
+                               title=u'餐馆设置')
 
 
 @app.route('/admin/users/manage')
@@ -2928,10 +2933,11 @@ def revenue_by_days():
     referrer = request.headers.get('Referer')
 
     paid_alacarte_orders = Order.query.filter(
-        Order.isPaid==True, Order.type=="In").all()
+                            Order.isPaid == True,
+                            Order.type == "In").all()
 
     paid_out_orders = Order.query.filter(
-        Order.isPaid==True, Order.type=="Out").all()
+        Order.isPaid==True, Order.type == "Out").all()
 
     form = DatePickForm()
 
@@ -2996,6 +3002,8 @@ def revenue_by_days():
                                alacarte=alacarte,
                                out=out,
                                form=form)
+
+    cur_open_sections = []
 
     return render_template('revenue_by_days.html',
                            referrer=referrer,

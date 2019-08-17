@@ -18,7 +18,7 @@ from .forms import (AddDishForm, StoreSettingForm,
 from .utilities import (json_reader, store_picture,
                         generate_qrcode, activity_logger,
                         qrcode2excel, call2print, receipt_templating,
-                        bar_templating, kitchen_templating)
+                        bar_templating, kitchen_templating, terminal_templating)
 
 from pathlib import Path
 import json
@@ -42,9 +42,9 @@ company_info = {
         }
 
 
-tax_rate_in = company_info.get('tax_rate_in')
+tax_rate_in = float(company_info.get('tax_rate_in', 0.0))
 
-tax_rate_out = company_info.get('tax_rate_out')
+tax_rate_out = float(company_info.get('tax_rate_out', 0.0))
 
 base_url = "http://a6d6fd65.ngrok.io"
 
@@ -412,14 +412,6 @@ def food_frontview():
 
     dishes = Food.query.all()
 
-    # for dish in dishes:
-    #
-    #     # Rewrite dish's image name
-    #     dish.image = dish.image.split("/")[-1]
-    #
-    # # Commit the changes from the ORM Operation
-    # db.session.commit()
-
     categories = list(set([dish.category for dish in dishes]))
 
     return render_template('foodfrontview.html',
@@ -457,6 +449,43 @@ def takeaway_checkout():
 
         db.session.add(order)
         db.session.commit()
+
+        # Order Terminal Order Printing
+        details = {key: {'quantity': items.get('quantity'),
+                         'total': items.get('quantity') * items.get('price')}
+                   for key, items in details.items()}
+
+        context = {"details": details,
+                   "company_name": company_info.get('company_name', ''),
+                   "address": company_info.get('address'),
+                   "now": datetime.now().strftime("%Y-%m-%d %H:%M:%S"),
+                   "tax_id": company_info.get('tax_id'),
+                   "wait_number": order.id,
+                   "total": order.totalPrice,
+                   "VAT": round((order.totalPrice / (1 + tax_rate_out)) * tax_rate_out, 2)}
+
+        temp_file = str(Path(app.root_path) / 'static' / 'docx' / 'terminal_temp_out.docx')
+        save_as = f"wait_receipt_{order.id}"
+
+        # Read the printer setting data from the json file
+        with open(str(Path(app.root_path) / "settings" / "printer.json"),
+                  encoding="utf8") as file:
+
+            data = file.read()
+
+        data = json.loads(data)
+
+        def master_printer():
+
+            # Print Receipt
+            terminal_templating(context=context,
+                               temp_file=temp_file,
+                               save_as=save_as,
+                               printer=data.get('terminal').get('printer'))
+
+        # Start the thread
+        th = Thread(target=master_printer)
+        th.start()
 
         flash("Ihre Bestellung war erfolgreich bitte melden Sie sich bei den Kasse! ")
 
@@ -972,18 +1001,10 @@ def admin_cancel_alacarte_order(order_id):
 @login_required
 def admin_view_paid_alacarte_orders():
 
-
     # Filtering alacarte unpaid orders and the targeted table
     orders = db.session.query(Order).filter(
         Order.type == "In",
-        Order.isPaid==True).all()
-
-
-
-    ## ???
-    # cur_orders = [order for order in orders if
-    #               order.timeCreated.date() == pen.today(tz="Europe/Berlin").date()]
-
+        Order.isPaid == True).all()
 
     cur_orders = orders
 
@@ -1453,7 +1474,7 @@ def set_store():
 
         # Save the logo file
         logo_file = form.logo.data
-        logo_file.save(str(Path(app.root_path) / 'static' / 'img' / f'{logo_file.filename}'))
+        logo_file.save(str(Path(app.root_path) / 'static' / 'img' / 'logo.png'))
 
         # Transmitting data in the form into the dictionary
         data = {
@@ -2978,8 +2999,8 @@ def revenue_by_days():
                     'Total_Card': ala_card_total}
 
         # Accumulating for out orders
-        out_total = sum([order.totalPrice for order \
-                      in [order for order in paid_out_orders \
+        out_total = sum([order.totalPrice for order
+                      in [order for order in paid_out_orders
                           if start <= order.timeCreated.date() <= end]])
 
         out_cash_total = sum([order.totalPrice for order in
@@ -3001,15 +3022,45 @@ def revenue_by_days():
                                referrer=referrer,
                                alacarte=alacarte,
                                out=out,
-                               form=form)
+                               form=form,
+                               title=company_info.get('company_name'))
 
-    cur_open_sections = []
+    cur_used_sections = [
+                        Table.query.filter_by(
+                        name = json.loads(order.container)\
+                        .get('table_name')).first_or_404().section
+                        for order in paid_alacarte_orders]
+
+    form.start_date.data = datetime.today().date()
+    form.end_date.data = datetime.today().date()
+
+    # Aggregate today's out orders
+
+    out_total = sum([order.totalPrice for order
+                     in [order for order in paid_out_orders
+                         if order.timeCreated.date() == datetime.today().date()]])
+
+    out_cash_total = sum([order.totalPrice for order in
+                          [order for order in paid_out_orders
+                           if order.timeCreated.date() == datetime.today().date()
+                           and json.loads(order.pay_via).get('method') == "Cash"]])
+
+    out_card_total = sum(
+        [order.totalPrice for order in
+         [order for order in paid_out_orders
+          if order.timeCreated.date() == datetime.today().date()
+          and json.loads(order.pay_via).get('method') == "Card"]])
+
+    out = {'Total': out_total,
+           'Total_Cash': out_cash_total,
+           'Total_Card': out_card_total}
 
     return render_template('revenue_by_days.html',
                            referrer=referrer,
                            form=form,
                            alacarte=alacarte,
-                           out=out)
+                           out=out,
+                           title=company_info.get('company_name'))
 
 
 @app.route('/revenue/by/week', methods=["POST", "GET"])

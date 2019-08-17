@@ -76,9 +76,9 @@
             <td>{{ order.totalPrice }}</td>
             <td>
               <span>
-                <button type="button" class="btn btn-info">
+                <button type="button" class="btn btn-secondary">
                   <a href={{ url_for('admin_alacarte_order_edit', order_id=order.id) }} style="color: rgb(247, 249, 252)">
-                    查看/修改
+                    查看
                   </a>
                 </button>
               </span>
@@ -118,7 +118,7 @@
 {% block scripts %}
 <script>
 
-    //sort the table in the first column as the descending order 
+    //sort the table in the first column as the descending order
     $(document).ready( function () {
     $('#example').DataTable({
 

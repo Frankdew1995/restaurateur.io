@@ -1,0 +1,81 @@
+{
+  "A": {
+    "adult": {
+      "noon": 15,
+      "after": 20
+    },
+    "kid": {
+      "noon": 15,
+      "after": 100
+    },
+    "label": "\u661f\u671f\u4e00",
+    "lastUpdate": "2019.8.21 22:10:21",
+    "note": "Hallo"
+  },
+  "B": {
+    "adult": {
+      "noon": 15,
+      "after": 20
+    },
+    "kid": {
+      "noon": 15,
+      "after": 20
+    },
+    "label": "\u661f\u671f\u4e8c"
+  },
+  "C": {
+    "adult": {
+      "noon": 15,
+      "after": 20
+    },
+    "kid": {
+      "noon": 15,
+      "after": 20
+    },
+    "label": "\u661f\u671f\u4e09"
+  },
+  "D": {
+    "adult": {
+      "noon": 15,
+      "after": 20
+    },
+    "kid": {
+      "noon": 15,
+      "after": 20
+    },
+    "label": "\u661f\u671f\u56db"
+  },
+  "E": {
+    "adult": {
+      "noon": 15,
+      "after": 20
+    },
+    "kid": {
+      "noon": 15,
+      "after": 20
+    },
+    "label": "\u661f\u671f\u4e94"
+  },
+  "F": {
+    "adult": {
+      "noon": 15,
+      "after": 20
+    },
+    "kid": {
+      "noon": 15,
+      "after": 20
+    },
+    "label": "\u661f\u671f\u516d"
+  },
+  "G": {
+    "adult": {
+      "noon": 15,
+      "after": 20
+    },
+    "kid": {
+      "noon": 15,
+      "after": 20
+    },
+    "label": "\u661f\u671f\u5929"
+  }
+}

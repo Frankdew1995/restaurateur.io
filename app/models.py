@@ -6,7 +6,6 @@ from datetime import datetime
 from werkzeug.security import generate_password_hash, check_password_hash
 
 
-
 class Food(db.Model):
 
     id = db.Column(db.Integer, primary_key=True, index=True, unique=True)
@@ -21,10 +20,13 @@ class Food(db.Model):
     image = db.Column(db.String(100), nullable=False)
     container = db.Column(db.String(300))
 
+    inUse = db.Column(db.Boolean, default=True)
+    cn_description = db.Column(db.String(500))
 
     def __repr__(self):
 
         return f"Food: {self.name}"
+
 
 class Table(db.Model):
 
@@ -41,10 +43,12 @@ class Table(db.Model):
 
         return f"Table No.: {self.number}"
 
+
 @login.user_loader
 def load_user(id):
 
     return User.query.get(int(id))
+
 
 # Create User Class and inherits from UserMixin
 class User(UserMixin, db.Model):
@@ -68,9 +72,6 @@ class User(UserMixin, db.Model):
     def check_password(self, password):
 
         return check_password_hash(self.password_hash, password)
-
-
-
 
 
 class Order(db.Model):
@@ -106,7 +107,14 @@ class Log(db.Model):
     time = db.Column(db.String(500))
 
 
+class Holiday(db.Model):
 
+    id = db.Column(db.Integer, primary_key=True, unique=True, index=True)
+    name = db.Column(db.String(500))
+    start = db.Column(db.DateTime)
+    end = db.Column(db.DateTime)
+    timeCreated = db.Column(db.DateTime)
+    inUse = db.Column(db.Boolean, default=True)
 
 
 

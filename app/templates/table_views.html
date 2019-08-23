@@ -26,7 +26,7 @@
 
 
 
-<button type="button" class="btn btn-secondary">
+<button type="button" class="btn btn-info">
   <a href={{ url_for('add_table') }} style="color: rgb(247, 249, 252)">
     新增
   </a>
@@ -35,7 +35,6 @@
 <hr>
 
 <div class="row">
-
 
     <div class="col-sm-12">
 
@@ -74,12 +73,12 @@
               </label>
             </div>
           </td>
-          <td>
+          <td style="text-align:center">
             <span>
-              <button type="button" class="btn btn-secondary"><a style="color: rgb(247, 249, 252)" href="{{ url_for('edit_table', table_id=table.id) }}">查看/修改</a></button>
+              <button type="button" class="btn btn-info"><a style="color: rgb(247, 249, 252)" href="{{ url_for('edit_table', table_id=table.id) }}">修改</a></button>
             </span>
             <span>
-              <button type="button" class="btn btn-secondary"><a style="color: rgb(247, 249, 252)" href="{{ url_for('remove_table', table_name=table.name) }}">删除</a></button>
+              <button type="button" class="btn btn-danger"><a style="color: rgb(247, 249, 252)" href="{{ url_for('remove_table', table_name=table.name) }}">删除</a></button>
             </span>
           </td>
         </tr>

@@ -50,6 +50,34 @@ class RegistrationForm(FlaskForm):
 class AddDishForm(FlaskForm):
 
     name = StringField(u"菜品名称", validators=[DataRequired()])
+
+    cn_name = StringField(u"中文名称")
+
+    class_name = SelectField('菜品种类',
+                             choices=[("Please select", u"请选择菜品种类")],
+                             validators=[DataRequired()])
+
+    category = SelectField(u"菜品分类",
+                           choices=[("Please select", u"请选择菜品分类")],
+                           validators=[DataRequired()])
+
+    description = TextAreaField(u"菜品描述", validators=[DataRequired()])
+    price = FloatField(u"单价", validators=[DataRequired()])
+    image = FileField(u"上传图片", validators=[FileAllowed(["jpg", "jpeg", "png"])])
+    eat_manner = SelectMultipleField(u"用餐方式", choices=[("Please select", u"请选择用餐方式"),
+                                                ("Buffet", u"自助餐"),
+                                               ("takeaway", u"外卖"),
+                                               ("AlaKarte", u"单点")])
+    submit = SubmitField(u"确认添加")
+
+
+# Edit Dish Form
+class EditDishForm(FlaskForm):
+
+    name = StringField(u"菜品名称", validators=[DataRequired()])
+
+    cn_name = StringField(u"中文名称")
+
     class_name = SelectField('菜品类型',
                              choices=[("Please select", u"请选择菜品类型")],
                              validators=[DataRequired()])
@@ -61,24 +89,25 @@ class AddDishForm(FlaskForm):
     description = TextAreaField(u"菜品描述", validators=[DataRequired()])
     price = FloatField(u"单价", validators=[DataRequired()])
     image = FileField(u"上传图片", validators=[FileAllowed(["jpg", "jpeg", "png"])])
-    eat_manner = SelectField(u"用餐方式", choices=[("Please select", u"请选择用餐方式"),
-                                                ("Buffet", u"自助餐"),
+    eat_manner = SelectMultipleField(u"用餐方式", choices=[("Please select", u"请选择用餐方式"),
+                                               ("Buffet", u"自助餐"),
                                                ("takeaway", u"外卖"),
                                                ("AlaKarte", u"单点")])
-    submit = SubmitField(u"确认添加")
+
+    submit = SubmitField(u"确认更新")
 
 
 class EditCategoryForm(FlaskForm):
 
-    name_class = SelectField(u"菜品类型",
-                             choices=[("Please select", u"请选择菜品类型")])
+    name_class = SelectField(u"菜品种类",
+                             choices=[("Please select", u"请选择菜品种类")])
 
     new_class = StringField(u"添加新类型")
 
     name_category = SelectField(u"菜品种类",
                                 choices=[("Please select", u"请选择菜品种类")])
 
-    new_category = StringField(u"添加新种类")
+    cur_category = StringField(u"菜品分类")
 
     unit_en = StringField(u"计量单位 zh")
 
@@ -87,41 +116,20 @@ class EditCategoryForm(FlaskForm):
 
 class AddCategoryForm(FlaskForm):
 
-    name_class = SelectField(u"菜品类型",
-                             choices=[("Please select", u"请选择菜品类型")])
+    name_class = SelectField(u"菜品种类",
+                             choices=[("Please select", u"请选择菜品种类")])
 
     new_class = StringField(u"添加新类型")
 
-    name_category = SelectField(u"菜品种类",
-                                choices=[("Please select", u"请选择菜品种类")])
+    name_category = SelectField(u"菜品分类",
+                                choices=[("Please select", u"请选择菜品分类")])
 
-    new_category = StringField(u"添加新种类")
+    new_category = StringField(u"添加新分类")
 
-    unit_en = StringField(u"计量单位 zh")
+    unit_en = StringField(u"计量单位")
 
     submit = SubmitField(u"确定添加")
 
-
-# Edit Dish Form
-class EditDishForm(FlaskForm):
-
-    name = StringField(u"菜品名称", validators=[DataRequired()])
-    class_name = SelectField('菜品类型',
-                             choices=[("Please select", u"请选择菜品类型")],
-                             validators=[DataRequired()])
-
-    category = SelectField(u"菜品种类",
-                           choices=[("Please select", u"请选择菜品种类")],
-                           validators=[DataRequired()])
-
-    description = TextAreaField(u"菜品描述", validators=[DataRequired()])
-    price = FloatField(u"单价", validators=[DataRequired()])
-    image = FileField(u"上传图片", validators=[FileAllowed(["jpg", "jpeg", "png"])])
-    eat_manner = SelectField(u"用餐方式", choices=[("Please select", u"请选择用餐方式"),
-                                               ("Buffet", u"自助餐"),
-                                               ("takeaway", u"外卖"),
-                                               ("AlaKarte", u"单点")])
-    submit = SubmitField(u"确认更新")
 
 
 # Store Settings Form
@@ -294,4 +302,43 @@ class EditPrinterForm(FlaskForm):
     printer = StringField(u'打印机名称', validators=[DataRequired()])
 
     submit = SubmitField(u"确认更新")
+
+
+class EditBuffetPriceForm(FlaskForm):
+
+    week_number = StringField(u"日期", validators=[DataRequired()])
+
+    price_for_adult_noon = IntegerField(u"中午成人价格")
+
+    price_for_adult_after = IntegerField(u"下午成人价格")
+
+    price_for_kid_noon = IntegerField(u"中午儿童价格")
+
+    price_for_kid_after = IntegerField(u"中午儿童价格")
+
+    note = StringField(u"备注")
+
+    submit = SubmitField(u"确认更新")
+
+
+class AddHolidayForm(FlaskForm):
+
+    name = StringField(u"节假日名称")
+
+    start_date = DateField(u'假期开始日期', validators=[DataRequired()])
+
+    end_date = DateField(u'假期结束日期', validators=[DataRequired()])
+
+    submit = SubmitField(u'添加')
+
+
+class EditHolidayForm(FlaskForm):
+
+    name = StringField(u"节假日名称")
+
+    start_date = DateField(u'假期开始日期', validators=[DataRequired()])
+
+    end_date = DateField(u'假期结束日期', validators=[DataRequired()])
+
+    submit = SubmitField(u'确定更新')
 

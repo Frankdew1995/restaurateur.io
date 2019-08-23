@@ -1,10 +1,5 @@
 [
   {
-    "Class": "Food",
-    "Subcategory": "Haxe Fleisch",
-    "Unit": "Stueck"
-  },
-  {
     "Class": "Drinks",
     "Subcategory": "Coffee",
     "Unit": "Tasse"

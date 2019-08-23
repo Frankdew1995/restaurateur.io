@@ -1,0 +1,120 @@
+{% extends "base.html" %}
+
+
+{% block css %}
+
+<style media="screen">
+  #back{
+    margin-left: 800px;
+    margin-bottom: 20px;
+  }
+</style>
+
+{% endblock %}
+
+
+
+{% block title %}
+
+
+<h1 class="h3 mb-2 text-gray-800">{{ title }}</h1>
+<hr>
+
+
+
+{% endblock %}
+
+
+{% block content %}
+
+
+<form action='' method="POST" enctype="multipart/form-data">
+
+
+    {{ form.hidden_tag() }}
+
+    <div class='form-group'>
+
+
+        <p>
+            {{ form.week_number.label }} <br>
+            {{ form.week_number(
+              class='form-control',
+              style="width: 50%",
+              readonly="readonly") }}
+        </p>
+
+        <p>
+          {{ form.price_for_adult_noon.label }}<br>
+          {{ form.price_for_adult_noon(
+              class='form-control',
+              style="width: 50%",
+              placeholder='请输入价格') }}
+        </p>
+
+
+        <p>
+          {{ form.price_for_adult_after.label }}<br>
+          {{ form.price_for_adult_after(
+              class='form-control',
+              style="width: 50%",
+              placeholder='请输入价格') }}
+        </p>
+
+        <p>
+          {{ form.price_for_kid_noon.label }}<br>
+          {{ form.price_for_kid_noon(
+              class='form-control',
+              style="width: 50%",
+              placeholder='请输入价格') }}
+        </p>
+
+        <p>
+          {{ form.price_for_kid_after.label }}<br>
+          {{ form.price_for_kid_after(
+              class='form-control',
+              style="width: 50%",
+              placeholder='请输入价格') }}
+        </p>
+
+
+        <p>
+          {{ form.note.label }}<br>
+          {{ form.note(
+              class='form-control',
+              style="width: 50%",
+              placeholder='请输入备注信息') }}
+        </p>
+
+
+        <p>
+            {{ form.submit(class='btn btn-info')}}
+            <button type="button" class="btn btn-secondary">
+              <a href={{ referrer }} style="color: rgb(247, 249, 252)">
+                取消
+              </a>
+            </button>
+
+        </p>
+
+
+    </div>
+
+
+</form>
+
+<br>
+
+<button type="button" class="btn btn-secondary" id="back">
+  <a href={{ referrer }} style="color: rgb(247, 249, 252)">
+    返回
+  </a>
+</button>
+
+
+
+
+
+
+
+{% endblock %}

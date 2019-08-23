@@ -1,0 +1,100 @@
+{% extends "base.html" %}
+
+
+
+{% block css %}
+
+
+<style media="screen">
+
+
+#back {
+  margin-left: 815px;
+  margin-bottom:20px;
+}
+
+
+
+</style>
+
+{% endblock %}
+
+
+
+{% block title %}
+
+
+<h2>修改节假日</h2>
+
+
+{% endblock %}
+
+
+{% block content %}
+
+
+<form action='' method="POST" enctype="multipart/form-data">
+
+
+    {{ form.hidden_tag() }}
+
+    <div class='form-group'>
+
+      <p>
+          {{ form.name.label }} <br>
+          {{ form.name(
+            class='form-control',
+            style="width: 50%",
+            placeholder='请输入节假日名称') }}
+      </p>
+
+
+      <p>
+
+        {{form.start_date.label}}<br>
+        {{ form.start_date(
+            class='form-control',
+            style="width: 50%",
+            placeholder='请输入节日开始日期') }}
+
+      </p>
+
+      <p>
+
+        {{form.end_date.label}}<br>
+        {{ form.end_date(
+            class='form-control',
+            style="width: 50%",
+            placeholder='请输入节日结束日期') }}
+      </p>
+
+      <p>
+
+          {{ form.submit(class='btn btn-info')}}
+          <button type="button" class="btn btn-secondary">
+            <a href="{{ referrer }}" style="color: rgb(247, 249, 252)">
+              取消
+            </a>
+          </button>
+
+      </p>
+
+
+    </div>
+
+</form>
+
+<br>
+
+<button type="button" class="btn btn-secondary" id="back">
+  <a href="{{ referrer }}" style="color: rgb(247, 249, 252)">
+    返回
+  </a>
+</button>
+
+
+
+
+
+
+{% endblock %}

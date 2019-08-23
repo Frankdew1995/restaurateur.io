@@ -4,16 +4,18 @@ from app import (app, db, render_template,
 
 from flask_login import current_user, login_user, login_required, logout_user
 
-from .models import User, Table, Food, Order, Visit, Log
+from .models import User, Table, Food, Order, Visit, Log, Holiday
 
 from .forms import (AddDishForm, StoreSettingForm,
                     RegistrationForm, LoginForm,
-                    EditDishForm,
-                    CheckoutForm, AddTableForm,
-                    EditTableForm, ConfirmForm,
-                    TableSectionQueryForm, SearchTableForm,
-                    DatePickForm, AddUserForm, EditUserForm,
-                    EditPrinterForm)
+                    EditDishForm, CheckoutForm,
+                    AddTableForm, EditTableForm,
+                    ConfirmForm, TableSectionQueryForm,
+                    SearchTableForm, DatePickForm,
+                    AddUserForm, EditUserForm,
+                    EditPrinterForm, EditBuffetPriceForm,
+                    AddHolidayForm, EditHolidayForm,
+                    AddCategoryForm, EditCategoryForm)
 
 from .utilities import (json_reader, store_picture,
                         generate_qrcode, activity_logger,
@@ -49,8 +51,6 @@ tax_rate_out = float(company_info.get('tax_rate_out', 0.0))
 base_url = "http://a6d6fd65.ngrok.io"
 
 timezone = 'Europe/Berlin'
-# will be added from store setting page
-
 
 # Login Route
 @app.route("/login", methods=["GET", "POST"])
@@ -259,7 +259,7 @@ def return_analytics():
 
         start_last_mon = datetime(cur_year, last_mon, 1).date()
 
-        data['last_mon_dates'] = [int((start_last_mon + timedelta(days=n)).strftime("%d")) \
+        data['last_mon_dates'] = [int((start_last_mon + timedelta(days=n)).strftime("%d"))
                                     for n in range(mon_range)]
 
         data['last_mon_revenue_by_dates'] = [
@@ -273,7 +273,7 @@ def return_analytics():
 
         start_last_mon = datetime(cur_year - 1, last_mon, 1).date()
 
-        data['last_mon_dates'] = [int((start_last_mon + timedelta(days=n)).strftime("%d")) \
+        data['last_mon_dates'] = [int((start_last_mon + timedelta(days=n)).strftime("%d"))
                                   for n in range(mon_range)]
 
         data['last_mon_revenue_by_dates'] = [
@@ -846,10 +846,17 @@ def update_takeaway_order():
 @login_required
 def all_out_orders():
 
-    # Filter only takeaway orders
-    orders = Order.query.filter(Order.type=="Out").all()
+    referrer = request.headers.get('Referer')
 
-    return render_template('all_out_orders.html', title=u'外卖订单', orders=orders)
+    # Filter only takeaway orders
+    orders = Order.query.filter(Order.type == "Out").all()
+
+    context = dict(title=u'外卖订单',
+                   orders=orders,
+                   referrer=referrer,
+                   company_name=company_info.get('company_name'))
+
+    return render_template('all_out_orders.html', **context)
 
 
 @app.route('/admin/view/open/alacarte/orders')
@@ -859,11 +866,11 @@ def admin_view_alacarte_open_orders():
     # Filtering alacarte unpaid orders and the targeted table
     orders = db.session.query(Order).filter(
         Order.type == "In",
-        Order.isPaid==False).all()
+        Order.isPaid == False).all()
 
     cur_orders = [order for order in orders if
                   order.timeCreated.date() ==
-                  datetime.now(tz=pytz.timezone("Europe/Berlin")).date()]
+                  datetime.now(tz=pytz.timezone(timezone)).date()]
 
     items = {order.id: json.loads(order.items) for order in cur_orders}
 
@@ -1116,15 +1123,20 @@ def display_status():
 @login_required
 def categories_view():
 
-    with open(str(Path(app.root_path) / 'settings' / "categories.json")) as file:
+    with open(str(Path(app.root_path) / 'settings' / "categories.json"),
+              'r',
+              encoding="utf8") as file:
 
         data = file.read()
 
     categories = json.loads(data)
 
-    return render_template('allcategories.html',
-                           title=u"菜品种类管理",
-                           categories=categories)
+    context = dict(referrer=request.headers.get('Referer'),
+                   title=u"菜品种类管理",
+                   company_name=company_info.get('company_name'),
+                   categories=categories)
+
+    return render_template('all_categories.html', **context)
 
 
 @app.route("/categories/add", methods=['POST', "GET"])
@@ -1148,54 +1160,34 @@ def add_category():
     form.name_class .choices.extend([(i, i) for i in all_classes])
     form.name_category.choices.extend([(i, i) for i in all_categories])
 
-    if form.validate_on_submit():
+    if form.validate_on_submit() or request.method == "POST":
 
-        if not form.new_class.data:
+        categories.append({
+                'Class': form.name_class.data,
+                'Subcategory': form.new_category.data,
+                'Unit': form.unit_en.data
+        })
 
-            if form.new_category.data:
-
-                categories.append({
-                    'Class': form.name_class.data,
-                    'Subcategory':form.new_category.data,
-                    'Unit':form.unit_en.data
-                })
-            else:
-                categories.append({
-                    'Class': form.name_class.data,
-                    'Subcategory': form.name_category.data,
-                    'Unit': form.unit_en.data
-                })
-
-        else:
-
-            if form.new_category.data:
-
-                categories.append({
-                    'Class': form.new_class.data,
-                    'Subcategory': form.new_category.data,
-                    'Unit': form.unit_en.data
-                })
-            else:
-                categories.append({
-                    'Class': form.new_class.data,
-                    'Subcategory': form.name_category.data,
-                    'Unit': form.unit_en.data
-                })
-
-        with open(str(Path(app.root_path) / 'settings' / "categories.json"), 'w') as file:
+        with open(str(Path(app.root_path) / 'settings' / "categories.json"), 'w',
+                  encoding="utf8") as file:
 
             json.dump(categories, file, indent=2)
 
+        flash(f"新菜品分类{form.new_category.data}已经添加!", category='success')
+
         return redirect(url_for('categories_view'))
 
-    return render_template('add_category.html',
-                           title=u"添加菜品种类",
-                           form=form)
+    context = dict(referrer=request.headers.get('Referer'),
+                   title=u"添加菜品种类",
+                   company_name=company_info.get('company_name'),
+                   form=form)
+
+    return render_template('add_category.html', **context)
 
 
-@app.route("/categories/edit", methods=['POST', "GET"])
+@app.route("/categories/edit/<string:subcategory>", methods=['POST', "GET"])
 @login_required
-def edit_category():
+def edit_category(subcategory):
 
     with open(str(Path(app.root_path) / 'settings' / "categories.json")) as file:
 
@@ -1203,62 +1195,85 @@ def edit_category():
 
     categories = json.loads(data)
 
+    category = [category for category in categories if
+                category.get('Subcategory') == subcategory][0]
+
     all_classes = list(set([i.get('Class') for i in categories]))
 
     all_categories = list(set([i.get('Subcategory') for i in categories]))
 
-
-    from .forms import AddCategoryForm
-
-    form = AddCategoryForm()
-
+    form = EditCategoryForm()
 
     form.name_class .choices.extend([(i, i) for i in all_classes])
     form.name_category.choices.extend([(i, i) for i in all_categories])
 
-    if form.validate_on_submit():
+    if form.validate_on_submit() or request.method == "POST":
 
-        if not form.new_class.data:
+        categories.append({
+            'Class': form.name_class.data,
+            'Subcategory': form.cur_category.data,
+            'Unit': form.unit_en.data
+        })
 
-            if form.new_category.data:
-
-                categories.append({
-                    'Class': form.name_class.data,
-                    'Subcategory':form.new_category.data,
-                    'Unit': form.unit_en.data
-                })
-            else:
-                categories.append({
-                    'Class': form.name_class.data,
-                    'Subcategory': form.name_category.data,
-                    'Unit': form.unit_en.data
-                })
-
-        else:
-
-            if form.new_category.data:
-
-                categories.append({
-                    'Class': form.new_class.data,
-                    'Subcategory': form.new_category.data,
-                    'Unit': form.unit_en.data
-                })
-            else:
-                categories.append({
-                    'Class': form.new_class.data,
-                    'Subcategory': form.name_category.data,
-                    'Unit': form.unit_en.data
-                })
+        categories.remove(category)
 
         with open(str(Path(app.root_path) / 'settings' / "categories.json"), 'w') as file:
 
             json.dump(categories, file, indent=2)
 
+        flash(f"菜品分类{form.cur_category.data}已经更新!", category='success')
+
         return redirect(url_for('categories_view'))
 
-    return render_template('edit_category.html',
-                           title=u"添加菜品种类",
-                           form=form)
+    form.name_class.data = category.get('Class', '')
+    form.cur_category.data = category.get('Subcategory', '')
+    form.unit_en.data = category.get('Unit', '')
+
+    context = dict(referrer=request.headers.get('Referer'),
+                   title=u"修改菜品种类",
+                   company_name=company_info.get('company_name'),
+                   form=form)
+
+    return render_template('edit_category.html', **context)
+
+
+# Remove a dish
+@app.route('/category/<string:subcategory>/remove', methods=["GET", "POST"])
+@login_required
+def remove_category(subcategory):
+
+    with open(str(Path(app.root_path) / 'settings' / "categories.json")) as file:
+
+        data = file.read()
+
+    categories = json.loads(data)
+
+    category = [category for category in categories if
+                category.get('Subcategory') == subcategory][0]
+
+    form = ConfirmForm()
+
+    if form.validate_on_submit() or request.method == "POST":
+
+        categories.remove(category)
+
+        with open(str(Path(app.root_path) / 'settings' / "categories.json"),
+                  mode='w',
+                  encoding="utf8") as file:
+
+            json.dump(categories, file, indent=2)
+
+        flash(f"菜品分类{category.get('Subcategory', '')}已经被删除!", category='success')
+
+        return redirect(url_for('categories_view'))
+
+    context = dict(referrer=request.headers.get('Referer'),
+                   title=u"删除菜品种类",
+                   company_name=company_info.get('company_name'),
+                   form=form,
+                   category=category)
+
+    return render_template('remove_category.html', **context)
 
 
 # All dish view route
@@ -1268,7 +1283,21 @@ def all_dishes():
 
     dishes = Food.query.all()
 
-    return render_template('alldishes.html', dishes=dishes)
+    paid_orders = Order.query.filter(Order.isPaid == True).all()
+
+    order_counts = {food.name:
+                        {"counts": sum([json.loads(order.items).get(food.name).get('quantity')
+                                    for order in paid_orders if food.name in json.loads(order.items).keys()]),
+                         "Img": food.image,
+                         "ID": food.id} for food in dishes}
+
+    context = dict(dishes=dishes,
+                   order_counts=order_counts,
+                   title=u'菜品管理',
+                   referrer=request.headers.get('Referer'),
+                   company_name=company_info.get('company_name'))
+
+    return render_template('all_dishes.html', **context)
 
 
 # Add Dish
@@ -1299,11 +1328,13 @@ def add_dish():
         description = form.description.data
         price = form.price.data
         eat_manner = form.eat_manner.data
+        cn_desc = form.cn_name.data
 
         file = request.files["file"]
         image_path = None
 
         if file:
+
             # If file selected or existing and reset the image path again
             image_path = store_picture(file=file)
 
@@ -1314,8 +1345,10 @@ def add_dish():
                     price_net_in=price / (1 + tax_rate_in),
                     price_net_out=price / (1 + tax_rate_out),
                     image=image_path,
-                    eat_manner=eat_manner,
-                    class_name=class_name)
+                    eat_manner=json.dumps(eat_manner),
+                    class_name=class_name,
+                    inUse=True,
+                    cn_description=cn_desc)
 
         db.session.add(dish)
         db.session.commit()
@@ -1324,9 +1357,12 @@ def add_dish():
 
         return redirect(url_for('all_dishes'))
 
-    return render_template("adddish.html",
-                           title=u"添加菜品",
-                           form=form)
+    context = dict(referrer=request.headers.get('Referer'),
+                   title=u"添加菜品",
+                   form=form,
+                   company_name=company_info.get('company_name'))
+
+    return render_template("add_dish.html", **context)
 
 
 # Remove a dish
@@ -1334,15 +1370,27 @@ def add_dish():
 @login_required
 def remove_dish(dish_id):
 
-
+    form = ConfirmForm()
     food = Food.query.get_or_404(dish_id)
 
-    db.session.delete(food)
-    db.session.commit()
+    if food:
 
-    flash(f"菜品{food.name}被删除!")
+        if form.validate_on_submit():
 
-    return redirect(url_for("all_dishes"))
+            db.session.delete(food)
+            db.session.commit()
+            flash(f"菜品{food.name}被删除!")
+
+            return redirect(url_for("all_dishes"))
+
+    context = dict(title=u"删除菜品",
+                   referrer=request.headers.get('Referer'),
+                   company_name=company_info.get('company_name'),
+                   form=form,
+                   dish=food)
+
+    return render_template('remove_dish.html', **context)
+
 
 # Edit Dish
 @app.route('/dish/<int:dish_id>/edit', methods=["GET", "POST"])
@@ -1367,22 +1415,20 @@ def edit_dish(dish_id):
 
     dish = db.session.query(Food).get_or_404(int(dish_id))
 
-
-    if request.method=="POST":
-
+    if request.method == "POST":
 
         dish.name = form.name.data
         dish.category = form.category.data
         dish.class_name = form.class_name.data
+        dish.cn_description = form.cn_name.data
 
         dish.price_gross = form.price.data
-        dish.price_net_out = dish.price_gross / tax_rate_out
-        dish.price_net_in = dish.price_gross / tax_rate_in
+        dish.price_net_out = dish.price_gross / (1 + tax_rate_out)
+        dish.price_net_in = dish.price_gross / (1 + tax_rate_in)
 
         dish.description = form.description.data
 
-        dish.eat_manner = form.eat_manner.data
-
+        dish.eat_manner = json.dumps(form.eat_manner.data)
 
         file = request.files["file"]
 
@@ -1398,7 +1444,6 @@ def edit_dish(dish_id):
 
         return redirect(url_for("all_dishes"))
 
-
     form.name.data = dish.name
     form.category.data = dish.category
     form.class_name.data = dish.class_name
@@ -1406,14 +1451,181 @@ def edit_dish(dish_id):
     form.price.data = dish.price_gross
     form.description.data = dish.description
 
-
     image_path = dish.image
 
     image = image_path.split("/")[-1]
 
     image_file = url_for('static', filename='img/' + image)
 
-    return render_template("editdish.html", form=form, image=image_file)
+    context = dict(referrer=request.headers.get('Referer'),
+                   form=form,
+                   image=image_file,
+                   title=u"修改菜品")
+
+    return render_template("edit_dish.html", **context)
+
+
+# Admin switch holiday on and off
+@app.route('/dish/switch', methods=["POST"])
+def switch_dish():
+
+    # Handle Data From Ajax
+    if request.method == "POST":
+
+        data = request.json
+
+        dish_id = data.get('dish_id')
+
+        inUse = data.get('inUse')
+
+        print(inUse)
+
+        dish = db.session.query(Food).get_or_404(int(dish_id))
+
+        dish.inUse = inUse
+
+        db.session.commit()
+
+        return jsonify({'status': 200})
+
+
+@app.route('/holiday/manage')
+@login_required
+def holidays_manage():
+
+    referrer = request.headers.get('Referer')
+
+    holidays = Holiday.query.all()
+
+    context = dict(referrer=referrer,
+                   title=u"添加节假日",
+                   company_name=company_info.get('company_name'),
+                   holidays=holidays)
+
+    return render_template("holiday_manage.html", **context)
+
+
+@app.route('/holiday/add', methods=["GET", "POST"])
+@login_required
+def add_holiday():
+
+    form = AddHolidayForm()
+
+    referrer = request.headers.get('Referer')
+
+    if form.validate_on_submit():
+
+        name = form.name.data
+        start = form.start_date.data
+        end = form.end_date.data
+
+        holiday = Holiday(name=name,
+                          start=start,
+                          end=end,
+                          timeCreated=datetime.now(tz=pytz.timezone(timezone)),
+                          inUse=True)
+
+        db.session.add(holiday)
+        db.session.commit()
+
+        flash(f"已经成功添加节假日{holiday.name}", category='success')
+
+        return redirect(url_for('holidays_manage'))
+
+    context = dict(referrer=referrer,
+                   title=u"添加节假日",
+                   company_name=company_info.get('company_name'),
+                   form=form)
+
+    return render_template("add_holiday.html", **context)
+
+
+@app.route('/holiday/edit/<int:holiday_id>', methods=["POST", "GET"])
+@login_required
+def edit_holiday(holiday_id):
+
+    holiday = db.session.query(Holiday).get_or_404(int(holiday_id))
+
+    form = EditHolidayForm()
+
+    referrer = request.headers.get('Referer')
+
+    context = dict(referrer=referrer,
+                   title=u"添加节假日",
+                   company_name=company_info.get('company_name'),
+                   form=form)
+
+    if holiday:
+
+        if form.validate_on_submit():
+
+            holiday.name = form.name.data
+            holiday.start = form.start_date.data
+            holiday.end = form.end_date.data
+
+            db.session.commit()
+
+            flash(f"已经成功更改节假日{holiday.name}!")
+
+            return redirect(url_for('holidays_manage'))
+
+    form.start_date.data = holiday.start
+    form.end_date.data = holiday.end
+    form.name.data = holiday.name
+
+    return render_template("edit_holiday.html", **context)
+
+
+@app.route('/holiday/remove/<int:holiday_id>', methods=["GET", "POST"])
+@login_required
+def remove_holiday(holiday_id):
+
+    form = ConfirmForm()
+
+    holiday = db.session.query(Holiday).get_or_404(int(holiday_id))
+
+    if holiday:
+
+        if form.validate_on_submit():
+
+            db.session.delete(holiday)
+
+            db.session.commit()
+
+            flash(f"已经删除节假日{holiday.name}")
+
+            return redirect(url_for('holidays_manage'))
+
+    context = dict(referrer=request.headers.get('Referer'),
+                   title=u"删除节假日",
+                   form=form,
+                   holiday=holiday)
+
+    return render_template("remove_holiday.html", **context)
+
+
+# Admin switch holiday on and off
+@app.route('/holiday/switch', methods=["POST"])
+def switch_holiday():
+
+    # Handle Data From Ajax
+    if request.method == "POST":
+
+        data = request.json
+
+        holiday_id = data.get('holiday_id')
+
+        inUse = data.get('inUse')
+
+        print(inUse)
+
+        holiday = db.session.query(Holiday).get_or_404(int(holiday_id))
+
+        holiday.inUse = inUse
+
+        db.session.commit()
+
+        return jsonify({'status': 200})
 
 
 @app.route('/qrcode/manage')
@@ -1427,8 +1639,7 @@ def qrcode_manage():
 
     return render_template('qrcode.html',
                            tables=tables,
-                           table2qr=table2qr
-                           )
+                           table2qr=table2qr)
 
 
 @app.route('/view/qrcode/<string:qrcode_name>')
@@ -1709,9 +1920,12 @@ def view_tables():
 
     tables = Table.query.all()
 
-    return render_template("table_views.html",
-                           tables=tables,
-                           title="桌子管理")
+    context = dict(referrer=request.headers.get('Referer'),
+                   title=u"桌子管理",
+                   tables=tables,
+                   company_name=company_info.get('company_name'))
+
+    return render_template("table_views.html", **context)
 
 
 # Admin Dashboard view active tables
@@ -1958,15 +2172,13 @@ def switch_table():
 
         db.session.commit()
 
-        return jsonify({'status':200})
+        return jsonify({'status': 200})
 
 
 # Table view function
 @app.route("/tables/add", methods=["POST", "GET"])
 @login_required
 def add_table():
-
-
 
     form = AddTableForm()
     import string
@@ -1976,13 +2188,9 @@ def add_table():
     # Instantiate some options for select fields
     form.section.choices.extend([(i, i) for i in letters])
 
-
     if form.validate_on_submit():
 
-
         suffix_url = "alacarte/interface"
-
-
 
         qrcodes = [generate_qrcode(table=form.name.data.upper(),
                                    base_url=base_url,
@@ -2009,7 +2217,6 @@ def add_table():
         flash(f"已经成功创建桌子：{form.name.data}")
 
         return redirect(url_for('view_tables'))
-
 
     return render_template("add_table.html",
                            form=form,
@@ -2094,7 +2301,6 @@ def remove_table(table_name):
 
             return redirect(url_for('view_tables'))
 
-
         elif request.method == "GET":
 
             return render_template("remove_table.html",
@@ -2108,18 +2314,76 @@ def remove_table(table_name):
 @login_required
 def buffet_price_settings():
 
+    # Read the price setting data
+    with open(str(Path(app.root_path) / "settings" / "buffet_price.json"), encoding="utf8") as file:
+        data = file.read()
 
-    return render_template("buffet_price_setting.html", title="自助餐价格设置")
+    data = json.loads(data)
 
+    context = dict(data=data,
+                   title=u"自助餐价格设置",
+                   company_name=company_info.get('company_name'))
+
+    return render_template("buffet_price_setting.html", **context)
+
+
+@app.route('/buffet/prices/edit/<string:week_number>', methods=["GET", "POST"])
+@login_required
+def edit_buffet_price(week_number):
+
+    form = EditBuffetPriceForm()
+
+    referrer = request.headers.get('Referer')
+
+    # Read the price setting data
+    with open(str(Path(app.root_path) / "settings" / "buffet_price.json"), encoding="utf8") as file:
+        data = file.read()
+
+    data = json.loads(data)
+
+    if form.validate_on_submit():
+
+        data[week_number]['adult']['noon'] = form.price_for_adult_noon.data
+        data[week_number]['adult']['after'] = form.price_for_adult_after.data
+
+        data[week_number]['kid']['noon'] = form.price_for_kid_noon.data
+        data[week_number]['kid']['after'] = form.price_for_kid_after.data
+
+        data[week_number]['lastUpdate'] = datetime.now(tz=pytz.timezone(timezone)).strftime("%Y.%-m.%-d %H:%M:%S")
+
+        data[week_number]['note'] = form.note.data
+
+        with open(str(Path(app.root_path) / "settings" / "buffet_price.json"),
+                  "w",
+                  encoding="utf8") as file:
+
+            json.dump(data, file, indent=2)
+
+        flash(f"已经为{data.get(week_number).get('label')}的自助餐更新价格!", category='success')
+
+        return redirect(url_for('buffet_price_settings'))
+
+    form.week_number.data = data.get(week_number).get('label')
+
+    form.price_for_adult_noon.data = data.get(week_number).get('adult').get('noon')
+    form.price_for_adult_after.data = data.get(week_number).get('adult').get('after')
+
+    form.price_for_kid_noon.data = data.get(week_number).get('kid').get('noon')
+    form.price_for_kid_after.data = data.get(week_number).get('kid').get('after')
+
+    context = dict(form=form,
+                   title=u"修改自助餐价格",
+                   company_name=company_info.get('company_name'),
+                   referrer=referrer)
+
+    return render_template("edit_buffet_price.html", **context)
 
 
 # Table Order view by table name and seat number
 @app.route("/alacarte/interface/<string:table_name>/<string:seat_number>")
 def alacarte_navigate(table_name, seat_number):
 
-
     # Create a visit object from model and record it in db
-
     visit = Visit(count=1,
                   timeVisited=datetime.now(pytz.timezone('Europe/Berlin')))
 
@@ -2128,7 +2392,6 @@ def alacarte_navigate(table_name, seat_number):
 
     # Query Tables
     table = Table.query.filter_by(name=table_name).first_or_404()
-
 
     # if table existing and table is on
     if table and table.is_on:
@@ -2957,18 +3220,26 @@ def revenue_by_days():
                             Order.isPaid == True,
                             Order.type == "In").all()
 
+    cur_paid_alacarte_orders = [order for order in paid_alacarte_orders if
+                                order.timeCreated.date() == datetime.now(
+                                    tz=pytz.timezone(timezone)
+                                ).date()]
+
+    # Compute the current used sections from Ala Carte
+    cur_used_sections = list(set([Table.query.filter_by(name=json.loads(order.container)\
+                        .get('table_name')).first_or_404().section
+                        for order in paid_alacarte_orders
+                        if order.timeCreated.date() == datetime.now(tz=pytz.timezone(timezone)).date()]))
+
     paid_out_orders = Order.query.filter(
-        Order.isPaid==True, Order.type == "Out").all()
+        Order.isPaid == True,
+        Order.type == "Out").all()
 
     form = DatePickForm()
 
     alacarte= {"Total": 0,
                "Total_Card": 0,
                "Total_Cash": 0}
-
-    out = {"Total": 0,
-           "Total_Card": 0,
-           "Total_Cash": 0}
 
     if form.validate_on_submit():
 
@@ -2998,6 +3269,32 @@ def revenue_by_days():
                     'Total_Cash': ala_cash_total,
                     'Total_Card': ala_card_total}
 
+        # Filtered paid alacarte orders
+        filtered_paid_alacarte_orders = [order for order in paid_alacarte_orders
+                                         if start <= order.timeCreated.date() <= end]
+
+        # Compute used sections during the DateRange
+        filtered_used_sections = list(set([Table.query.filter_by(name=json.loads(order.container).get('table_name')).first_or_404().section
+                                      for order in paid_alacarte_orders if start <= order.timeCreated.date() <= end]))
+
+        from collections import OrderedDict
+
+        revenue_by_sections = {section:
+                                {"Cash": sum([order.totalPrice for order in [order for order in filtered_paid_alacarte_orders
+                                              if Table.query.filter_by(name=json.loads(order.container).get('table_name')).first_or_404().section == section
+                                              and json.loads(order.pay_via).get('method') == "Cash"]]),
+
+                                  "Card": sum([order.totalPrice for order in [order for order in filtered_paid_alacarte_orders
+                                            if Table.query.filter_by(name=json.loads(order.container).get('table_name')).first_or_404().section == section
+                                            and json.loads(order.pay_via).get('method') == "Card"]]),
+
+                                  "Total": sum([order.totalPrice for order in [order for order in filtered_paid_alacarte_orders
+                                              if Table.query.filter_by(name=json.loads(order.container).get('table_name')).first_or_404().section == section]])
+
+                                      } for section in filtered_used_sections}
+
+        revenue_by_sections = OrderedDict(sorted(revenue_by_sections.items(), key=lambda t: t[0]))
+
         # Accumulating for out orders
         out_total = sum([order.totalPrice for order
                       in [order for order in paid_out_orders
@@ -3018,49 +3315,71 @@ def revenue_by_days():
                 'Total_Cash': out_cash_total,
                 'Total_Card': out_card_total}
 
-        return render_template('revenue_by_days.html',
-                               referrer=referrer,
-                               alacarte=alacarte,
-                               out=out,
-                               form=form,
-                               title=company_info.get('company_name'))
+        context = dict(referrer=referrer,
+                       alacarte=alacarte,
+                       out=out,
+                       form=form,
+                       title=company_info.get('company_name'),
+                       revenue_by_sections=revenue_by_sections)
 
-    cur_used_sections = [
-                        Table.query.filter_by(
-                        name = json.loads(order.container)\
-                        .get('table_name')).first_or_404().section
-                        for order in paid_alacarte_orders]
+        return render_template('revenue_by_days.html', **context)
 
-    form.start_date.data = datetime.today().date()
-    form.end_date.data = datetime.today().date()
+    from collections import OrderedDict
+
+    revenue_by_sections = {section: {"Cash": sum([order.totalPrice for order in [order for order in cur_paid_alacarte_orders
+                                             if Table.query.filter_by(name=json.loads(order.container)\
+                                            .get('table_name')).first_or_404().section
+                                             == section and json.loads(order.pay_via).get('method') == "Cash"]]),
+
+                                  "Card": sum([order.totalPrice for order in [order for order in cur_paid_alacarte_orders
+                                             if Table.query.filter_by(name=json.loads(order.container)\
+                                            .get('table_name')).first_or_404().section
+                                             == section and json.loads(order.pay_via).get('method') == "Card"]]),
+
+                                  "Total": sum([order.totalPrice for order in [order for order in cur_paid_alacarte_orders
+                                              if Table.query.filter_by(name=json.loads(order.container)\
+                                              .get('table_name')).first_or_404().section == section]])
+
+                                  } for section in cur_used_sections}
+
+    revenue_by_sections = OrderedDict(sorted(revenue_by_sections.items(),
+                                             key=lambda t: t[0]))
+
+    form.start_date.data = datetime.now(tz=pytz.timezone(timezone)).date()
+    form.end_date.data = datetime.now(tz=pytz.timezone(timezone)).date()
 
     # Aggregate today's out orders
-
     out_total = sum([order.totalPrice for order
                      in [order for order in paid_out_orders
-                         if order.timeCreated.date() == datetime.today().date()]])
+                        if order.timeCreated.date() ==
+                         datetime.now(tz=pytz.timezone(timezone)).date()]])
 
     out_cash_total = sum([order.totalPrice for order in
                           [order for order in paid_out_orders
-                           if order.timeCreated.date() == datetime.today().date()
+                           if order.timeCreated.date() ==
+                           datetime.now(tz=pytz.timezone(timezone)).date()
                            and json.loads(order.pay_via).get('method') == "Cash"]])
 
     out_card_total = sum(
         [order.totalPrice for order in
          [order for order in paid_out_orders
-          if order.timeCreated.date() == datetime.today().date()
-          and json.loads(order.pay_via).get('method') == "Card"]])
+          if order.timeCreated.date() == datetime.now(
+             tz=pytz.timezone(timezone)).date()
+              and json.loads(order.pay_via).get('method') == "Card"]])
 
     out = {'Total': out_total,
            'Total_Cash': out_cash_total,
            'Total_Card': out_card_total}
 
-    return render_template('revenue_by_days.html',
-                           referrer=referrer,
-                           form=form,
-                           alacarte=alacarte,
-                           out=out,
-                           title=company_info.get('company_name'))
+    # Wrap all info in a dict for templating mapping.
+    context = dict(referrer=referrer,
+                   form=form,
+                   out=out,
+                   title=company_info.get('company_name'),
+                   revenue_by_sections=revenue_by_sections,
+                   alacarte=alacarte)
+
+    return render_template('revenue_by_days.html', **context)
 
 
 @app.route('/revenue/by/week', methods=["POST", "GET"])
@@ -3076,7 +3395,6 @@ def revenue_by_week():
     today = datetime.now().date()
 
     start = today - timedelta(days=today.weekday())
-
 
     weekdays2revenue = {
 
@@ -3898,6 +4216,7 @@ def switch_printer():
 
     # Handle Data From Ajax
     if request.method == "POST":
+
         data = request.json
 
         terminal = data.get('terminalName')

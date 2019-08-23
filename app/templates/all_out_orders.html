@@ -7,6 +7,20 @@
 <link rel="stylesheet" type="text/css" href="https://cdnjs.cloudflare.com/ajax/libs/twitter-bootstrap/4.1.3/css/bootstrap.css">
 <link rel="stylesheet" type="text/css" href="https://cdn.datatables.net/1.10.19/css/dataTables.bootstrap4.min.css">
 
+<style>
+
+
+  #back {
+
+    margin-left: 800px;
+    margin-bottom: 20px;
+    color: rgb(247, 249, 252);
+  }
+
+
+
+
+</style>
 {% endblock %}
 
 
@@ -15,8 +29,6 @@
 
 
 <h1 class="h3 mb-2 text-gray-800">{{ title }}</h1>
-
-<br>
 
 {% endblock %}
 
@@ -46,7 +58,7 @@
         <tr>
           <th scope="col">Bestell-Nr.#</th>
           <th scope="col">生成时间</th>
-          <th scope="col">金额 EURO</th>
+          <th scope="col">总金额 €</th>
           <th scope="col">操作</th>
           <!-- <th scope="col">状态</th> -->
         </tr>
@@ -57,9 +69,9 @@
           <th scope="row">{{ order.id }}</th>
           <td>{{ order.timeCreated }}</td>
           <td>{{ order.totalPrice }}</td>
-          <td>
+          <td style="text-align:center">
             <span>
-              <button type="button" class="btn btn-secondary">
+              <button type="button" class="btn btn-info">
                 <a href={{ url_for('takeaway_order_view', order_id=order.id) }} style="color: rgb(247, 249, 252)">
                   查看
                 </a>
@@ -74,6 +86,15 @@
     </div>
 
 </div>
+
+
+<br>
+
+<button type="button" class="btn btn-secondary" id="back">
+  <a href="{{referrer}}" style="color: rgb(247, 249, 252)">
+    返回
+  </a>
+</button>
 
 
 {% endblock %}

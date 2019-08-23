@@ -1,0 +1,125 @@
+{% extends "base.html" %}
+
+
+{% block css %}
+
+
+<style>
+
+  #back {
+    margin-left: 815px;
+    margin-bottom:20px;
+  }
+
+  .form-control {
+    width: 50%;
+  }
+
+</style>
+
+
+{% endblock %}
+
+{% block title %}
+
+
+<h1 class="h3 mb-2 text-gray-800">{{ title }}</h1>
+<br>
+
+{% endblock %}
+
+{% block content %}
+
+<form action='' method="POST" enctype="multipart/form-data">
+
+
+    {{ form.hidden_tag() }}
+
+    <div class='form-group'>
+
+        <p>
+            {{ form.name.label }}
+            {{ form.name(placeholder="请输入菜品名称", class="form-control", style="width:50%")}}
+        </p>
+
+
+        <p>
+            {{ form.cn_name.label }}
+            {{ form.cn_name(placeholder="请输入菜品中文名称", class="form-control", style="width:50%")}}
+        </p>
+
+        <p>
+
+          {{ form.class_name.label }}<br>
+          {{ form.class_name(class="form-control", style="width:50%") }}
+
+        </p>
+
+        <p>
+
+            {{ form.category.label }}<br>
+            {{ form.category(class="form-control", style="width:50%")}}
+
+        </p>
+
+        <p>
+
+          {{ form.eat_manner.label }}<br>
+          {{ form.eat_manner(class="form-control", style="width:50%") }}
+
+        </p>
+
+        <p>
+
+            {{ form.price.label }}<br>
+            {{ form.price(placeholder="请输入菜品单价", class="form-control", style="width:50%")}}
+
+        </p>
+
+
+        <p>
+
+            {{ form.description.label }}<br>
+            {{ form.description(class='form-control', style="width:50%")}}
+
+        </p>
+
+        <p>
+
+            <label for="file">设置菜品图片</label>
+            <input type='file' class='form-control-file' name='file'>
+
+        </p>
+
+        <p>
+
+            {{ form.submit(class='btn btn-info')}}
+
+            <button type="button" class="btn btn-secondary">
+              <a href='{{ referrer }}' style="color: rgb(247, 249, 252)">
+                取消
+              </a>
+            </button>
+
+        </p>
+
+
+
+    </div>
+
+
+</form>
+
+<br>
+<button type="button" class="btn btn-secondary" id="back">
+  <a href={{ url_for('all_dishes') }} style="color: rgb(247, 249, 252)">
+    返回
+  </a>
+</button>
+
+
+
+
+
+
+{% endblock %}

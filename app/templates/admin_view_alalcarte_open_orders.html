@@ -32,13 +32,6 @@
 {% block title %}
 
 <h1 class="h3 mb-2 text-gray-800">餐桌情况(未结账)</h1>
-<hr>
-<button type="button" class="btn btn-secondary">
-  <a href={{ url_for('index') }} style="color: rgb(247, 249, 252)">
-    返回
-  </a>
-</button>
-
 
 {% endblock %}
 
@@ -61,7 +54,7 @@
             <th scope="col">订单号#</th>
             <th scope="col">桌子号</th>
             <th scope="col">下单时间</th>
-            <th scope="col">菜品价格 €</th>
+            <th scope="col">总金额 €</th>
             <th scope="col">操作</th>
           </tr>
         </thead>
@@ -74,7 +67,7 @@
             <td>{{ containers.get(order.id).get('table_name') }}</td>
             <td>{{ order.timeCreated }}</td>
             <td>{{ order.totalPrice }}</td>
-            <td>
+            <td style="text-align:center">
               <span>
                 <button type="button" class="btn btn-info">
                   <a href={{ url_for('admin_alacarte_order_edit', order_id=order.id) }} style="color: rgb(247, 249, 252)">
@@ -105,6 +98,14 @@
   </div>
 
 </div>
+
+<br>
+<button type="button" class="btn btn-secondary" style="margin-left:839px">
+  <a href={{ url_for('index') }} style="color: rgb(247, 249, 252)">
+    返回
+  </a>
+</button>
+
 
 
 

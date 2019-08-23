@@ -1,0 +1,85 @@
+{% extends "base.html" %}
+
+
+{% block css %}
+
+
+<style>
+
+  #back {
+    margin-left: 815px;
+    margin-bottom:20px;
+  }
+
+  .form-control {
+    width: 50%;
+  }
+
+</style>
+
+
+{% endblock %}
+
+
+
+{% block title %}
+
+
+<h1 class="h3 mb-2 text-gray-800">{{title}}</h1>
+<br>
+
+{% endblock %}
+
+
+{% block content %}
+
+
+<form method="POST" enctype="multipart/form-data">
+
+    {{ form.hidden_tag() }}
+
+    <div class='form-group'>
+
+        <p>
+            {{ form.name_class.label }} <br>
+            {{ form.name_class(class="form-control", style="width:50%") }}
+        </p>
+
+
+        <p>
+            {{ form.cur_category.label }} <br>
+            {{ form.cur_category(class="form-control", style="width:50%") }}
+        </p>
+
+         <p>
+
+            {{ form.unit_en.label }}<br>
+            {{ form.unit_en(class="form-control", style="width:50%")}}
+
+        </p>
+
+        <p>
+
+            {{ form.submit(class='btn btn-info')}}
+            <button type="button" class="btn btn-secondary">
+              <a href="{{ referrer }}" style="color: rgb(247, 249, 252)">
+                取消
+              </a>
+            </button>
+
+        </p>
+
+    </div>
+
+</form>
+<br>
+<button type="button" class="btn btn-secondary" id="back">
+  <a href="{{ referrer }}" style="color: rgb(247, 249, 252)">
+    返回
+  </a>
+</button>
+
+
+
+
+{% endblock %}

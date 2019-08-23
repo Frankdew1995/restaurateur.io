@@ -3,7 +3,7 @@
 
 <head>
 
-  <meta charset="utf-8">
+  <meta charset="UTF-8">
   <meta http-equiv="X-UA-Compatible" content="IE=edge">
   <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
   <meta name="description" content="">
@@ -113,8 +113,8 @@
             <!--<h6 class="collapse-header">Custom Components:</h6>-->
             <a class="collapse-item" href={{url_for('buffet_price_settings')}}>自助餐价格设置</a>
             <a class="collapse-item" href="{{ url_for('all_dishes') }}">菜品管理</a>
-            <a class="collapse-item" href="{{ url_for('categories_view') }}">菜品分类管理</a>
-            <a class="collapse-item" href="#">节假日管理</a>
+            <a class="collapse-item" href="{{ url_for('categories_view') }}">菜品种类管理</a>
+            <a class="collapse-item" href="{{ url_for('holidays_manage') }}">节假日管理</a>
 
           </div>
         </div>
@@ -255,10 +255,6 @@
               </div>
             </li>
 
-
-
-
-
             <div class="topbar-divider d-none d-sm-block"></div>
 
             <!-- Nav Item - User Information -->
@@ -296,7 +292,7 @@
       <footer class="sticky-footer bg-white">
         <div class="container my-auto">
           <div class="copyright text-center my-auto">
-            <span>Copyright {{ title }}</span>
+            <span>Copyright {{ company_name }}</span>
           </div>
         </div>
       </footer>

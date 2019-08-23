@@ -23,26 +23,14 @@
 
         <p>
             {{ form.name_class.label }} <br>
-            {{ form.name_class() }}
+            {{ form.name_class(class="form-control", style="width:50%") }}
         </p>
 
-
-        <p>
-            {{ form.new_class.label }} <br>
-            {{ form.new_class() }}
-        </p>
-
-
-
-        <p>
-            {{ form.name_category.label }} <br>
-            {{ form.name_category() }}
-        </p>
 
 
         <p>
             {{ form.new_category.label }} <br>
-            {{ form.new_category() }}
+            {{ form.new_category(placeholder="输入新分类名称", class="form-control", style="width:50%") }}
         </p>
 
 
@@ -50,7 +38,7 @@
          <p>
 
             {{ form.unit_en.label }}<br>
-            {{ form.unit_en()}}
+            {{ form.unit_en(placeholder="请输入计量单位", class="form-control", style="width:50%")}}
 
         </p>
 
@@ -58,11 +46,9 @@
 
         <p>
 
-            {{ form.submit(class='btn btn-danger')}}
-
-
+            {{ form.submit(class='btn btn-info')}}
             <button type="button" class="btn btn-secondary">
-              <a href={{ url_for('categories_view') }} style="color: rgb(247, 249, 252)">
+              <a href="{{ referrer }}" style="color: rgb(247, 249, 252)">
                 取消
               </a>
             </button>

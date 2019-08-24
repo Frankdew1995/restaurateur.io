@@ -43,6 +43,9 @@ company_info = {
             "tax_id": info.get('TAX_ID')
         }
 
+date_format = "%Y.%-m.%-d"
+
+datetime_format = "%Y.%-m.%-d %H:%M:%S"
 
 tax_rate_in = float(company_info.get('tax_rate_in', 0.0))
 
@@ -392,7 +395,7 @@ def index():
                          "Img": food.image,
                          "ID": food.id} for food in foods}
 
-    context = dict(title="Xstar Group",
+    context = dict(title="总览",
                    cur_visits=cur_visits,
                    daily_visit_up_rate=daily_visit_up_rate,
                    cur_guests=cur_guests,
@@ -401,7 +404,8 @@ def index():
                    daily_revenue_up_rate=daily_revenue_up_rate,
                    cur_mon_revenue=cur_mon_revenue,
                    monthly_revenue_up_rate=monthly_revenue_up_rate,
-                   order_counts=order_counts)
+                   order_counts=order_counts,
+                   company_name=company_info.get('company_name'))
 
     return render_template("analytics.html", current_user=current_user, **context)
 
@@ -701,7 +705,7 @@ def checkout_takeaway_admin(order_id):
                         page_name=u'外卖界面 > 订单结账',
                         descr=f'''结账订单号:{order.id}\n
                         支付方式:{logging.get('Pay')}\n
-                        账单金额: {logging.get('Total')}\n
+                        账单金额: {order.totalPrice}\n
                         订单类型:{logging.get('Type')}\n''',
                         log_time=str(datetime.now(tz=pytz.timezone('Europe/Berlin'))),
                         status=u'成功')
@@ -876,10 +880,13 @@ def admin_view_alacarte_open_orders():
 
     containers = {order.id: json.loads(order.container) for order in cur_orders}
 
-    return render_template("admin_view_alalcarte_open_orders.html",
-                           open_orders=cur_orders,
-                           items=items,
-                           containers=containers)
+    context = dict(open_orders=cur_orders,
+                   items=items,
+                   containers=containers,
+                   referrer=request.headers.get('Referer'),
+                   title=u"餐桌情况(未结账)")
+
+    return render_template("admin_view_alalcarte_open_orders.html", **context)
 
 
 @app.route("/admin/alacarte/order/<int:order_id>/edit")
@@ -894,11 +901,14 @@ def admin_alacarte_order_edit(order_id):
 
     referrer = request.headers.get('Referer')
 
-    return render_template('admin_alacarte_order_edit.html',
-                           order=order,
-                           ordered_items=ordered_items,
-                           container=container,
-                           referrer=referrer)
+    context = dict(order=order,
+                   ordered_items=ordered_items,
+                   container=container,
+                   referrer=referrer,
+                   str_referrer=str(referrer),
+                   title=u"订单修改/查看")
+
+    return render_template('admin_alacarte_order_edit.html', **context)
 
 
 @app.route('/admin/alacarte/orders/update', methods=["GET", "POST"])
@@ -1019,10 +1029,14 @@ def admin_view_paid_alacarte_orders():
 
     containers = {order.id: json.loads(order.container) for order in cur_orders}
 
-    return render_template("admin_view_paid_alacarte_orders.html",
-                           open_orders=cur_orders,
-                           items=items,
-                           containers=containers)
+    context = dict(open_orders=cur_orders,
+                   items=items,
+                   containers=containers,
+                   title=u"已完成订单",
+                   referrer=request.headers.get('Referer'),
+                   company_name=company_info.get('company_name'))
+
+    return render_template("admin_view_paid_alacarte_orders.html", **context)
 
 
 # View paid takeaway order
@@ -1460,7 +1474,8 @@ def edit_dish(dish_id):
     context = dict(referrer=request.headers.get('Referer'),
                    form=form,
                    image=image_file,
-                   title=u"修改菜品")
+                   title=u"修改菜品",
+                   company_name=company_info.get('company_name'))
 
     return render_template("edit_dish.html", **context)
 
@@ -1633,13 +1648,32 @@ def qrcode_manage():
 
     tables = Table.query.all()
 
-    table2qr = {table.name: json.loads(table.container).get('qrcodes') for table in tables}
+    context = dict(referrer=request.headers.get('Referer'),
+                   title=u"二维码管理",
+                   tables=tables,
+                   company_name=company_info.get('company_name'),
+                   format=datetime_format)
 
-    print(table2qr)
+    return render_template('qrcode.html', **context)
 
-    return render_template('qrcode.html',
-                           tables=tables,
-                           table2qr=table2qr)
+
+@app.route('/view/qrcodes/<int:table_id>')
+def view_qrcodes(table_id):
+
+    table = Table.query.get_or_404(int(table_id))
+
+    tables = Table.query.all()
+
+    table2qr = {table.name: json.loads(table.container).get('qrcodes')
+                for table in tables}
+
+    context = dict(referrer=request.headers.get('Referer'),
+                   title=u"查看所有二维码",
+                   table2qr=table2qr,
+                   company_name=company_info.get('company_name'),
+                   table_name=table.name)
+
+    return render_template('view_qrcodes.html', **context)
 
 
 @app.route('/view/qrcode/<string:qrcode_name>')
@@ -1651,10 +1685,14 @@ def view_qrcode(qrcode_name):
 
     seat_number = qrcode_name.split('_')[1]
 
-    return render_template('view_qrcode.html',
-                           qrcode=qrcode,
-                           table_name=table_name,
-                           seat_number=seat_number)
+    context = dict(referrer=request.headers.get('Referer'),
+                   title=u"查看二维码",
+                   qrcode=qrcode,
+                   company_name=company_info.get('company_name'),
+                   table_name=table_name,
+                   seat_number=seat_number)
+
+    return render_template('view_qrcode.html', **context)
 
 
 @app.route('/qrcode/export/<string:table_name>', methods=["POST", "GET"])
@@ -1663,7 +1701,7 @@ def export_qrcode(table_name):
     file = None
     if table_name.lower().strip() == "all":
 
-        file = qrcode2excel(tables=[table.name for table in Table.query.all()])
+        file = qrcode2excel(tables=sorted([table.name for table in Table.query.all()]))
 
     else:
 
@@ -1709,25 +1747,26 @@ def set_store():
 
         return redirect(url_for("set_store"))
 
-    elif request.method == "GET":
+    data = json_reader(file=str(Path.cwd() / 'app' / 'settings' / 'config.json'))
+    form.store_name.data = data.get("STORE_NAME")
+    form.street_no.data = data.get("STREET NO.")
+    form.street.data = data.get("STREET")
+    form.zip.data = data.get("ZIP")
+    form.country.data = data.get('COUNTRY')
+    form.city.data = data.get('CITY')
+    form.tax_id.data = data.get('TAX_ID')
+    form.tax_rate_InHouse.data = data.get("TAX_RATE").get("Inhouse Order")
+    form.tax_rate_takeaway.data = data.get("TAX_RATE").get("takeaway")
 
-        data = json_reader(file=str(Path.cwd() / 'app' / 'settings' / 'config.json'))
-        form.store_name.data = data.get("STORE_NAME")
-        form.street_no.data = data.get("STREET NO.")
-        form.street.data = data.get("STREET")
-        form.zip.data = data.get("ZIP")
-        form.country.data = data.get('COUNTRY')
-        form.city.data = data.get('CITY')
-        form.tax_id.data = data.get('TAX_ID')
-        form.tax_rate_InHouse.data = data.get("TAX_RATE").get("Inhouse Order")
-        form.tax_rate_takeaway.data = data.get("TAX_RATE").get("takeaway")
+    logo = data.get('LOGO')
 
-        logo = data.get('LOGO')
+    context = dict(referrer=request.headers.get('Referer'),
+                   title=u'餐馆设置',
+                   form=form,
+                   company_name=company_info.get('company_name'),
+                   logo=logo)
 
-        return render_template("settings.html",
-                               form=form,
-                               logo=logo,
-                               title=u'餐馆设置')
+    return render_template("settings.html", **context)
 
 
 @app.route('/admin/users/manage')
@@ -1744,15 +1783,19 @@ def users_manage():
     users = User.query.filter(User.id != current_user.id,
                               User.permissions <= current_user.permissions).all()
 
-    user2container = {user.id: json.loads(user.container) for user in users
-                      if user.container is not None}
+    user2container = {user.id: ",".join(json.loads(user.container).get('section'))
+                      for user in users if json.loads(user.container)}
 
     user_in_use = {user.id: json.loads(user.container).get('inUse') for user in users}
 
-    return render_template('users_manage.html',
-                           users=users,
-                           user2container=user2container,
-                           user_in_use=user_in_use)
+    context = dict(users=users,
+                   user2container=user2container,
+                   user_in_use=user_in_use,
+                   referrer=request.headers.get('Referer'),
+                   title=u'跑堂人员列表',
+                   company_name=company_info.get('company_name'))
+
+    return render_template('users_manage.html', **context)
 
 
 @app.route('/admin/users/add', methods=["GET", "POST"])
@@ -1781,30 +1824,41 @@ def add_user():
         section = form.section.data
         password = form.password.data
 
-        # By default permission for waiter/takeaway account is 1 and 0
-        permissions = form.account_type.data
+        # Checking user accounts duplicates
+        if not User.query.filter_by(username=username).first_or_404():
 
-        user = User(username=username,
-                    alias=alias,
-                    container=json.dumps({"section": section, 'inUse': True}),
-                    permissions=permissions,
-                    email=f"{str(uuid4())[:11]}@cnfrien.com")
-        # Email attr will be deprecated
+            # By default permission for waiter/takeaway account is 1 and 0
+            permissions = form.account_type.data
 
-        user.set_password(password=password)
+            user = User(username=username,
+                        alias=alias,
+                        container=json.dumps({"section": section, 'inUse': True}),
+                        permissions=permissions,
+                        email=f"{str(uuid4())[:11]}@cnfrien.com")
+            # Email attr will be deprecated
 
-        db.session.add(user)
+            user.set_password(password=password)
 
-        db.session.commit()
+            db.session.add(user)
 
-        flash(message=f"已经创建跑堂{user.username}", category="success")
+            db.session.commit()
 
-        return redirect(url_for('users_manage'))
+            flash(message=f"已经创建跑堂{user.username}", category="success")
 
-    return render_template('add_user.html',
-                           referrer=referrer,
-                           form=form,
-                           title=u"添加跑堂人员")
+            return redirect(url_for('users_manage'))
+
+        else:
+
+            flash(message=f"账户名{username}已经存在, 请重新再试!", category="error")
+
+            return redirect(url_for('add_user'))
+
+    context = dict(referrer=referrer,
+                   company_name=company_info.get('company_name'),
+                   form=form,
+                   title=u"添加跑堂人员")
+
+    return render_template('add_user.html', **context)
 
 
 @app.route("/admin/user/<int:user_id>/edit", methods=["GET", "POST"])
@@ -1828,34 +1882,46 @@ def edit_user(user_id):
     # Instantiate some options for select fields
     form.section.choices.extend(holder)
 
-    if request.method=="POST":
+    if request.method == "POST":
 
-        user.username = form.username.data
-        user.alias = form.alias.data
+        if not User.query.filter_by(username=form.username.data).first_or_404():
 
-        container = json.loads(user.container)
-        container['section'] = form.section.data
+            user.username = form.username.data
+            user.alias = form.alias.data
 
-        user.container = json.dumps(container)
+            container = json.loads(user.container)
+            container['section'] = form.section.data
 
-        db.session.commit()
+            user.container = json.dumps(container)
 
-        flash(message=f"已经更新跑堂{user.username}的资料", category="success")
+            db.session.commit()
 
-        return redirect(url_for('users_manage'))
+            flash(message=f"已经更新跑堂{user.username}的资料", category="success")
+
+            return redirect(url_for('users_manage'))
+
+        else:
+
+            flash(message=f"账户名{form.username.data}已经存在, 请重新再试!", category="error")
+
+            return redirect(url_for('edit_user', user_id=user.id))
 
     form.username.data = user.username
     form.alias.data = user.alias
+    form.section.data = json.loads(user.container).get('section')
 
     section = None
     if json.loads(user.container).get('section'):
         section = ", ".join(json.loads(user.container).get('section'))
 
-    return render_template('edit_user.html',
-                           form=form,
-                           user=user,
-                           referrer=referrer,
-                           section=section)
+    context = dict(title=u"修改跑堂资料",
+                   form=form,
+                   user=user,
+                   referrer=referrer,
+                   section=section,
+                   company_name=company_info.get('company_name'))
+
+    return render_template('edit_user.html', **context)
 
 
 @app.route('/admin/user/<int:user_id>/delete', methods=['GET', 'POST'])
@@ -1923,7 +1989,8 @@ def view_tables():
     context = dict(referrer=request.headers.get('Referer'),
                    title=u"桌子管理",
                    tables=tables,
-                   company_name=company_info.get('company_name'))
+                   company_name=company_info.get('company_name'),
+                   format=datetime_format)
 
     return render_template("table_views.html", **context)
 
@@ -1941,7 +2008,7 @@ def admin_active_tables():
 
     # Filtering only orders which happened the same day.(TZ: Berlin) + order is not cancelled
     open_orders = [order for order in orders if order.timeCreated.date()
-                   == datetime.now(tz=pytz.timezone("Europe/Berlin")).date()
+                   == datetime.now(tz=pytz.timezone(timezone)).date()
                 and not json.loads(order.container).get('isCancelled')]
 
     # Currently Open Tables
@@ -1954,15 +2021,20 @@ def admin_active_tables():
     if form.validate_on_submit():
 
         selected_table = form.select_table.data
-        open_tables = [table for table in open_tables if table==selected_table]
+        open_tables = [table for table in open_tables if table == selected_table]
 
         return render_template('admin_active_tables.html',
                                form=form,
                                open_tables=open_tables)
 
-    return render_template('admin_active_tables.html',
-                           form=form,
-                           open_tables=open_tables)
+    context = dict(referrer=request.headers.get('Referer'),
+                   title=u"已点餐桌子",
+                   company_name=company_info.get('company_name'),
+                   format=datetime_format,
+                   form=form,
+                   open_tables=open_tables)
+
+    return render_template('admin_active_tables.html', **context)
 
 
 @app.route('/admin/transfer/table/<string:table_name>', methods=["POST", "GET"])
@@ -1996,8 +2068,8 @@ def admin_transfer_table(table_name):
 
     if form.validate_on_submit():
 
-        cur_table_orders = [order for order in open_orders \
-                            if json.loads(order.container).get('table_name')==table_name]
+        cur_table_orders = [order for order in open_orders
+                            if json.loads(order.container).get('table_name') == table_name]
 
         target_table = form.target_table.data
 
@@ -2025,7 +2097,7 @@ def admin_transfer_table(table_name):
                             新桌子:{logging.get('table_cur')}\n'
                             ''',
                             status=u'成功',
-                            log_time=str(datetime.now(tz=pytz.timezone('Europe/Berlin'))))
+                            log_time=str(datetime.now(tz=pytz.timezone(timezone))))
 
             flash(f"桌子{table_name}已经转至{target_table}!", category='success')
 
@@ -2033,7 +2105,13 @@ def admin_transfer_table(table_name):
 
     form.cur_table.data = f"{table_name} - {Table.query.filter_by(name=table_name).first_or_404().number}人"
 
-    return render_template("admin_transfer_table.html", form=form)
+    context = dict(referrer=request.headers.get('Referer'),
+                   title=u"转台",
+                   company_name=company_info.get('company_name'),
+                   format=datetime_format,
+                   form=form)
+
+    return render_template("admin_transfer_table.html", **context)
 
 
 # Waiter views a table's aggregated order summary
@@ -2047,7 +2125,6 @@ def admin_view_table(table_name):
     orders = db.session.query(Order).filter(
         Order.type == "In",
         Order.isPaid == False).all()
-
 
     open_orders = [order for order in orders if
                    json.loads(order.container).get('table_name') == table_name and
@@ -2190,37 +2267,52 @@ def add_table():
 
     if form.validate_on_submit():
 
-        suffix_url = "alacarte/interface"
+        table_name = form.name.data.upper()
 
-        qrcodes = [generate_qrcode(table=form.name.data.upper(),
-                                   base_url=base_url,
-                                   suffix_url=suffix_url,
-                                   seat=str(i+1)) for i in range(form.persons.data)]
+        # Check Duplicates
+        if not Table.query.filter_by(name=table_name).first_or_404():
 
-        table = Table(
-            name=form.name.data.upper(),
-            number=form.persons.data,
-            section=form.section.data,
-            timeCreated=datetime.now(tz=pytz.timezone("Europe/Berlin")),
-            container=json.dumps({'isCalled': False,
-                                  'payCalled': False,
-                                  'qrcodes': qrcodes}),
+            suffix_url = "alacarte/interface"
 
-            seats="\n".join([f"{form.name.data.upper()}-{i+1}" for
-                             i in range(form.persons.data)])
-        )
+            qrcodes = [generate_qrcode(table=form.name.data.upper(),
+                                       base_url=base_url,
+                                       suffix_url=suffix_url,
+                                       seat=str(i+1)) for i in range(form.persons.data)]
 
-        db.session.add(table)
+            table = Table(
+                name=form.name.data.upper(),
+                number=form.persons.data,
+                section=form.section.data,
+                timeCreated=datetime.now(tz=pytz.timezone("Europe/Berlin")),
+                container=json.dumps({'isCalled': False,
+                                      'payCalled': False,
+                                      'qrcodes': qrcodes}),
 
-        db.session.commit()
+                seats="\n".join([f"{form.name.data.upper()}-{i+1}" for
+                                 i in range(form.persons.data)])
+            )
 
-        flash(f"已经成功创建桌子：{form.name.data}")
+            db.session.add(table)
 
-        return redirect(url_for('view_tables'))
+            db.session.commit()
 
-    return render_template("add_table.html",
-                           form=form,
-                           title="添加桌子")
+            flash(f"已经成功创建桌子：{form.name.data}")
+
+            return redirect(url_for('view_tables'))
+
+        else:
+
+            flash(f"{table_name}已经存在，请重新输入桌子名称")
+
+            return redirect(url_for('add_table'))
+
+    context = dict(referrer=request.headers.get('Referer'),
+                   title=u"添加桌子",
+                   company_name=company_info.get('company_name'),
+                   format=datetime_format,
+                   form=form)
+
+    return render_template("add_table.html", **context)
 
 
 # Table view function
@@ -2243,41 +2335,57 @@ def edit_table(table_id):
 
         if table:
 
-            table.name = form.name.data.upper()
-            table.number = form.persons.data
-            table.section = form.section.data.upper()
+            table_name = form.name.data.upper()
 
-            seats = "\n".join([f"{table.name}-{i+1}" for i in range(form.persons.data)])
+            # Check Duplicates
+            if not Table.query.filter_by(name=table_name).first_or_404():
 
-            table.seats = seats
+                table.name = form.name.data.upper()
+                table.number = form.persons.data
+                table.section = form.section.data.upper()
 
-            suffix_url = "alacarte/interface"
+                seats = "\n".join([f"{table.name}-{i+1}" for i in range(form.persons.data)])
 
-            qrcodes = [generate_qrcode(table=form.name.data.upper(),
-                                       base_url=base_url,
-                                       suffix_url=suffix_url,
-                                       seat=str(i+1)) for i in range(form.persons.data)]
+                table.seats = seats
 
-            container = {'isCalled': False,
-                         'payCalled': False,
-                         'qrcodes': qrcodes}
+                suffix_url = "alacarte/interface"
 
-            table.container = json.dumps(container)
+                qrcodes = [generate_qrcode(table=form.name.data.upper(),
+                                           base_url=base_url,
+                                           suffix_url=suffix_url,
+                                           seat=str(i+1)) for i in range(form.persons.data)]
 
-            db.session.commit()
+                container = {'isCalled': False,
+                             'payCalled': False,
+                             'qrcodes': qrcodes}
 
-            flash(f"桌子{table.name}更新成功")
+                table.container = json.dumps(container)
 
-            return redirect(url_for("view_tables"))
+                db.session.commit()
+
+                flash(f"桌子{table.name}更新成功")
+
+                return redirect(url_for("view_tables"))
+
+            else:
+
+                flash(f"{table_name}已经存在，请重新修改桌子名称")
+
+                return redirect(url_for('edit_table', table_id=table.id))
+
 
     form.name.data = table.name
     form.persons.data = table.number
     form.section.data = table.section
 
-    return render_template("edit_table.html",
-                           title="修改桌子",
-                           form=form,
-                           seats=table.seats)
+    context = dict(referrer=request.headers.get('Referer'),
+                   title=u"修改桌子",
+                   company_name=company_info.get('company_name'),
+                   format=datetime_format,
+                   form=form,
+                   seats=table.seats)
+
+    return render_template("edit_table.html", **context)
 
 
 # Remove table view function
@@ -3196,18 +3304,42 @@ def tables_pay_called():
     return jsonify(status)
 
 
-@app.route('/view/log')
+@app.route('/view/logs')
 @login_required
-def view_log():
+def view_logs():
 
-    import csv
-    with open(str(Path(app.root_path) / 'logging.csv'), "r", encoding="utf8") as file:
-        reader = csv.reader(file)
-        lines = list(reader)
+    logs = Log.query.all()
 
-    file.close()
+    context = dict(referrer=request.headers.get('Referer'),
+                   title=u"后台操作记录",
+                   company_name=company_info.get('company_name'),
+                   logs=logs)
+
     # Exclude the header line from the csv file
-    return render_template('view_log.html', lines=lines[1:])
+    return render_template('view_logs.html', **context)
+
+
+@app.route('/view/log/<int:log_id>')
+@login_required
+def view_log(log_id):
+
+    log = Log.query.get_or_404(int(log_id))
+
+    context = dict(referrer=request.headers.get('Referer'),
+                   title=u"查看操作记录",
+                   company_name=company_info.get('company_name'),
+                   log=log)
+
+    return render_template('view_log.html', **context)
+
+
+@app.route("/export/log")
+@login_required
+def export_log():
+
+    file = str(Path(app.root_path) / 'cache' / 'logging.csv')
+
+    return send_file(file, as_attachment=True, mimetype="text/csv")
 
 
 @app.route('/revenue/by/days', methods=["POST", "GET"])
@@ -3375,9 +3507,10 @@ def revenue_by_days():
     context = dict(referrer=referrer,
                    form=form,
                    out=out,
-                   title=company_info.get('company_name'),
+                   company_name=company_info.get('company_name'),
                    revenue_by_sections=revenue_by_sections,
-                   alacarte=alacarte)
+                   alacarte=alacarte,
+                   title=u"日结")
 
     return render_template('revenue_by_days.html', **context)
 
@@ -3420,10 +3553,13 @@ def revenue_by_week():
                u"星期六": "Saturday",
                u"星期天": "Sunday"}
 
-    return render_template('revenue_by_week.html',
-                           referrer=referrer,
-                           weekdays2revenue=weekdays2revenue,
-                           week2en=week2en)
+    context = dict(referrer=referrer,
+                   company_name=company_info.get('company_name'),
+                   weekdays2revenue=weekdays2revenue,
+                   week2en=week2en,
+                   title=u"星期结")
+
+    return render_template('revenue_by_week.html', **context)
 
 
 @app.route('/revenue/by/month', methods=["POST", "GET"])
@@ -3462,9 +3598,12 @@ def revenue_by_month():
                                  and json.loads(order.pay_via).get('method') == "Card"]),
                   } for n in range(cur_mon_range)}
 
-    return render_template('revenue_by_month.html',
-                           referrer=referrer,
-                           ordered_days2revenue=ordered_days2revenue)
+    context = dict(referrer=referrer,
+                   company_name=company_info.get('company_name'),
+                   ordered_days2revenue=ordered_days2revenue,
+                   title=u"月结")
+
+    return render_template('revenue_by_month.html', **context)
 
 
 @app.route('/revenue/by/year', methods=["POST", "GET"])
@@ -3491,9 +3630,12 @@ def revenue_by_year():
                                 and json.loads(order.pay_via).get('method') == "Card"]),
              } for month in range(1, 13)}
 
-    return render_template('revenue_by_year.html',
-                           referrer=referrer,
-                           months2revenue=months2revenue)
+    context = dict(referrer=referrer,
+                   company_name=company_info.get('company_name'),
+                   months2revenue=months2revenue,
+                   title=u"年结")
+
+    return render_template('revenue_by_year.html', **context)
 
 
 # Boss Interface
@@ -3704,6 +3846,7 @@ def boss_transfer_table(table_name):
                             订单号:{order.id}\n
                             原桌子：{logging.get('table_before')}\n
                             新桌子:{logging.get('table_cur')}\n'
+                            操作人:{current_user.username}\n
                             ''',
                             status=u'成功',
                             log_time=str(datetime.now(tz=pytz.timezone('Europe/Berlin'))))
@@ -4164,26 +4307,44 @@ def boss_takeaway_order_view(order_id):
                            referrer=referrer)
 
 
+@app.route("/view/meallists")
+@login_required
+def view_meallists():
+
+    pass
+
+
+@app.route("/view/printing/receipts")
+@login_required
+def view_printing_receipts():
+
+    pass
+
+
 # Printer section for managing, delete and add etc.
 @app.route("/printers/manage")
 @login_required
 def printers_manage():
 
-    with open(str(Path(app.root_path) / "settings" / "printer.json"), encoding="utf8") as file:
+    with open(str(Path(app.root_path) / "settings" / "printer.json"),
+              encoding="utf8") as file:
 
         data = file.read()
 
     data = json.loads(data)
 
-    return render_template("printer_manage.html",
-                           data=data)
+    context = dict(referrer=request.headers.get('Referer'),
+                   title=u"打印设置",
+                   company_name=company_info.get('company_name'),
+                   format=datetime_format,
+                   data=data)
+
+    return render_template("printer_manage.html", **context)
 
 
 @app.route("/printers/<string:terminal>/edit", methods=["GET", "POST"])
 @login_required
 def edit_printer(terminal):
-
-    referrer = request.headers.get("Referer")
 
     form = EditPrinterForm()
 
@@ -4206,9 +4367,13 @@ def edit_printer(terminal):
     form.printer.data = data.get(terminal).get('printer')
     form.terminal.data = data.get(terminal).get('cn_key')
 
-    return render_template("edit_printer.html",
-                           form=form,
-                           referrer=referrer)
+    context = dict(referrer=request.headers.get('Referer'),
+                   title=u"修改打印设置",
+                   company_name=company_info.get('company_name'),
+                   format=datetime_format,
+                   form=form)
+
+    return render_template("edit_printer.html", **context)
 
 
 @app.route("/printer/switch", methods=["POST"])

@@ -18,5 +18,10 @@
     "Class": "Drinks",
     "Subcategory": "Liqor",
     "Unit": "Bottle"
+  },
+  {
+    "Class": "Please select",
+    "Subcategory": "Grillen",
+    "Unit": "pfanne"
   }
 ]

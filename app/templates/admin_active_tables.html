@@ -22,6 +22,11 @@
     .a {color: rgb(247, 249, 252)
 
     }
+
+    #back {
+      margin-left: 795px;
+      margin-bottom:20px;
+    }
 </style>
 {% endblock %}
 
@@ -29,14 +34,6 @@
 {% block title %}
 
 <h1 class="h3 mb-2 text-gray-800">已点餐桌子</h1>
-<hr>
-<button type="button" class="btn btn-secondary">
-  <a href={{ url_for('index') }} style="color: rgb(247, 249, 252)">
-    返回
-  </a>
-</button>
-
-
 
 {% endblock %}
 
@@ -93,7 +90,7 @@
           <!-- start of table body -->
           <tr>
             <td>{{ table }}</td>
-            <td>
+            <td style="text-align:center">
               <span>
                 <button type="button" class="btn btn-info">
                   <a href={{ url_for('admin_view_table', table_name=table) }} style="color: rgb(247, 249, 252)">
@@ -129,6 +126,13 @@
   </div>
 
 </div>
+<br>
+<button type="button" class="btn btn-secondary" id="back">
+  <a style="color: rgb(247, 249, 252)" href={{ referrer }}>
+    返回
+  </a>
+</button>
+
 
 
 

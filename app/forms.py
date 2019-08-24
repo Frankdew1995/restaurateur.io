@@ -24,7 +24,6 @@ class LoginForm(FlaskForm):
     submit = SubmitField(u'登陆')
 
 
-
 # Registration Form
 class RegistrationForm(FlaskForm):
 

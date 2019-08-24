@@ -9,8 +9,8 @@
       "after": 100
     },
     "label": "\u661f\u671f\u4e00",
-    "lastUpdate": "2019.8.21 22:10:21",
-    "note": "Hallo"
+    "lastUpdate": "2019.8.24 01:58:12",
+    "note": "Hey"
   },
   "B": {
     "adult": {
@@ -21,7 +21,9 @@
       "noon": 15,
       "after": 20
     },
-    "label": "\u661f\u671f\u4e8c"
+    "label": "\u661f\u671f\u4e8c",
+    "lastUpdate": "2019.8.24 01:58:25",
+    "note": "\u661f\u671f\u4e8c"
   },
   "C": {
     "adult": {

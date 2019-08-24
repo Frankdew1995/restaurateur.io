@@ -11,14 +11,20 @@
       width:50%;
     }
 
+
+    #back {
+      margin-left: 815px;
+      margin-bottom:20px;
+    }
+
+
 </style>
 
 {% endblock %}
 
 
 
-<h1 class="h3 mb-2 text-gray-800">餐馆设置</h1>
-<br>
+<h1 class="h3 mb-2 text-gray-800">{{title}}</h1>
 
 {% endblock %}
 
@@ -115,10 +121,10 @@
 
         <p>
 
-            {{ form.submit(class='btn btn-danger')}}
+            {{ form.submit(class='btn btn-info')}}
 
             <button type="button" class="btn btn-secondary">
-              <a href={{ url_for('index') }} style="color: rgb(247, 249, 252)">
+              <a style="color: rgb(247, 249, 252)" href={{ referrer }}>
                 取消
               </a>
             </button>
@@ -129,9 +135,15 @@
 
     </div>
 
-
-
 </form>
+
+<br>
+<button type="button" class="btn btn-secondary" id="back">
+  <a style="color: rgb(247, 249, 252)" href={{ referrer }}>
+    返回
+  </a>
+</button>
+
 
 
 

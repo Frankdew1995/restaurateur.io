@@ -28,8 +28,8 @@
 
 {% block title %}
 
-<h1 class="h3 mb-2 text-gray-800">转台</h1>
-<hr>
+<h1 class="h3 mb-2 text-gray-800">{{title}}</h1>
+
 
 
 {% endblock %}
@@ -51,10 +51,10 @@
 
     <br>
 
-    {{form.submit(class='btn btn-danger', style="margin-left:5px")}}
+    {{form.submit(class='btn btn-info', style="margin-left:5px")}}
 
     <button type="button" class="btn btn-secondary">
-      <a href={{ url_for('admin_active_tables') }} style="color: rgb(247, 249, 252)">
+      <a style="color: rgb(247, 249, 252)" href="{{ referrer }}">
         取消
       </a>
     </button>

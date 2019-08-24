@@ -27,6 +27,12 @@
 
     }
 
+    #back {
+      margin-left: 800px;
+      margin-bottom: 20px;
+    }
+
+
 
 </style>
 {% endblock %}
@@ -119,20 +125,13 @@
   {% endif %}
 
 
-
-  <button type="button" class="btn btn-danger">
-    <a href={{ referrer }} style="color: rgb(247, 249, 252)">
-      返回
-    </a>
-  </button>
-
-
-
-
-
-
-
 </div>
+<br>
+<button type="button" class="btn btn-secondary" id="back">
+  <a href={{ referrer }} style="color: rgb(247, 249, 252)">
+    返回
+  </a>
+</button>
 
 
 

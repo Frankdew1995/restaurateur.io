@@ -26,20 +26,18 @@ Done:
 19. Remove pendulum usages in the code
 26. AlaKarte order printing
 23. Replace pandas usages
-
-
+27. Logout Function admin,waiter and takeaway
+25. takeout order printing
+20. Remove email attr from user model
 
 
 To Dos:
 
-25. takeout order printing
 10. Render Flashing MSGs in all front pages
 12. Takeaway Categories > sub categories > single items
 17. Product detail view page (width 100%)
 19. License Key to redirect to register page
-20. Remove email attr from user model
 26. User Avatar >> Default
-27. Logout Function admin,waiter and takeaway
 28. revenue by waiters and sections in waiter admin
 29. Serialize orders daily.
 

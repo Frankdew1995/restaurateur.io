@@ -1,11 +1,25 @@
 {% extends "base.html" %}
 
+{% block css %}
+
+<style media="screen">
+
+
+  #back {
+    margin-left: 815px;
+    margin-bottom:20px;
+  }
+
+</style>
+
+
+{% endblock %}
+
 
 {% block title %}
 
 
-<h2>查看修改桌子</h2>
-<hr>
+<h1 class="h3 mb-2 text-gray-800">{{ title }}</h1>
 
 {% endblock %}
 
@@ -13,13 +27,25 @@
 {% block content %}
 
 
-<button type="button" class="btn btn-danger">
-  <a href={{ url_for('view_tables') }} style="color: rgb(247, 249, 252)">
-    返回
-  </a>
-</button>
+{% with messages = get_flashed_messages() %}
 
-<hr>
+  {% if messages %}
+
+  <div class="container">
+
+    {% for message in messages %}
+
+    <div class="alert alert-danger" role="alert">
+        {{ message }}
+    </div>
+
+    {% endfor %}
+
+  </div>
+
+  {% endif %}
+
+{% endwith %}
 
 <form action='' method="POST" enctype="multipart/form-data">
 
@@ -75,9 +101,9 @@
 
         <p>
 
-            {{ form.submit(class='btn btn-danger')}}
+            {{ form.submit(class='btn btn-info')}}
             <button type="button" class="btn btn-secondary">
-              <a href={{ url_for('view_tables') }} style="color: rgb(247, 249, 252)">
+              <a style="color: rgb(247, 249, 252)" href={{ referrer }}>
                 取消
               </a>
             </button>
@@ -88,12 +114,13 @@
     </div>
 
 
-
-
-
-
-
 </form>
+<br>
+<button type="button" class="btn btn-secondary" id="back">
+  <a style="color: rgb(247, 249, 252)" href={{ url_for('view_tables') }}>
+    返回
+  </a>
+</button>
 
 
 

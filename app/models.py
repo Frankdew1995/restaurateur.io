@@ -102,7 +102,7 @@ class Log(db.Model):
     order_id = db.Column(db.Integer, unique=True)
     operation = db.Column(db.String(100))
     page = db.Column(db.String(100))
-    desc = db.Column(db.String(500))
+    desc = db.Column(db.String(2000))
     status = db.Column(db.String(500))
     time = db.Column(db.String(500))
 

@@ -2,7 +2,7 @@
   "kitchen": {
     "printer": "Star TSP100 Cutter (TSP143) eco",
     "cn_key": "\u53a8\u623f",
-    "is_on": true
+    "is_on": false
   },
   "bar": {
     "printer": "Star TSP100 Cutter (TSP143)",

@@ -7,7 +7,12 @@
 <link rel="stylesheet" type="text/css" href="https://cdnjs.cloudflare.com/ajax/libs/twitter-bootstrap/4.1.3/css/bootstrap.css">
 <link rel="stylesheet" type="text/css" href="https://cdn.datatables.net/1.10.19/css/dataTables.bootstrap4.min.css">
 <link rel="stylesheet" href={{ url_for('static', filename='css/takeaway_order_update.css') }}>
-
+<style media="screen">
+    #back {
+      margin-left: 815px;
+      margin-bottom:20px;
+    }
+</style>
 
 <style>
 
@@ -35,10 +40,15 @@
 
 {% block title %}
 
-<h1 class="h3 mb-2 text-gray-800">订单查看</h1>
-<hr>
+{% if "admin/view/paid/alacarte/orders" in str_referrer %}
 
+<h1 class="h3 mb-2 text-gray-800">查看订单</h1>
 
+{% else %}
+
+<h1 class="h3 mb-2 text-gray-800">{{title}}</h1>
+
+{% endif %}
 
 {% endblock %}
 
@@ -109,26 +119,28 @@
 
 
   {% if not order.isPaid and not container.get('isCancelled') %}
-  <button id="update" class="btn btn-danger">
+  <button id="update" class="btn btn-info">
     <a href={{ url_for('admin_view_alacarte_open_orders') }} style="color: rgb(247, 249, 252)">
       确定更新
     </a>
   </button>
 
-  {% endif %}
-
-
   <button type="button" class="btn btn-secondary">
     <a href={{ referrer }} style="color: rgb(247, 249, 252)">
-      返回
+      取消
     </a>
   </button>
 
-
-
-
+  {% endif %}
 
 </div>
+
+<br>
+<button type="button" class="btn btn-secondary" id="back">
+  <a style="color: rgb(247, 249, 252)" href={{ referrer }}>
+    返回
+  </a>
+</button>
 
 
 

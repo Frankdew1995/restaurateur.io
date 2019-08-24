@@ -1,5 +1,5 @@
 import time
-from PIL import Image
+from PIL import Image, ImageDraw, ImageFont
 from uuid import uuid4
 import os
 import json
@@ -56,6 +56,8 @@ def generate_qrcode(table, seat, base_url, suffix_url):
 
     url = f"{base_url}/{suffix_url}/{table}/{seat}"
 
+    font_ttf = str(Path(app.root_path) / 'static' / 'fonts' / 'OpenSans-Bold.ttf')
+
     file_name = table + "_" + seat
 
     image = pyqrcode.create(url)
@@ -64,17 +66,56 @@ def generate_qrcode(table, seat, base_url, suffix_url):
 
     image.png(save_abs_path, scale=5)
 
+    img = Image.new('RGB', (60, 60), color="white")
+
+    w, h = img.size
+
+    d = ImageDraw.Draw(img)
+
+    fnt = ImageFont.truetype(font_ttf, 3)
+
+    w_text, h_text = d.textsize(table+"-"+seat, font=fnt)
+
+    d.text(((w - w_text) / 2, (h - h_text) / 2), table+"-"+seat, fill="black")
+
+    qrcode = Image.open(save_abs_path)
+
+    w_qrcode, h_qrcode = qrcode.size
+
+    qrcode.paste(img, ((w_qrcode - w) // 2, (h_qrcode - h) // 2))
+
+    qrcode.save(save_abs_path)
+
     return f"{file_name}.png"
 
 
 def activity_logger(order_id, operation_type,
                     page_name, descr,
                     status, log_time):
+
+    from .models import Log
+    from app import db
+
+    log = Log()
+
+    log.order_id = order_id
+    log.status = status
+    log.operation = operation_type
+    log.desc = descr
+    log.time = log_time
+    log.page = page_name
+
+    db.session.add(log)
+
+    db.session.commit()
+
     import csv
 
     row = (order_id, operation_type, page_name, descr, status, log_time)
 
-    with open(str(Path(app.root_path) / 'logging.csv'), "a", encoding="utf8") as file:
+    with open(str(Path(app.root_path) / 'cache' / 'logging.csv'),
+              mode="a",
+              encoding="utf8") as file:
         writer = csv.writer(file)
         writer.writerow(row)
 
@@ -90,6 +131,8 @@ def qrcode2excel(tables):
 
     # Create an new Excel file and add a worksheet.
     workbook = xlsxwriter.Workbook(save_abs_path)
+
+    # worksheet = workbook.add_worksheet()
 
     for table_name in tables:
 

@@ -6,7 +6,14 @@
 <link rel="stylesheet" type="text/css" href="https://cdn.datatables.net/1.10.19/css/jquery.dataTables.css">
 <link rel="stylesheet" type="text/css" href="https://cdnjs.cloudflare.com/ajax/libs/twitter-bootstrap/4.1.3/css/bootstrap.css">
 <link rel="stylesheet" type="text/css" href="https://cdn.datatables.net/1.10.19/css/dataTables.bootstrap4.min.css">
+<style media="screen">
 
+    #back {
+      margin-left: 815px;
+      margin-bottom:20px;
+    }
+
+</style>
 {% endblock %}
 
 
@@ -14,7 +21,7 @@
 {% block title %}
 
 
-<h1 class="h3 mb-2 text-gray-800">查看二维码</h1>
+<h1 class="h3 mb-2 text-gray-800">{{title}}: {{table_name}}-{{seat_number}}</h1>
 <br>
 
 {% endblock %}
@@ -22,17 +29,6 @@
 
 
 {% block content %}
-
-
-<button type="button" class="btn btn-danger">
-  <a href={{ url_for('qrcode_manage') }} style="color: rgb(247, 249, 252)">
-    返回
-  </a>
-</button>
-
-
-
-<hr>
 
 
 <div class="container">
@@ -58,10 +54,13 @@
 
   </p>
 
-
-
-
 </div>
+<br>
+<button type="button" class="btn btn-secondary" id="back">
+  <a style="color: rgb(247, 249, 252)" href={{ referrer }}>
+    返回
+  </a>
+</button>
 
 
 

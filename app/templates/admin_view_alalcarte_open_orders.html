@@ -31,7 +31,7 @@
 
 {% block title %}
 
-<h1 class="h3 mb-2 text-gray-800">餐桌情况(未结账)</h1>
+<h1 class="h3 mb-2 text-gray-800">{{title}}</h1>
 
 {% endblock %}
 
@@ -71,7 +71,7 @@
               <span>
                 <button type="button" class="btn btn-info">
                   <a href={{ url_for('admin_alacarte_order_edit', order_id=order.id) }} style="color: rgb(247, 249, 252)">
-                    查看/修改
+                    修改
                   </a>
                 </button>
               </span>
@@ -100,8 +100,8 @@
 </div>
 
 <br>
-<button type="button" class="btn btn-secondary" style="margin-left:839px">
-  <a href={{ url_for('index') }} style="color: rgb(247, 249, 252)">
+<button type="button" class="btn btn-secondary" style="margin-left:795px">
+  <a style="color: rgb(247, 249, 252)" href={{ referrer }} >
     返回
   </a>
 </button>

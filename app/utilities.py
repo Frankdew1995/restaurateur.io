@@ -292,7 +292,6 @@ def receipt_templating(context,
 
         return "ok"
 
-
 def kitchen_templating(context,
                        temp_file,
                        save_as,

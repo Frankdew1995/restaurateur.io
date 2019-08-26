@@ -32,6 +32,23 @@
 
 {% block content %}
 
+{% with messages = get_flashed_messages() %}
+
+  {% if messages %}
+
+    {% for message in messages %}
+
+    <div class="alert alert-success" role="alert">
+        {{ message }}
+    </div>
+
+    {% endfor %}
+
+  {% endif %}
+
+{% endwith %}
+
+
 
 <div class="row">
 
@@ -67,7 +84,7 @@
               </label>
             </div>
           </td>
-          <td>
+          <td style="text-align:center">
             <span style="text-align:center">
               <button type="button" class="btn btn-info">
                 <a style="color: rgb(247, 249, 252)" href={{ url_for('edit_printer', terminal=key) }}>

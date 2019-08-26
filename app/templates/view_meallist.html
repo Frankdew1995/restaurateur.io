@@ -1,0 +1,137 @@
+{% extends 'base.html' %}
+
+
+{% block css %}
+
+<link rel="stylesheet" type="text/css" href="https://cdn.datatables.net/1.10.19/css/jquery.dataTables.css">
+<link rel="stylesheet" type="text/css" href="https://cdnjs.cloudflare.com/ajax/libs/twitter-bootstrap/4.1.3/css/bootstrap.css">
+<link rel="stylesheet" type="text/css" href="https://cdn.datatables.net/1.10.19/css/dataTables.bootstrap4.min.css">
+<link rel="stylesheet" href={{ url_for('static', filename='css/takeaway_order_update.css') }}>
+
+<style media="screen">
+    #back {
+      margin-left: 815px;
+      margin-bottom:20px;
+    }
+</style>
+
+<style>
+
+    .column {
+      float: left;
+      width: 40%;
+      margin-left: 15px;
+    }
+
+    /* Clear floats after the columns */
+    .row:after {
+      content: "";
+      display: table;
+      clear: both;}
+
+    .a {color: rgb(247, 249, 252)
+
+    }
+
+</style>
+{% endblock %}
+
+
+
+{% block title %}
+
+<h1 class="h3 mb-2 text-gray-800">{{title}}</h1>
+
+{% endblock %}
+
+
+{% block content %}
+
+<div class="shopping-cart">
+
+  <div class="column-labels">
+    <label class="product-details">Product</label>
+    <label class="product-price">Price</label>
+    <label class="product-quantity">Quantity</label>
+    <label class="product-line-price">Total</label>
+  </div>
+  {% for item, details in ordered_items.items() %}
+  <div class="product">
+
+    <div class="product-details">
+      <div class="product-title">{{ item }}</div>
+    </div>
+    <div class="product-price">{{ details.get('price') }}</div>
+
+    <div class="product-quantity">
+      <input type="number" value={{ details.get('quantity')  }} min="1" readonly="readonly">
+    </div>
+
+    <div class="product-line-price">{{ details.get('price') * details.get('quantity') }}</div>
+  </div>
+  {% endfor %}
+
+
+
+  <p>订单号:
+    <span id="orderId">
+      {{order.id}}
+    </span>
+  </p>
+  <p>桌子号: {{ container.get('table_name', '外卖') }}</p>
+  <p>座位号: {{ container.get('seat_number', '外卖') }}</p>
+  <p>生成时间: {{ order.timeCreated.strftime(datetime_format) }}</p>
+
+  <p>状态:
+    <span>
+      {% if not container.get('isCancelled') %}
+      {{"已结账" if order.isPaid else "就餐中"}}
+      {% endif %}
+    </span>
+    <span>
+      {{"已取消" if container.get('isCancelled') }}
+    </span>
+  </p>
+
+
+  {% if not order.isPaid and not container.get('isCancelled') %}
+  <button id="update" class="btn btn-info">
+    <a style="color: rgb(247, 249, 252)" href={{ url_for('print_meallist', order_id=order.id) }}>
+      打印
+    </a>
+  </button>
+
+  {% endif %}
+
+</div>
+
+<br>
+<button type="button" class="btn btn-secondary" id="back">
+  <a style="color: rgb(247, 249, 252)" href={{ referrer }}>
+    返回
+  </a>
+</button>
+
+
+
+
+
+{% endblock %}
+
+
+
+
+
+{% block scripts %}
+<script>
+    $(document).ready(function() {
+    $('#example').DataTable();
+} );
+</script>
+
+
+<script type="text/javascript" charset="utf8" src="https://cdn.datatables.net/1.10.19/js/dataTables.bootstrap4.min.js"></script>
+<script type="text/javascript" charset="utf8" src="https://code.jquery.com/jquery-3.3.1.js"></script>
+<script type="text/javascript" charset="utf8" src="https://cdn.datatables.net/1.10.19/js/jquery.dataTables.min.js"></script>
+
+{% endblock %}

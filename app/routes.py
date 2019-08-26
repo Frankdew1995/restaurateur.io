@@ -55,6 +55,9 @@ base_url = "http://a6d6fd65.ngrok.io"
 
 timezone = 'Europe/Berlin'
 
+today = datetime.now(tz=pytz.timezone(timezone)).date()
+
+
 # Login Route
 @app.route("/login", methods=["GET", "POST"])
 def login():
@@ -378,13 +381,13 @@ def index():
     last_mon_revenue = sum([order.totalPrice for order in paid_orders \
                            if start_last_mon <= order.timeCreated.date() <= end_last_mon])
 
-    monthly_revenue_up_rate=None
+    monthly_revenue_up_rate = None
     if last_mon_revenue == 0 or None:
 
         monthly_revenue_up_rate = "100%"
 
     else:
-        monthly_revenue_up_rate = str(round(((cur_mon_revenue - last_mon_revenue) / last_mon_revenue), 2) * 100) + "%"
+        monthly_revenue_up_rate = str(round(((cur_mon_revenue - last_mon_revenue) / last_mon_revenue), 0) * 100) + "%"
 
     foods = Food.query.all()
 
@@ -583,6 +586,10 @@ def checkout_takeaway_admin(order_id):
 
         pay_via = {}
 
+        # Set the settleID and settleTime
+        settle_id = str(uuid4().int)
+        settle_time = datetime.now(tz=pytz.timezone(timezone))
+
         # Pay via cash
         if form.cash_submit.data:
 
@@ -621,6 +628,9 @@ def checkout_takeaway_admin(order_id):
 
             pay_via['method'] = "Card"
             logging['Pay'] = u'卡'
+
+        order.settleTime = settle_time
+        order.settleID = settle_id
 
         order.isPaid = True
 
@@ -2008,12 +2018,10 @@ def admin_active_tables():
 
     # Filtering only orders which happened the same day.(TZ: Berlin) + order is not cancelled
     open_orders = [order for order in orders if order.timeCreated.date()
-                   == datetime.now(tz=pytz.timezone(timezone)).date()
-                and not json.loads(order.container).get('isCancelled')]
+                   == today and not order.isCancelled]
 
     # Currently Open Tables
-    open_tables = list(set([json.loads(order.container).get("table_name")
-                            for order in open_orders]))
+    open_tables = list(set([order.table_name for order in open_orders]))
 
     # Extend the choices of current form
     form.select_table.choices.extend([(i, i) for i in open_tables])
@@ -2121,111 +2129,106 @@ def admin_view_table(table_name):
     # Check out form payment methods, discount and coupon code
     form = CheckoutForm()
 
-    # Filtering alacarte unpaid orders and the targeted table
+    # Filtering ala carte unpaid orders and the targeted table and order not cancelled
     orders = db.session.query(Order).filter(
         Order.type == "In",
-        Order.isPaid == False).all()
+        Order.isPaid == False,
+        Order.table_name == table_name,
+        Order.isCancelled == False).order_by(Order.timeCreated.desc()).all()
 
-    open_orders = [order for order in orders if
-                   json.loads(order.container).get('table_name') == table_name and
-                   order.timeCreated.date() == datetime.now(tz=pytz.timezone("Europe/Berlin")).date() and
-                   not json.loads(order.container).get('isCancelled')]
-    # Add cond if order not cancelled
+    if len(orders) > 0:
 
-    # Check if a checkout button is clicked
-    if request.method == "POST":
+        order = orders[0]
 
-        for order in open_orders:
+        if order.timeCreated.date() == today:
 
-            logging = {}
+            # Check if a checkout button is clicked
+            if form.validate_on_submit() or request.method == "POST":
 
-            pay_via = {}
+                # Set the settleID and settleTime
+                settle_id = str(uuid4().int)
+                settle_time = datetime.now(tz=pytz.timezone(timezone))
 
-            # Pay via cash
-            if form.cash_submit.data:
+                logging = {}
 
-                if form.coupon_amount.data:
+                pay_via = {}
 
-                    order.totalPrice = order.totalPrice -\
-                                       (form.coupon_amount.data/len(open_orders))
+                # Pay via cash
+                if form.cash_submit.data:
 
-                    pay_via['coupon_amount'] = form.coupon_amount.data/len(open_orders)
+                    if form.coupon_amount.data:
 
-                elif form.discount_rate.data:
+                        order.totalPrice = order.totalPrice -\
+                                           form.coupon_amount.data
 
-                    order.totalPrice = order.totalPrice * form.discount_rate.data
-                    pay_via['discount_rate'] = form.discount_rate.data
+                        pay_via['coupon_amount'] = form.coupon_amount.data
 
-                pay_via["method"] = "Cash"
-                logging['Pay'] = u'现金'
+                    elif form.discount_rate.data:
 
-            # Pay via card
-            elif form.card_submit.data:
+                        order.totalPrice = order.totalPrice * form.discount_rate.data
+                        pay_via['discount_rate'] = form.discount_rate.data
 
-                if form.coupon_amount.data:
+                    pay_via["method"] = "Cash"
+                    logging['Pay'] = u'现金'
 
-                    order.totalPrice = order.totalPrice -\
-                                       (form.coupon_amount.data/len(open_orders))
+                # Pay via card
+                elif form.card_submit.data:
 
-                    pay_via['coupon_amount'] = form.coupon_amount.data/len(open_orders)
+                    if form.coupon_amount.data:
 
-                elif form.discount_rate.data:
+                        order.totalPrice = order.totalPrice -\
+                                           form.coupon_amount.data
 
-                    order.totalPrice = order.totalPrice * form.discount_rate.data
-                    pay_via['discount_rate'] = form.discount_rate.data
+                        pay_via['coupon_amount'] = form.coupon_amount.data
 
-                pay_via['method'] = "Card"
-                logging['Pay'] = u'卡'
+                    elif form.discount_rate.data:
 
-            order.isPaid = True
+                        order.totalPrice = order.totalPrice * form.discount_rate.data
+                        pay_via['discount_rate'] = form.discount_rate.data
 
-            order.pay_via = json.dumps(pay_via)
+                    pay_via['method'] = "Card"
+                    logging['Pay'] = u'卡'
 
-            db.session.commit()
+                order.settleTime = settle_time
+                order.settleID = settle_id
 
-            # Writing logs to the csv file
-            activity_logger(order_id=order.id,
-                            operation_type=u'结账',
-                            page_name=u'跑堂界面 > 桌子详情',
-                            descr=f'''结账订单号:{order.id}\n
-                                    桌子编号：{json.loads(order.container).get('table_name')}-{json.loads(order.container).get('seat_number')}
-                                    支付方式:{logging.get('Pay')}\n
-                                    结账金额: {order.totalPrice}\n
-                                    订单类型: AlaCarte\n''',
-                            log_time=str(datetime.now(tz=pytz.timezone('Europe/Berlin'))),
-                            status=u'成功')
+                order.isPaid = True
 
-            return redirect(url_for('admin_active_tables'))
+                order.pay_via = json.dumps(pay_via)
 
-    # Else just render page as get method
-    # Calculate the total price for this table
-    total_price = sum([order.totalPrice for order in open_orders])
+                db.session.commit()
 
-    dish_varieties = [[key for key in (json.loads(order.items).keys())] for order in open_orders]
+                # Writing logs to the csv file
+                activity_logger(order_id=order.id,
+                                operation_type=u'结账',
+                                page_name=u'跑堂界面 > 桌子详情',
+                                descr=f'''结账订单号:{order.id}\n
+                                        桌子编号：{order.table_name}-{order.seat_number}
+                                        支付方式:{logging.get('Pay')}\n
+                                        结账金额: {order.totalPrice}\n
+                                        订单类型: AlaCarte\n''',
+                                log_time=str(datetime.now(tz=pytz.timezone(timezone))),
+                                status=u'成功')
 
-    varieties = []
-    for x in dish_varieties:
-        varieties.extend(x)
+                return redirect(url_for('admin_active_tables'))
 
-    varieties = list(set(varieties))
+            # Else just render page as get method
+            # Calculate the total price for this table
+            total_price = order.totalPrice
 
-    dishes = {
-        dish:
-            {
-            'quantity': sum([json.loads(order.items).get(dish).get('quantity')
-                             for order in open_orders if json.loads(order.items).get(dish)]),
+            dishes = json.loads(order.items)
 
-            'price': Food.query.filter_by(name=dish).first_or_404().price_gross,
+            return render_template('admin_view_table_summary.html',
+                                   dishes=dishes,
+                                   table_name=table_name,
+                                   total_price=total_price,
+                                   form=form)
 
-            'class_name':Food.query.filter_by(name=dish).first_or_404().class_name,
+        flash(f"{table_name}暂无订单！")
+        return redirect(url_for('admin_active_tables'))
 
-             } for dish in varieties}
-
-    return render_template('admin_view_table_summary.html',
-                           dishes=dishes,
-                           table_name=table_name,
-                           total_price=total_price,
-                           form=form)
+    flash(f"{table_name}暂无订单！")
+    return redirect(url_for('admin_active_tables'))
 
 
 # Guest switch table on and off
@@ -2265,7 +2268,7 @@ def add_table():
     # Instantiate some options for select fields
     form.section.choices.extend([(i, i) for i in letters])
 
-    if form.validate_on_submit():
+    if form.validate_on_submit() or request.method == "POST":
 
         table_name = form.name.data.upper()
 
@@ -2568,25 +2571,93 @@ def alacarte_guest_checkout():
 
         details = {
             Food.query.get_or_404(int(i.get('itemId'))).name:
-               {'quantity': int(i.get('itemQuantity')),
-                'price': float(price_dict.get(Food.query.get_or_404(int(i.get('itemId'))).name)),
-                'class_name': Food.query.get_or_404(int(i.get('itemId'))).class_name}
-                   for i in details}
+                {'quantity': int(i.get('itemQuantity')),
+                 'price': float(price_dict.get(Food.query.get_or_404(int(i.get('itemId'))).name)),
+                 'class_name': Food.query.get_or_404(int(i.get('itemId'))).class_name,
+                 'order_by': seat_number}
+            for i in details}
 
-        container = {'table_name': table_name,
-                     'seat_number': seat_number,
-                     'isCancelled': False}
+        # Check if this table is already associated with an open order
+        orders = db.session.query(Order).filter(
+            Order.type == "In",
+            Order.isPaid == False,
+            Order.table_name == table_name).order_by(Order.timeCreated.desc()).all()
 
-        order = Order(
-            totalPrice=total_price,
-            orderNumber=str(uuid4().int),
-            items=json.dumps(details),
-            timeCreated=datetime.now(pytz.timezone("Europe/Berlin")),
-            type="In",
-            container=json.dumps(container))
+        if len(orders) > 0:
 
-        db.session.add(order)
-        db.session.commit()
+            order = orders[0]
+
+            if order.timeCreated.date() != today:
+
+                # Create a new order for this table
+                order = Order(
+                    totalPrice=total_price,
+                    orderNumber=str(uuid4().int),
+                    items=json.dumps(details),
+                    timeCreated=datetime.now(pytz.timezone(timezone)),
+                    type="In",
+                    table_name=table_name,
+                    seat_number=seat_number,
+                    isCancelled=False,
+                    dishes=json.dumps([details]))
+
+                db.session.add(order)
+                db.session.commit()
+
+            else:
+
+                cur_items = json.loads(order.items)
+
+                dishes = order.dishes
+
+                if not dishes:
+
+                    dishes = []
+
+                else:
+
+                    dishes = json.loads(order.dishes)
+
+                dishes.append(details)
+
+                order.dishes = json.dumps(dishes)
+
+                cur_dishes = cur_items.keys()
+
+                for dish, items in details.items():
+
+                    if dish in cur_dishes:
+
+                        cur_items[dish]['quantity'] = cur_items[dish]['quantity'] \
+                                                      + items.get('quantity')
+
+                    else:
+
+                        cur_items[dish] = items
+
+                order.items = json.dumps(cur_items)
+
+                order.totalPrice = sum([i[1].get('quantity') * i[1].get('price')
+                                        for i in cur_items.items()])
+
+                db.session.commit()
+
+        else:
+
+            # Create a new order for this table
+            order = Order(
+                totalPrice=total_price,
+                orderNumber=str(uuid4().int),
+                items=json.dumps(details),
+                timeCreated=datetime.now(pytz.timezone(timezone)),
+                type="In",
+                table_name=table_name,
+                seat_number=seat_number,
+                isCancelled=False,
+                dishes=json.dumps([details]))
+
+            db.session.add(order)
+            db.session.commit()
 
         details_kitchen = {key: {'quantity': items.get('quantity'),
                                  'total': items.get('quantity') * items.get('price')}
@@ -2839,6 +2910,10 @@ def view_table(table_name):
     # Check if a checkout button is clicked
     if request.method == "POST":
 
+        # Set settleId and SettleTime
+        settle_id = str(uuid4().int)
+        settle_time = datetime.now(tz=pytz.timezone(timezone))
+
         for order in open_orders:
 
             logging = {}
@@ -2882,6 +2957,9 @@ def view_table(table_name):
                 logging['Pay'] = u'卡'
 
             order.isPaid = True
+
+            order.settleID = settle_id
+            order.settleTime = settle_time
 
             order.pay_via = json.dumps(pay_via)
 
@@ -3358,10 +3436,8 @@ def revenue_by_days():
                                 ).date()]
 
     # Compute the current used sections from Ala Carte
-    cur_used_sections = list(set([Table.query.filter_by(name=json.loads(order.container)\
-                        .get('table_name')).first_or_404().section
-                        for order in paid_alacarte_orders
-                        if order.timeCreated.date() == datetime.now(tz=pytz.timezone(timezone)).date()]))
+    cur_used_sections = list(set([Table.query.filter_by(name=order.table_name).first_or_404().section
+                        for order in paid_alacarte_orders if order.timeCreated.date() == today]))
 
     paid_out_orders = Order.query.filter(
         Order.isPaid == True,
@@ -3406,22 +3482,22 @@ def revenue_by_days():
                                          if start <= order.timeCreated.date() <= end]
 
         # Compute used sections during the DateRange
-        filtered_used_sections = list(set([Table.query.filter_by(name=json.loads(order.container).get('table_name')).first_or_404().section
+        filtered_used_sections = list(set([Table.query.filter_by(name=order.table_name).first_or_404().section
                                       for order in paid_alacarte_orders if start <= order.timeCreated.date() <= end]))
 
         from collections import OrderedDict
 
         revenue_by_sections = {section:
                                 {"Cash": sum([order.totalPrice for order in [order for order in filtered_paid_alacarte_orders
-                                              if Table.query.filter_by(name=json.loads(order.container).get('table_name')).first_or_404().section == section
+                                              if Table.query.filter_by(name=order.table_name).first_or_404().section == section
                                               and json.loads(order.pay_via).get('method') == "Cash"]]),
 
                                   "Card": sum([order.totalPrice for order in [order for order in filtered_paid_alacarte_orders
-                                            if Table.query.filter_by(name=json.loads(order.container).get('table_name')).first_or_404().section == section
+                                            if Table.query.filter_by(name=order.table_name).first_or_404().section == section
                                             and json.loads(order.pay_via).get('method') == "Card"]]),
 
                                   "Total": sum([order.totalPrice for order in [order for order in filtered_paid_alacarte_orders
-                                              if Table.query.filter_by(name=json.loads(order.container).get('table_name')).first_or_404().section == section]])
+                                              if Table.query.filter_by(name=order.table_name).first_or_404().section == section]])
 
                                       } for section in filtered_used_sections}
 
@@ -3451,26 +3527,24 @@ def revenue_by_days():
                        alacarte=alacarte,
                        out=out,
                        form=form,
-                       title=company_info.get('company_name'),
-                       revenue_by_sections=revenue_by_sections)
+                       company_name=company_info.get('company_name'),
+                       revenue_by_sections=revenue_by_sections,
+                       title=u"日结")
 
         return render_template('revenue_by_days.html', **context)
 
     from collections import OrderedDict
 
     revenue_by_sections = {section: {"Cash": sum([order.totalPrice for order in [order for order in cur_paid_alacarte_orders
-                                             if Table.query.filter_by(name=json.loads(order.container)\
-                                            .get('table_name')).first_or_404().section
+                                             if Table.query.filter_by(name=order.table_name).first_or_404().section
                                              == section and json.loads(order.pay_via).get('method') == "Cash"]]),
 
                                   "Card": sum([order.totalPrice for order in [order for order in cur_paid_alacarte_orders
-                                             if Table.query.filter_by(name=json.loads(order.container)\
-                                            .get('table_name')).first_or_404().section
+                                             if Table.query.filter_by(name=order.table_name).first_or_404().section
                                              == section and json.loads(order.pay_via).get('method') == "Card"]]),
 
                                   "Total": sum([order.totalPrice for order in [order for order in cur_paid_alacarte_orders
-                                              if Table.query.filter_by(name=json.loads(order.container)\
-                                              .get('table_name')).first_or_404().section == section]])
+                                              if Table.query.filter_by(name=order.table_name).first_or_404().section == section]])
 
                                   } for section in cur_used_sections}
 
@@ -3880,7 +3954,11 @@ def boss_view_table(table_name):
 
     # Add cond if order not cancelled
     # Check if a checkout button is clicked
-    if request.method == "POST":
+    if request.method == "POST" or form.validate_on_submit():
+
+        # Set the settleID and settleTime
+        settle_id = str(uuid4().int)
+        settle_time = datetime.now(tz=pytz.timezone(timezone))
 
         for order in open_orders:
 
@@ -3923,6 +4001,9 @@ def boss_view_table(table_name):
 
                 pay_via['method'] = "Card"
                 logging['Pay'] = u'卡'
+
+            order.settleID = settle_id
+            order.settleTime = settle_time
 
             order.isPaid = True
 
@@ -4311,14 +4392,175 @@ def boss_takeaway_order_view(order_id):
 @login_required
 def view_meallists():
 
-    pass
+    # Filtering alacarte unpaid orders and the targeted table
+    unpaid_alacarte_orders = db.session.query(Order).filter(
+        Order.type == "In",
+        Order.isPaid == False).all()
+
+    paid_out_orders = db.session.query(Order).filter(
+        Order.type == "Out",
+        Order.isPaid == True).all()
+
+    orders = unpaid_alacarte_orders + paid_out_orders
+
+    cur_orders = [order for order in orders if
+                  order.timeCreated.date() ==
+                  datetime.now(tz=pytz.timezone(timezone)).date()]
+
+    items = {order.id: json.loads(order.items) for order in cur_orders}
+
+    containers = {order.id: json.loads(order.container)
+                  for order in cur_orders if order.container}
+
+    context = dict(open_orders=cur_orders,
+                   items=items,
+                   containers=containers,
+                   referrer=request.headers.get('Referer'),
+                   title=u"菜品打印",
+                   datetime_format=datetime_format,
+                   company_name=company_info.get('company_name'))
+
+    return render_template("view_meallists.html", **context)
+
+
+@app.route("/print/meallist/<int:order_id>")
+@login_required
+def print_meallist(order_id):
+
+    order = db.session.query(Order).get_or_404(int(order_id))
+
+    ordered_items = json.loads(order.items)
+
+    details_kitchen = {key: {'quantity': items.get('quantity'),
+                             'total': items.get('quantity') * items.get('price')}
+                       for key, items in ordered_items.items() if items.get("class_name") == "Food"}
+
+    details_bar = {key: {'quantity': items.get('quantity'),
+                         'total': items.get('quantity') * items.get('price')}
+                   for key, items in ordered_items.items() if items.get("class_name") == "Drinks"}
+
+    context_kitchen = {"details": details_kitchen,
+                       "wait_number": order.id}
+
+    kitchen_temp = str(Path(app.root_path) / 'static' / 'docx' / 'kitchen.docx')
+
+    save_as_kitchen = f"meallist_kitchen_{order.id}"
+
+    context_bar = {"details": details_bar,
+                   "wait_number": order.id}
+
+    bar_temp = str(Path(app.root_path) / 'static' / 'docx' / 'bar.docx')
+
+    save_as_bar = f"meallist_bar_{order.id}"
+
+    # Read the printer setting data from the json file
+    with open(str(Path(app.root_path) / "settings" / "printer.json"), encoding="utf8") as file:
+        data = file.read()
+
+    data = json.loads(data)
+
+    def master_printer():
+
+        # Print to kitchen
+        kitchen_templating(context=context_kitchen,
+                           temp_file=kitchen_temp,
+                           save_as=save_as_kitchen,
+                           printer=data.get('kitchen').get('printer'))
+
+        # Print to bar
+        bar_templating(context=context_bar,
+                       temp_file=bar_temp,
+                       save_as=save_as_bar,
+                       printer=data.get('bar').get('printer'))
+
+    # Start the thread
+    th = Thread(target=master_printer)
+    th.start()
+
+    # Marked as printed
+    if not order.mealPrinted:
+
+        order.mealPrinted = True
+        db.session.commit()
+
+    flash(f"订单{order.id}的菜品正在打印，请耐心等待.如菜品未打印，\
+            请确认打印机是否处于打开状态及正确配置.", category='success')
+
+    return redirect(url_for('view_meallists'))
+
+
+@app.route("/view/meallist/<int:order_id>")
+@login_required
+def view_meallist(order_id):
+
+    order = Order.query.get_or_404(int(order_id))
+
+    ordered_items = json.loads(order.items)
+
+    container = {}
+
+    if order.container:
+
+        container = json.loads(order.container)
+
+    context = dict(order=order,
+                   referrer=request.headers.get('Referer'),
+                   title=u"查看菜品",
+                   datetime_format=datetime_format,
+                   ordered_items=ordered_items,
+                   container=container)
+
+    return render_template('view_meallist.html', **context)
 
 
 @app.route("/view/printing/receipts")
 @login_required
 def view_printing_receipts():
 
-    pass
+    # Filtering alacarte unpaid orders and the targeted table
+    orders = db.session.query(Order).filter(Order.isPaid == True).all()
+
+    cur_orders = [order for order in orders if
+                  order.timeCreated.date() == today]
+
+    context = dict(open_orders=cur_orders,
+                   referrer=request.headers.get('Referer'),
+                   title=u"发票打印",
+                   datetime_format=datetime_format,
+                   company_name=company_info.get('company_name'))
+
+    return render_template("view_receipts.html", **context)
+    # return jsonify(data)
+
+
+@app.route('/print/receipt/<int:order_id>')
+@login_required
+def print_receipt(order_id):
+
+    order = Order.query.get_or_404(int(order_id))
+
+    flash(f"订单{order.id}的发票正在打印，请耐心等待.如未打印，\
+                请确认打印机是否处于打开状态及正确配置.", category='success')
+
+    return redirect(url_for('view_printing_receipts'))
+
+
+@app.route('/view/receipt/<int:order_id>')
+@login_required
+def view_receipt(order_id):
+
+    order = Order.query.get_or_404(int(order_id))
+
+    ordered_items = json.loads(order.items)
+
+    context = dict(order=order,
+                   ordered_items=ordered_items,
+                   referrer=request.headers.get('Referer'),
+                   title=u"查看发票",
+                   datetime_format=datetime_format,
+                   company_name=company_info.get('company_name'))
+
+    return render_template("view_receipt.html", **context)
 
 
 # Printer section for managing, delete and add etc.
@@ -4348,7 +4590,9 @@ def edit_printer(terminal):
 
     form = EditPrinterForm()
 
-    with open(str(Path(app.root_path) / "settings" / "printer.json"), encoding="utf8") as file:
+    with open(str(Path(app.root_path)
+                  / "settings"
+                  / "printer.json"), encoding="utf8") as file:
 
         data = file.read()
 

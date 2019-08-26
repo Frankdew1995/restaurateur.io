@@ -148,8 +148,8 @@
         </a>
         <div id="collapsePages" class="collapse" aria-labelledby="headingPages" data-parent="#accordionSidebar">
           <div class="bg-white py-2 collapse-inner rounded">
-            <a class="collapse-item" href="#">菜品打印</a>
-            <a class="collapse-item" href="#">发票打印</a>
+            <a class="collapse-item" href={{ url_for('view_meallists') }}>菜品打印</a>
+            <a class="collapse-item" href={{ url_for('view_printing_receipts') }}>发票打印</a>
             <a class="collapse-item" href={{ url_for('printers_manage') }}>打印设置</a>
           </div>
         </div>

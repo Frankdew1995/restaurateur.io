@@ -130,7 +130,6 @@ class AddCategoryForm(FlaskForm):
     submit = SubmitField(u"确定添加")
 
 
-
 # Store Settings Form
 class StoreSettingForm(FlaskForm):
 

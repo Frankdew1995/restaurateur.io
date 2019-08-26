@@ -87,6 +87,14 @@ class Order(db.Model):
     pay_via = db.Column(db.String(100))
     type = db.Column(db.String(100))
     container = db.Column(db.String(300))
+    mealPrinted = db.Column(db.Boolean, default=False)
+    printed = db.Column(db.Boolean, default=False)
+    settleTime = db.Column(db.DateTime)
+    settleID = db.Column(db.String(500))
+    table_name = db.Column(db.String(500))
+    seat_number = db.Column(db.String(500))
+    isCancelled = db.Column(db.Boolean(), default=False)
+    dishes = db.Column(db.String(500))
 
 
 class Visit(db.Model):

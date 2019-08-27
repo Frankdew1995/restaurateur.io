@@ -1,0 +1,304 @@
+{% extends 'base.html' %}
+
+
+{% block css %}
+
+<link rel="stylesheet" type="text/css" href="https://cdn.datatables.net/1.10.19/css/jquery.dataTables.css">
+<link rel="stylesheet" type="text/css" href="https://cdnjs.cloudflare.com/ajax/libs/twitter-bootstrap/4.1.3/css/bootstrap.css">
+<link rel="stylesheet" type="text/css" href="https://cdn.datatables.net/1.10.19/css/dataTables.bootstrap4.min.css">
+<style>
+
+    .column {
+      float: left;
+      width: 49%;
+      margin-left: 5px;
+    }
+
+    /* Clear floats after the columns */
+    .row:after {
+      content: "";
+      display: table;
+      clear: both;}
+
+    .a {color: rgb(247, 249, 252)
+
+    }
+
+    #back{
+
+      margin-left:792px;
+      margin-bottom: 20px;
+
+    }
+
+
+</style>
+{% endblock %}
+
+
+
+{% block title %}
+
+<h1 class="h3 mb-2 text-gray-800">{{title}}</h1>
+
+{% endblock %}
+
+
+{% block content %}
+
+
+
+
+  <div class="container">
+
+
+    <div class="column">
+
+      <h5>Erklaerung der Begriffe in den Berichten</h5>
+
+      <p>Begriffe: Bedeutung</p>
+
+      <p>BRUTTO1: </p>
+
+
+
+    <!-- start of form -->
+      <br>
+      <div>
+
+          <button type="button" class="btn btn-info">
+            <a href="#coupon" style="color: rgb(247, 249, 252)">
+              打印
+            </a>
+          </button>
+
+
+          <br>
+
+      </div>
+
+  </div>
+
+  <div class="column">
+
+        <table class="table table-bordered" style="width:100%">
+          <thead>
+            <tr>
+              <th colspan="5" style="text-align:center">Z Bericht Nr.{{z_number}}</th>
+            </tr>
+
+            <tr>
+              <th colspan="5" style="text-align:center">-----Finanzbericht Tag------</th>
+
+            </tr>
+          </thead>
+
+          <tbody style="text-align:center">
+
+            <tr>
+              <th scope="row">Bis</th>
+              <td colspan="2">{{now}}</td>
+            </tr>
+
+            <tr>
+              <th colspan="5">------------------------------------------------------------</th>
+            </tr>
+
+            <tr>
+              <th scope="row">BRUTTO1</th>
+              <th>19%</th>
+              <th>{{gross_revenue1}}</th>
+            </tr>
+
+            <tr>
+              <th scope="row">NETTO1</th>
+              <th>19%</th>
+              <th>{{net_revenue1}}</th>
+            </tr>
+
+            <tr>
+
+              <th scope="row">MWST1</th>
+              <th>19%</th>
+              <th>{{vat1}}</th>
+
+            </tr>
+
+            <tr>
+              <th scope="row">BRUTTO2</th>
+              <th>7%</th>
+              <th>{{gross_revenue2}}</th>
+            </tr>
+
+            <tr>
+              <th scope="row">NETTO2</th>
+              <th>7%</th>
+              <th>{{net_revenue2}}</th>
+            </tr>
+
+            <tr>
+
+              <th scope="row">MWST2</th>
+              <th>7%</th>
+              <th>{{vat2}}</th>
+
+            </tr>
+
+            <tr>
+              <th colspan="5">------------------------------------------------------------</th>
+            </tr>
+
+            <tr>
+              <th scope="row">VERST.GES/B</th>
+              <th colspan="2">{{taxable_gross}}</th>
+            </tr>
+
+            <tr>
+              <th scope="row">VERST.GES/N</th>
+              <th colspan="2">{{taxable_net}}</th>
+            </tr>
+
+            <tr>
+              <th scope="row">ST.GESAMT</th>
+              <th colspan="2">{{total_vat}}</th>
+            </tr>
+
+            <tr>
+              <th colspan="5">------------------------------------------------------------</th>
+            </tr>
+
+            <tr>
+              <th scope="row">Total</th>
+              <th colspan="2">{{total_taxable_gross}}</th>
+            </tr>
+
+            <tr>
+              <th scope="row">Rabatt</th>
+              <th colspan="2">-{{percentage_discounts}}</th>
+            </tr>
+
+            <tr>
+              <th scope="row">Service Aufschlag</th>
+              <th colspan="2"></th>
+            </tr>
+
+            <tr>
+              <th scope="row">Aufschlag</th>
+              <th colspan="2"></th>
+            </tr>
+
+
+            <tr>
+              <th scope="row">Rabatt</th>
+              <th colspan="2">-{{total_discounts}}</th>
+            </tr>
+
+            <tr>
+              <th scope="row">Einzahlung</th>
+              <th colspan="2"></th>
+            </tr>
+
+            <tr>
+              <th scope="row">Auszahlung</th>
+              <th colspan="2"></th>
+
+            </tr>
+
+
+            <tr>
+              <th colspan="5">------------------------------------------------------------</th>
+            </tr>
+
+            <tr>
+              <th scope="row">Bezahlte Tische</th>
+              <th colspan="2">{{gross_revenue1}}</th>
+
+            </tr>
+
+            <tr>
+              <th scope="row">Offene Tische</th>
+              <th colspan="2">{{gross_revenue_from_unpaid_tables}}</th>
+
+            </tr>
+
+            <tr>
+              <th scope="row">Bezahlte Mitnahme</th>
+              <th colspan="2">{{gross_revenue2}}</th>
+            </tr>
+
+            <tr>
+              <th scope="row">Offene Mitnahme</th>
+              <th colspan="2">{{gross_revenue_from_unpaid_out_orders}}</th>
+            </tr>
+
+            <tr>
+              <th colspan="5">------------------------------------------------------------</th>
+            </tr>
+
+
+            <tr>
+              <th scope="row">Total</th>
+              <th colspan="2"></th>
+
+            </tr>
+
+            <tr>
+              <th colspan="5">------------------------------------------------------------</th>
+            </tr>
+
+
+            <tr>
+              <th colspan="5">TOTAL LADE </th>
+            </tr>
+
+            <tr>
+              <th colspan="5">------------------------------------------------------------</th>
+            </tr>
+
+            <tr>
+              <th scope="row">BAR</th>
+              <th colspan="2">{{gross_cash_revenue}}</th>
+            </tr>
+
+            <tr>
+              <th scope="row">KARTE</th>
+              <th colspan="2">{{gross_card_revenue}}</th>
+            </tr>
+
+          </tbody>
+        </table>
+
+
+      </div>
+    </div>
+
+    <br>
+    <button type="button" class="btn btn-secondary" id="back">
+      <a style="color: rgb(247, 249, 252)" href={{ referrer }} >
+        返回
+      </a>
+    </button>
+
+<!-- end of form -->
+
+{% endblock %}
+
+
+
+
+
+
+
+{% block scripts %}
+<script>
+    $(document).ready(function() {
+    $('#example').DataTable();
+} );
+</script>
+
+
+<script type="text/javascript" charset="utf8" src="https://cdn.datatables.net/1.10.19/js/dataTables.bootstrap4.min.js"></script>
+<script type="text/javascript" charset="utf8" src="https://code.jquery.com/jquery-3.3.1.js"></script>
+<script type="text/javascript" charset="utf8" src="https://cdn.datatables.net/1.10.19/js/jquery.dataTables.min.js"></script>
+
+{% endblock %}

@@ -72,7 +72,7 @@
       <div class="product-title">{{ item }}</div>
     </div>
     <div class="product-price">{{ details.get('price') }}</div>
-    {% if not order.isPaid and not container.get('isCancelled') %}
+    {% if not order.isPaid and not order.isCancelled %}
     <div class="product-quantity">
       <input type="number" value={{ details.get('quantity')  }} min="1">
     </div>
@@ -97,18 +97,18 @@
       {{order.id}}
     </span>
   </p>
-  <p>桌子号: {{ container.get('table_name') }}</p>
-  <p>座位号: {{ container.get('seat_number') }}</p>
-  <p>生成时间: {{ order.timeCreated }}</p>
+  <p>桌子号: {{ order.table_name }}</p>
+  <p>座位号: {{ order.seat_number }}</p>
+  <p>生成时间: {{ order.timeCreated.strftime(datetime_format) }}</p>
 
   <p>状态:
     <span>
-      {% if not container.get('isCancelled') %}
+      {% if not order.isCancelled %}
       {{"已结账" if order.isPaid else "就餐中"}}
       {% endif %}
     </span>
     <span>
-      {{"已取消" if container.get('isCancelled') }}
+      {{"已取消" if order.isCancelled }}
     </span>
   </p>
 
@@ -118,7 +118,7 @@
 
 
 
-  {% if not order.isPaid and not container.get('isCancelled') %}
+  {% if not order.isPaid and not order.isCancelled %}
   <button id="update" class="btn btn-info">
     <a href={{ url_for('admin_view_alacarte_open_orders') }} style="color: rgb(247, 249, 252)">
       确定更新

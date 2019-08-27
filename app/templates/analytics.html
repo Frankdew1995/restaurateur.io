@@ -32,6 +32,11 @@
 
     }
 
+    .btn-info {
+      background-color: #26a69a;
+      border-color: #26a69a;
+    }
+
 
 </style>
 {% endblock %}
@@ -241,7 +246,7 @@
             <td>{{ items.get('counts') }}</td>
             <td style="text-align:center">
               <span>
-                <button type="button" class="btn btn-info"><a style="color: rgb(247, 249, 252)" href="{{ url_for('edit_dish', dish_id=items.get('ID')) }}">查看</a></button>
+                <button type="button" class="btn btn-info" style="border-color:#26a69a; background-color:#26a69a;"><a style="color: rgb(247, 249, 252)" href="{{ url_for('edit_dish', dish_id=items.get('ID')) }}">查看</a></button>
               </span>
             </td>
         </tr>

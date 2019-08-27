@@ -29,6 +29,9 @@ from datetime import datetime, timedelta
 import pytz
 from threading import Thread
 from werkzeug.utils import secure_filename
+import pickle
+from babel.dates import format_date, format_datetime, format_time
+from babel.numbers import format_number, format_decimal, format_percent
 
 # Some global variables - read from config file.
 
@@ -728,7 +731,8 @@ def checkout_takeaway_admin(order_id):
                            order=order,
                            order_items=order_items,
                            prices=prices,
-                           form=form)
+                           form=form,
+                           datetime_format=datetime_format)
 
 
 @app.route("/takeaway_orders/view")
@@ -888,11 +892,11 @@ def admin_view_alacarte_open_orders():
 
     items = {order.id: json.loads(order.items) for order in cur_orders}
 
-    containers = {order.id: json.loads(order.container) for order in cur_orders}
+    # containers = {order.id: json.loads(order.container) for order in cur_orders}
 
     context = dict(open_orders=cur_orders,
                    items=items,
-                   containers=containers,
+                   datetime_format=datetime_format,
                    referrer=request.headers.get('Referer'),
                    title=u"餐桌情况(未结账)")
 
@@ -907,16 +911,15 @@ def admin_alacarte_order_edit(order_id):
 
     ordered_items = json.loads(order.items)
 
-    container = json.loads(order.container)
-
     referrer = request.headers.get('Referer')
 
     context = dict(order=order,
                    ordered_items=ordered_items,
-                   container=container,
                    referrer=referrer,
                    str_referrer=str(referrer),
-                   title=u"订单修改/查看")
+                   title=u"订单修改/查看",
+                   datetime_format=datetime_format,
+                   company_name=company_info.get('company_name'))
 
     return render_template('admin_alacarte_order_edit.html', **context)
 
@@ -1037,14 +1040,12 @@ def admin_view_paid_alacarte_orders():
 
     items = {order.id: json.loads(order.items) for order in cur_orders}
 
-    containers = {order.id: json.loads(order.container) for order in cur_orders}
-
     context = dict(open_orders=cur_orders,
                    items=items,
-                   containers=containers,
                    title=u"已完成订单",
                    referrer=request.headers.get('Referer'),
-                   company_name=company_info.get('company_name'))
+                   company_name=company_info.get('company_name'),
+                   datetime_format=datetime_format)
 
     return render_template("admin_view_paid_alacarte_orders.html", **context)
 
@@ -3420,6 +3421,156 @@ def export_log():
     return send_file(file, as_attachment=True, mimetype="text/csv")
 
 
+@app.route("/z/receipts/manage")
+@login_required
+def z_receipts_manage():
+
+    with open(str(Path(app.root_path) / 'cache' / 'z_bon_settings.pickle'),
+              mode="rb") as pickle_out:
+        data = pickle.load(pickle_out)
+
+    context = dict(referrer=request.headers.get('Referer'),
+                   title=u"Z单(每日一次)",
+                   company_name=company_info.get('company_name'),
+                   data=data)
+
+    return render_template("view_void_z_receipts.html", **context) \
+        if len(data) == 0 else render_template("view_z_receipts.html", **context)
+
+
+@app.route('/view/z/receipt')
+@login_required
+def view_z_receipt():
+
+    paid_orders = Order.query.filter(Order.isPaid == True).order_by(Order.settleTime.desc()).all()
+
+    unpaid_orders = Order.query.filter(Order.isPaid == False).order_by(Order.settleTime.desc()).all()
+
+    with open(str(Path(app.root_path) / 'cache' / 'z_bon_settings.pickle'),
+              mode="rb") as pickle_out:
+        data = pickle.load(pickle_out)
+
+    from_time = None
+    unpaid_from = None
+
+    if len(data) == 0:
+
+        unpaid_from = unpaid_orders[-1].timeCreated
+
+        from_time = paid_orders[-1].settleTime
+
+    else:
+
+        from_time = data[-1].get('lastPrinted')
+        unpaid_from = data[-1].get('unpaid_last_until')
+
+    now = datetime.now(tz=None)
+
+    ranged_paid_alacarte_orders = [order for order in paid_orders if order.type == "In" and
+                                   from_time <= order.settleTime <= now]
+
+    ranged_paid_out_orders = [order for order in paid_orders if order.type == "Out" and
+                                   from_time <= order.settleTime <= now]
+
+    gross_revenue1 = sum([order.totalPrice for order in ranged_paid_alacarte_orders])
+
+    net_revenue1 = round(gross_revenue1 / (1 + tax_rate_in), 2)
+
+    vat1 = gross_revenue1 - net_revenue1
+
+    gross_revenue2 = sum([order.totalPrice for order in ranged_paid_out_orders])
+
+    net_revenue2 = round(gross_revenue2 / (1 + tax_rate_out), 2)
+
+    vat2 = gross_revenue2 - net_revenue2
+
+    taxable_gross = gross_revenue1 + gross_revenue2
+
+    taxable_net = net_revenue1 + net_revenue2
+
+    total_vat = vat1 + vat2
+
+    total_taxable_gross = gross_revenue2 + gross_revenue1
+
+    filtered_paid_orders = ranged_paid_alacarte_orders + ranged_paid_out_orders
+
+    percentage_discounts = sum([order.discount_rate * order.totalPrice for order
+                                in filtered_paid_orders if order.discount_rate])
+
+    total_discounts = sum([order.discount for order
+                                in filtered_paid_orders if order.discount])
+
+    gross_revenue_from_paid_tables = gross_revenue1
+
+    gross_revenue_from_out_orders = gross_revenue2
+
+    ranged_unpaid_alacarte_orders = [order for order in unpaid_orders if order.type == "In" and
+                                   unpaid_from <= order.timeCreated <= now]
+
+    ranged_unpaid_out_orders = [order for order in unpaid_orders if order.type == "Out" and
+                                   unpaid_from <= order.timeCreated <= now]
+
+    gross_revenue_from_unpaid_tables = sum([order.totalPrice for
+                                            order in ranged_unpaid_alacarte_orders])
+
+    gross_revenue_from_unpaid_out_orders = sum([order.totalPrice for order in ranged_unpaid_out_orders])
+
+    ranged_paid_orders_cash = [order for order in paid_orders if json.loads(order.pay_via).get('method') == "Cash"
+                          and from_time <= order.settleTime <= now]
+
+    ranged_paid_orders_card = [order for order in paid_orders if json.loads(order.pay_via).get('method') == "Card"
+                               and from_time <= order.settleTime <= now]
+
+    gross_cash_revenue = sum([order.totalPrice for order in ranged_paid_orders_cash])
+
+    gross_card_revenue = sum([order.totalPrice for order in ranged_paid_orders_card])
+
+    context = dict(referrer=request.headers.get('Referer'),
+                   title=u"打印Z单",
+                   company_name=company_info.get('company_name'),
+                   z_number=len(data)+1,
+                   now=format_datetime(now, locale="de_DE"),
+                   gross_revenue1=format_decimal(gross_revenue1, locale="de_DE"),
+                   net_revenue1=format_decimal(net_revenue1, locale="de_DE"),
+                   vat1=format_decimal(vat1, locale="de_DE"),
+                   gross_revenue2=format_decimal(gross_revenue2, locale="de_DE"),
+                   net_revenue2=format_decimal(net_revenue2, locale="de_DE"),
+                   vat2=format_decimal(vat2, locale="de_DE"),
+                   taxable_gross=format_decimal(taxable_gross, locale="de_DE"),
+                   taxable_net=format_decimal(taxable_net, locale="de_DE"),
+                   total_vat=format_decimal(total_vat, locale="de_DE"),
+                   total_taxable_gross=format_decimal(total_taxable_gross, locale="de_DE"),
+                   percentage_discounts=format_decimal(percentage_discounts, locale="de_DE"),
+                   total_discounts=format_decimal(total_discounts, locale="de_DE"),
+                   gross_revenue_from_unpaid_tables=format_decimal(gross_revenue_from_unpaid_tables, locale="de_DE"),
+                   gross_cash_revenue=format_decimal(gross_cash_revenue, locale="de_DE"),
+                   gross_card_revenue=format_decimal(gross_card_revenue, locale="de_DE"),
+                   gross_revenue_from_unpaid_out_orders=format_decimal(gross_revenue_from_unpaid_tables, locale="de_DE")
+                   )
+
+    return render_template("view_z_receipt.html", **context)
+
+
+@app.route('/print/z/receipt/<string:date_time>')
+@login_required
+def print_z_receipt(date_time):
+
+    paid_orders = Order.query.filter(
+        Order.isPaid == True).order_by(Order.settleTime.desc()).all()
+
+    with open(str(Path(app.root_path) / 'cache' / 'z_bon_settings.pickle'),
+              mode="rb") as pickle_out:
+        data = pickle.load(pickle_out)
+
+    from_time = data[-1].get('lastPrinted')
+
+    if len(data) == 0:
+
+        from_time = paid_orders[-1].settleTime
+
+    return redirect(url_for('view_z_receipts'))
+
+
 @app.route('/revenue/by/days', methods=["POST", "GET"])
 @login_required
 def revenue_by_days():
@@ -4404,8 +4555,7 @@ def view_meallists():
     orders = unpaid_alacarte_orders + paid_out_orders
 
     cur_orders = [order for order in orders if
-                  order.timeCreated.date() ==
-                  datetime.now(tz=pytz.timezone(timezone)).date()]
+                  order.timeCreated.date() == today]
 
     items = {order.id: json.loads(order.items) for order in cur_orders}
 
@@ -4414,7 +4564,6 @@ def view_meallists():
 
     context = dict(open_orders=cur_orders,
                    items=items,
-                   containers=containers,
                    referrer=request.headers.get('Referer'),
                    title=u"菜品打印",
                    datetime_format=datetime_format,

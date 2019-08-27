@@ -71,19 +71,19 @@
           <!-- start of table body -->
           <tr>
             <th scope="row">{{order.id}}</th>
-            <td>{{ containers.get(order.id).get('table_name') }}</td>
-            <td>{{ order.timeCreated }}</td>
+            <td>{{ order.table_name }}</td>
+            <td>{{ order.timeCreated.strftime(datetime_format) }}</td>
             <td>{{ order.totalPrice }}</td>
             <td style="text-align:center">
               <span>
-                <button type="button" class="btn btn-info">
+                <button type="button" class="btn btn-info" style="border-color:#26a69a; background-color:#26a69a;">
                   <a href={{ url_for('admin_alacarte_order_edit', order_id=order.id) }} style="color: rgb(247, 249, 252)">
                     查看
                   </a>
                 </button>
               </span>
               <span>
-                {% if not containers.get(order.id).get('isCancelled') and not order.isPaid %}
+                {% if not order.isCancelled and not order.isPaid %}
                 <button type="button" class="btn btn-danger">
                   <a href={{ url_for('admin_cancel_alacarte_order', order_id=order.id) }} style="color: rgb(247, 249, 252)">
                     取消

@@ -93,7 +93,7 @@
             <tr>
               <th scope="col">创建时间</th>
               <th>
-                {{ order.timeCreated }}
+                {{ order.timeCreated.strftime(datetime_format) }}
               </th>
             </tr>
           </thead>

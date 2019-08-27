@@ -494,7 +494,9 @@ def call2print(table_name):
     subprocess.Popen(f'{printer_path} {out_save_path} "{printer_name}"', shell=True)
 
 
+def void_pickle_dumper():
 
+    pass
 
 
 

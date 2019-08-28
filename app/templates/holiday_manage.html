@@ -48,7 +48,7 @@
 {% endwith %}
 
 
-<button type="button" class="btn btn-info">
+<button type="button" class="btn btn-info" style="border-color:#26a69a; background-color:#26a69a;">
   <a href={{ url_for('add_holiday') }} style="color: rgb(247, 249, 252)">
     添加
   </a>
@@ -93,10 +93,18 @@
           </td>
           <td style="text-align:center">
             <span>
-              <button type="button" class="btn btn-info"><a style="color: rgb(247, 249, 252)" href="{{ url_for('edit_holiday', holiday_id=holiday.id) }}">修改</a></button>
+              <button type="button" class="btn btn-info" style="border-color:#26a69a; background-color:#26a69a;">
+                <a style="color: rgb(247, 249, 252)" href="{{ url_for('edit_holiday', holiday_id=holiday.id) }}">
+                  修改
+                </a>
+              </button>
             </span>
             <span>
-              <button type="button" class="btn btn-danger"><a style="color: rgb(247, 249, 252)" href="{{ url_for('remove_holiday', holiday_id=holiday.id) }}">删除</a></button>
+              <button type="button" class="btn btn-danger" style="border-color:#E57373; background-color:##E57373;">
+                <a style="color: rgb(247, 249, 252)" href="{{ url_for('remove_holiday', holiday_id=holiday.id) }}">
+                  删除
+                </a>
+              </button>
             </span>
           </td>
         </tr>

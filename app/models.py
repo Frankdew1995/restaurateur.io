@@ -94,7 +94,7 @@ class Order(db.Model):
     table_name = db.Column(db.String(500))
     seat_number = db.Column(db.String(500))
     isCancelled = db.Column(db.Boolean(), default=False)
-    dishes = db.Column(db.String(500))
+    dishes = db.Column(db.String(1500))
     discount = db.Column(db.Float)
     discount_rate = db.Column(db.Float)
 

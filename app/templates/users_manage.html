@@ -34,7 +34,7 @@
 
 {% block content %}
 
-<button type="button" class="btn btn-info">
+<button type="button" class="btn btn-info" style="border-color:#26a69a; background-color:#26a69a;">
   <a href={{ url_for('add_user') }} style="color: rgb(247, 249, 252)">
     添加跑堂人员
   </a>
@@ -109,11 +109,19 @@
           <td style="text-align:center">
 
             <span>
-              <button type="button" class="btn btn-info"><a style="color: rgb(247, 249, 252)" href={{ url_for('edit_user', user_id=user.id) }}>编辑</a></button>
+              <button type="button" class="btn btn-info" style="border-color:#26a69a; background-color:#26a69a;">
+                <a style="color: rgb(247, 249, 252)" href={{ url_for('edit_user', user_id=user.id) }}>
+                  编辑
+                </a>
+              </button>
             </span>
 
             <span>
-              <button type="button" class="btn btn-info"><a style="color: rgb(247, 249, 252)" href={{ url_for('update_password', user_id=user.id) }}>修改密码</a></button>
+              <button type="button" class="btn btn-info" style="border-color:#26a69a; background-color:#26a69a;">
+                <a style="color: rgb(247, 249, 252)" href={{ url_for('update_password', user_id=user.id) }}>
+                  修改密码
+                </a>
+              </button>
             </span>
 
             <span>

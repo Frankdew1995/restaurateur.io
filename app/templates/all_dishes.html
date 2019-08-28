@@ -55,7 +55,7 @@
 {% endwith %}
 
 
-<button type="button" class="btn btn-info">
+<button type="button" class="btn btn-info" style="border-color:#26a69a; background-color:#26a69a;">
   <a href={{ url_for('add_dish') }} style="color: rgb(247, 249, 252)">
     新增
   </a>
@@ -114,7 +114,7 @@
           <td>{{ dish.price_gross }}</td>
           <td style="text-align:center">
             <span>
-              <button type="button" class="btn btn-info">
+              <button type="button" class="btn btn-info" style="border-color:#26a69a; background-color:#26a69a;">
                 <a href="{{ url_for('edit_dish', dish_id=dish.id) }}" style="color: rgb(247, 249, 252)">
                   修改
                 </a>
@@ -154,7 +154,9 @@
 
 <script>
     $(document).ready(function() {
-    $('#example').DataTable();
+    $('#example').DataTable({
+      'order': [[4, "desc"]]
+    });
 } );
 </script>
 

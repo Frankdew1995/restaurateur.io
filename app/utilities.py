@@ -17,6 +17,7 @@ from app.models import Table, User
 
 import subprocess
 
+
 # Save Image and return image path
 def store_picture(file):
 
@@ -292,6 +293,7 @@ def receipt_templating(context,
 
         return "ok"
 
+
 def kitchen_templating(context,
                        temp_file,
                        save_as,
@@ -499,5 +501,60 @@ def void_pickle_dumper():
     pass
 
 
+def z_receipt_templating(context,
+                       temp_file,
+                       save_as,
+                       printer):
+
+    '''
+    :param context: a dictionary key-value pair
+    :param temp_file: template file path for receipt printing(Takeout and InHouse)
+    :param save_as: the file name without file extension
+    :param printer: the printer name for printing the receipt
+    :return: "ok. if successfully printed
+    '''
+
+    # Read the printer setting data from the json file
+    with open(str(Path(app.root_path) / "settings" / "printer.json"), encoding="utf8") as file:
+        data = file.read()
+
+    data = json.loads(data)
+
+    # if the printer is on
+    if data.get('receipt').get('is_on'):
+
+        from docxtpl import DocxTemplate
+
+        doc = DocxTemplate(temp_file)
+
+        doc.render(context)
+
+        abs_save_path = str(Path(app.root_path) / 'static' / 'out' / 'receipts' / f'{save_as}.docx')
+
+        out_save_path = str(Path(app.root_path) / 'static' / 'out' / 'receipts' / f'{save_as}.pdf')
+
+        doc.save(abs_save_path)
+
+        docx2pdf(doc_in=abs_save_path,
+                 pdf_out=out_save_path)
+
+        # Print the PDF info from the thermal printer
+        printer_path = str(Path(app.root_path) / 'utils' / 'printer' / 'PDFtoPrinter')
+
+        import subprocess
+        # call the command to print the pdf file
+        wait_start = time.time()
+        while True:
+            if not Path(out_save_path).exists():
+                time.sleep(0.5)
+                wait_end = time.time()
+
+                if wait_end - wait_start > 15:
+                    break
+            else:
+                subprocess.Popen(f'{printer_path} {out_save_path} "{printer}"', shell=True)
+                break
+
+        return "ok"
 
 

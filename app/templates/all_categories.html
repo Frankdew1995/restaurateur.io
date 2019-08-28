@@ -51,7 +51,7 @@
 {% endwith %}
 
 
-<button type="button" class="btn btn-info">
+<button type="button" class="btn btn-info" style="border-color:#26a69a; background-color:#26a69a;">
   <a href={{ url_for('add_category') }} style="color: rgb(247, 249, 252)">
     新增
   </a>
@@ -86,10 +86,18 @@
           <td>{{ cate.get("Unit") }}</td>
           <td style="text-align:center">
             <span>
-              <button type="button" class="btn btn-info"><a href={{ url_for('edit_category', subcategory=cate.get("Subcategory", '') ) }} style="color: rgb(247, 249, 252)">修改</a></button>
+              <button type="button" class="btn btn-info" style="border-color:#26a69a; background-color:#26a69a;">
+                <a href={{ url_for('edit_category', subcategory=cate.get("Subcategory", '') ) }} style="color: rgb(247, 249, 252)">
+                  修改
+                </a>
+              </button>
             </span>
             <span>
-              <button type="button" class="btn btn-danger"><a href={{ url_for('remove_category', subcategory=cate.get("Subcategory", '') ) }} style="color: rgb(247, 249, 252)">删除</a></button>
+              <button type="button" class="btn btn-danger" style="border-color:#E57373; background-color:##E57373;">
+                <a href={{ url_for('remove_category', subcategory=cate.get("Subcategory", '') ) }} style="color: rgb(247, 249, 252)">
+                  删除
+                </a>
+              </button>
             </span>
           </td>
         </tr>

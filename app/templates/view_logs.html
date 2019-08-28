@@ -28,7 +28,7 @@
 {% block content %}
 
 
-<button type="button" class="btn btn-info">
+<button type="button" class="btn btn-info" style="border-color:#26a69a; background-color:#26a69a;">
   <a style="color: rgb(247, 249, 252)" href={{ url_for('export_log') }} >
      导出
   </a>
@@ -67,7 +67,7 @@
             <td style="text-align:center">
 
               <span>
-                <button type="button" class="btn btn-info">
+                <button type="button" class="btn btn-info" style="border-color:#26a69a; background-color:#26a69a;">
                   <a style="color: rgb(247, 249, 252)" href={{ url_for('view_log', log_id=log.id) }}>
                     查看
                   </a>

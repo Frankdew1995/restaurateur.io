@@ -77,7 +77,7 @@
       <input type="number" value={{ details.get('quantity')  }} min="1">
     </div>
     <div class="product-removal">
-      <button class="remove-product">
+      <button class="remove-product" style="border-color:#26a69a; background-color:#26a69a;">
         移除
       </button>
     </div>
@@ -119,7 +119,7 @@
 
 
   {% if not order.isPaid and not order.isCancelled %}
-  <button id="update" class="btn btn-info">
+  <button id="update" class="btn btn-info" style="border-color:#26a69a; background-color:#26a69a;">
     <a href={{ url_for('admin_view_alacarte_open_orders') }} style="color: rgb(247, 249, 252)">
       确定更新
     </a>

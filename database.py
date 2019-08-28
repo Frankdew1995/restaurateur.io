@@ -1,5 +1,5 @@
 
-from app.models import Order
+from app.models import Order, Log
 from app import db
 from uuid import uuid4
 import json
@@ -10,11 +10,9 @@ timezone = "Europe/Berlin"
 today = datetime.now(tz=pytz.timezone(timezone)).date()
 
 
-paid_orders = db.session.query(Order).filter(
-        Order.isPaid == True).order_by(Order.settleTime.desc()).all()
+for log in db.session.query(Log).all():
 
-print(paid_orders)
+    if str(today) in log.time:
 
-from_time = paid_orders[-1].settleTime
-
-print(from_time)
+        db.session.delete(log)
+        db.session.commit()

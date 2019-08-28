@@ -79,18 +79,21 @@
         </thead>
         <tbody>
 
-          {% for order in open_orders %}
+          {% for meal in meals %}
           <!-- start of table body -->
+          {% for time, details in meal.items() %}
           <tr>
-            <th scope="row">{{order.id}}</th>
+            <th scope="row">{{details.get('order_id')}}</th>
 
-            <th>{{"外卖" if order.type=="Out" else "单点" }}</th>
+            <th>{{"外卖" if type_dict.get(details.get('order_id'))=="Out" else "单点" }}</th>
 
-            <td>{{ order.table_name }}</td>
+            <td>{{ table_dict.get(details.get('order_id'))
+              if table_dict.get(details.get('order_id')) else "" }}
+            </td>
 
-            <td>{{ order.timeCreated.strftime(datetime_format) }}</td>
+            <td>{{ datetime.fromtimestamp(float(time)).strftime(datetime_format) }}</td>
 
-            {% if order.mealPrinted %}
+            {% if Order.query.get_or_404(details.get('order_id')).mealPrinted %}
             <td>已打印</td>
             {% else %}
             <td>未打印</td>
@@ -98,15 +101,15 @@
 
             <td style="text-align:center">
               <span>
-                <button type="button" class="btn btn-info">
-                  <a href={{ url_for('view_meallist', order_id=order.id) }} style="color: rgb(247, 249, 252)">
+                <button type="button" class="btn btn-info" style="border-color:#26a69a; background-color:#26a69a;">
+                  <a href={{ url_for('view_meallist', timestamp=time) }} style="color: rgb(247, 249, 252)">
                     查看菜品
                   </a>
                 </button>
               </span>
               <span>
-                <button type="button" class="btn btn-info">
-                  <a href={{ url_for('print_meallist', order_id=order.id) }} style="color: rgb(247, 249, 252)">
+                <button type="button" class="btn btn-info" style="border-color:#26a69a; background-color:#26a69a;">
+                  <a href="#" style="color: rgb(247, 249, 252)">
                     打印
                   </a>
                 </button>
@@ -114,6 +117,7 @@
             </td>
           </tr>
           <!-- end of table body -->
+          {% endfor %}
           {% endfor %}
 
 
@@ -140,7 +144,11 @@
 {% block scripts %}
 <script>
     $(document).ready(function() {
-    $('#example').DataTable();
+    $('#example').DataTable(
+      {
+        'order': [[3, "desc"]]
+      }
+    );
 } );
 </script>
 <script type="text/javascript" charset="utf8" src="https://cdn.datatables.net/1.10.19/js/dataTables.bootstrap4.min.js"></script>

@@ -78,30 +78,30 @@
       {{order.id}}
     </span>
   </p>
-  <p>桌子号: {{ container.get('table_name', '外卖') }}</p>
-  <p>座位号: {{ container.get('seat_number', '外卖') }}</p>
-  <p>生成时间: {{ order.timeCreated.strftime(datetime_format) }}</p>
+  <p>桌子号: {{ order.table_name if order.table_name else '外卖' }}</p>
+  <p>座位号: {{ order.seat_number if order.seat_number else '外卖' }}</p>
+  <p>订单生成时间: {{ order.timeCreated.strftime(datetime_format) }}</p>
+  <p>菜品下单时间: {{ timeOrdered }}</p>
 
   <p>状态:
     <span>
-      {% if not container.get('isCancelled') %}
+      {% if not order.isCancelled %}
       {{"已结账" if order.isPaid else "就餐中"}}
       {% endif %}
     </span>
     <span>
-      {{"已取消" if container.get('isCancelled') }}
+      {{"已取消" if order.isCancelled }}
     </span>
   </p>
 
 
-  {% if not order.isPaid and not container.get('isCancelled') %}
-  <button id="update" class="btn btn-info">
-    <a style="color: rgb(247, 249, 252)" href={{ url_for('print_meallist', order_id=order.id) }}>
+  <button id="update" class="btn btn-info" style="border-color:#26a69a; background-color:#26a69a;">
+    <a style="color: rgb(247, 249, 252)" href={{ url_for('print_meallist', timestamp=timestamp) }}>
       打印
     </a>
   </button>
 
-  {% endif %}
+  
 
 </div>
 

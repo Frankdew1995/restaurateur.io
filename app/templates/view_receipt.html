@@ -79,8 +79,7 @@
     </span>
   </p>
 
-  <p>桌子号: {{ order.table_name }}</p>
-  <p>座位号: {{ order.seat_number }}</p>
+  <p>桌子号: {{ order.table_name if order.table_name else ""}}</p>
   <p>生成时间: {{ order.timeCreated.strftime(datetime_format) }}</p>
 
   <p>状态:
@@ -94,8 +93,12 @@
     </span>
   </p>
 
+  <p>Total: {{total}}</p>
+  <p>Satz: {{"19%" if order.type == "In" else "7%"}}</p>
+  <p>MwsT: {{ vat }}</p>
 
-  <button id="update" class="btn btn-info">
+
+  <button id="update" class="btn btn-info" style="border-color:#26a69a; background-color:#26a69a;">
     <a style="color: rgb(247, 249, 252)" href={{ url_for('print_receipt', order_id=order.id) }}>
       打印
     </a>

@@ -73,7 +73,6 @@
             <th scope="col">订单分类</th>
             <th scope="col">桌子号</th>
             <th scope="col">下单时间</th>
-            <th scope="col">结账时间</th>
             <th scope="col">打印状态</th>
             <th scope="col">操作</th>
           </tr>
@@ -87,12 +86,9 @@
 
             <th>{{"外卖" if order.type == "Out" else "单点"}}</th>
 
-            <td>{{ order.table_name }}</td>
-
+            <td>{{ order.table_name if order.table_name else "" }}</td>
 
             <td>{{ order.timeCreated.strftime(datetime_format) }}</td>
-
-            <td>{{ order.settleTime.strftime(datetime_format) }}</td>
 
             {% if order.printed %}
             <td>已打印</td>
@@ -102,14 +98,14 @@
 
             <td style="text-align:center">
               <span>
-                <button type="button" class="btn btn-info">
+                <button type="button" class="btn btn-info" style="border-color:#26a69a; background-color:#26a69a;">
                   <a href={{ url_for('view_receipt', order_id=order.id) }} style="color: rgb(247, 249, 252)">
                     查看发票
                   </a>
                 </button>
               </span>
               <span>
-              <button type="button" class="btn btn-info">
+              <button type="button" class="btn btn-info" style="border-color:#26a69a; background-color:#26a69a;">
                 <a href={{ url_for('print_receipt', order_id=order.id) }} style="color: rgb(247, 249, 252)">
                   打印
                 </a>
@@ -145,27 +141,11 @@
 <script>
     $(document).ready(function() {
     $('#example').DataTable({
-      'order':[[3, 'desc']]
+      'order':[[4, 'desc']]
     });
 } );
 </script>
 <script type="text/javascript" charset="utf8" src="https://cdn.datatables.net/1.10.19/js/dataTables.bootstrap4.min.js"></script>
 <script type="text/javascript" charset="utf8" src="https://code.jquery.com/jquery-3.3.1.js"></script>
 <script type="text/javascript" charset="utf8" src="https://cdn.datatables.net/1.10.19/js/jquery.dataTables.min.js"></script>
-<script type="text/javascript">
-
-  const cancelBtns = document.querySelectorAll(".btn btn-danger");
-
-
-  cancelBtns.addEventListener('click', function(){
-    alert("确定取消订单吗？");
-  });
-
-
-
-</script>
-
-
-
-
 {% endblock %}

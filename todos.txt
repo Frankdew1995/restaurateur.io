@@ -42,19 +42,10 @@ To Dos:
 29. Serialize orders daily.
 
 30. Sort the order by settleTime desc and use the \
-    settleID to identify orders that share the same table:
 
     admin, waiter, takeaway and boss
 
-#Set the settleID and settleTime
-settle_id = str(uuid4().int)
-settle_time = datetime.now(tz=pytz.timezone(timezone))
-
-@app.route("/addtable", methods=["POST", "GET"])
-
-
-btn btn-info style="border-color:#26a69a; background-color:#26a69a;"
-
-btn btn-danger style="border-color:#E57373; background-color:##E57373;"
+31. dishes in Order model: use timestamp as the string to record
+32.
 
 

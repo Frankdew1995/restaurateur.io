@@ -20,7 +20,8 @@ from .forms import (AddDishForm, StoreSettingForm,
 from .utilities import (json_reader, store_picture,
                         generate_qrcode, activity_logger,
                         qrcode2excel, call2print, receipt_templating,
-                        bar_templating, kitchen_templating, terminal_templating)
+                        bar_templating, kitchen_templating,
+                        terminal_templating, z_receipt_templating)
 
 from pathlib import Path
 import json
@@ -420,7 +421,7 @@ def index():
 @app.route("/takeaway/frontviews")
 def food_frontview():
 
-    dishes = Food.query.all()
+    dishes = Food.query.filter(Food.inUse == True).all()
 
     categories = list(set([dish.category for dish in dishes]))
 
@@ -711,17 +712,20 @@ def checkout_takeaway_admin(order_id):
         # Start the thread
         th = Thread(target=master_printer)
         th.start()
+        try:
+            # Writing logs to the csv file
+            activity_logger(order_id=order.id,
+                            operation_type=u'结账',
+                            page_name=u'外卖界面 > 订单结账',
+                            descr=f'''结账订单号:{order.id}\n
+                            支付方式:{logging.get('Pay')}\n
+                            账单金额: {order.totalPrice}\n
+                            订单类型:{logging.get('Type')}\n''',
+                            log_time=str(datetime.now(tz=pytz.timezone('Europe/Berlin'))),
+                            status=u'成功')
+        except:
 
-        # Writing logs to the csv file
-        activity_logger(order_id=order.id,
-                        operation_type=u'结账',
-                        page_name=u'外卖界面 > 订单结账',
-                        descr=f'''结账订单号:{order.id}\n
-                        支付方式:{logging.get('Pay')}\n
-                        账单金额: {order.totalPrice}\n
-                        订单类型:{logging.get('Type')}\n''',
-                        log_time=str(datetime.now(tz=pytz.timezone('Europe/Berlin'))),
-                        status=u'成功')
+            pass
 
         flash(f"已经为订单{order.id}结账")
 
@@ -2141,6 +2145,8 @@ def admin_view_table(table_name):
 
         order = orders[0]
 
+        print(order)
+
         if order.timeCreated.date() == today:
 
             # Check if a checkout button is clicked
@@ -2159,14 +2165,13 @@ def admin_view_table(table_name):
 
                     if form.coupon_amount.data:
 
-                        order.totalPrice = order.totalPrice -\
-                                           form.coupon_amount.data
+                        order.discount = form.coupon_amount.data
 
                         pay_via['coupon_amount'] = form.coupon_amount.data
 
                     elif form.discount_rate.data:
 
-                        order.totalPrice = order.totalPrice * form.discount_rate.data
+                        order.discount_rate = form.discount_rate.data
                         pay_via['discount_rate'] = form.discount_rate.data
 
                     pay_via["method"] = "Cash"
@@ -2177,14 +2182,13 @@ def admin_view_table(table_name):
 
                     if form.coupon_amount.data:
 
-                        order.totalPrice = order.totalPrice -\
-                                           form.coupon_amount.data
+                        order.discount = form.coupon_amount.data
 
                         pay_via['coupon_amount'] = form.coupon_amount.data
 
                     elif form.discount_rate.data:
 
-                        order.totalPrice = order.totalPrice * form.discount_rate.data
+                        order.discount_rate = form.discount_rate.data
                         pay_via['discount_rate'] = form.discount_rate.data
 
                     pay_via['method'] = "Card"
@@ -2590,22 +2594,29 @@ def alacarte_guest_checkout():
 
             if order.timeCreated.date() != today:
 
+                now = datetime.now(pytz.timezone(timezone))
+
+                cur_max_id = max([order.id for order in Order.query.all()])
+
                 # Create a new order for this table
                 order = Order(
                     totalPrice=total_price,
                     orderNumber=str(uuid4().int),
                     items=json.dumps(details),
-                    timeCreated=datetime.now(pytz.timezone(timezone)),
+                    timeCreated=now,
                     type="In",
                     table_name=table_name,
                     seat_number=seat_number,
                     isCancelled=False,
-                    dishes=json.dumps([details]))
+                    dishes=json.dumps([{datetime.timestamp(now): {"items": details,
+                                                                  "order_id": cur_max_id + 1}}]))
 
                 db.session.add(order)
                 db.session.commit()
 
             else:
+
+                now = datetime.now(pytz.timezone(timezone))
 
                 cur_items = json.loads(order.items)
 
@@ -2619,7 +2630,8 @@ def alacarte_guest_checkout():
 
                     dishes = json.loads(order.dishes)
 
-                dishes.append(details)
+                dishes.append({datetime.timestamp(now): {"items": details,
+                                                          "order_id": order.id}})
 
                 order.dishes = json.dumps(dishes)
 
@@ -2645,17 +2657,23 @@ def alacarte_guest_checkout():
 
         else:
 
+            now = datetime.now(pytz.timezone(timezone))
+
+            cur_max_id = max([order.id for order in Order.query.all()])
+
             # Create a new order for this table
             order = Order(
                 totalPrice=total_price,
                 orderNumber=str(uuid4().int),
                 items=json.dumps(details),
-                timeCreated=datetime.now(pytz.timezone(timezone)),
+                timeCreated=now,
                 type="In",
                 table_name=table_name,
                 seat_number=seat_number,
                 isCancelled=False,
-                dishes=json.dumps([details]))
+                dishes=json.dumps([{datetime.timestamp(now): {"items": details,
+                                                              "order_id": cur_max_id + 1}}])
+            )
 
             db.session.add(order)
             db.session.commit()
@@ -2674,7 +2692,7 @@ def alacarte_guest_checkout():
                            "now": datetime.now().strftime("%Y-%m-%d %H:%M:%S")}
 
         kitchen_temp = str(Path(app.root_path) / 'static' / 'docx' / 'kitchen_alacarte.docx')
-        save_as_kitchen = f"alacarte_meallist_kitchen_{order.id}"
+        save_as_kitchen = f"alacarte_meallist_kitchen_{order.id}_{str(uuid4())}"
 
         context_bar = {"details": details_bar,
                        "seat_number": seat_number,
@@ -2682,7 +2700,7 @@ def alacarte_guest_checkout():
                        "now": datetime.now().strftime("%Y-%m-%d %H:%M:%S")}
 
         bar_temp = str(Path(app.root_path) / 'static' / 'docx' / 'bar_alacarte.docx')
-        save_as_bar = f"alacarte_meallist_bar_{order.id}"
+        save_as_bar = f"alacarte_meallist_bar_{order.id}_{str(uuid4())}"
 
         # Read the printer setting data from the json file
         with open(str(Path(app.root_path) / "settings" / "printer.json"), encoding="utf8") as file:
@@ -2734,7 +2752,6 @@ def guest_call_service(table_name, seat_number):
     return redirect(url_for('alacarte_navigate',
                             table_name=table_name,
                             seat_number=seat_number))
-
 
 
 @app.route('/pay/call/<string:table_name>/<string:seat_number>',methods=['GET', 'POST'])
@@ -2796,16 +2813,15 @@ def waiter_admin():
 
     # Filtering only orders which happened the same day.(TZ: Berlin)
     orders = [order for order in orders if
-              order.timeCreated.date() == datetime.now(tz=pytz.timezone("Europe/Berlin")).date() and
-                   not json.loads(order.container).get('isCancelled')]
+              order.timeCreated.date() == today and
+                   not order.isCancelled]
     # Order is not cancelled added
 
     from collections import OrderedDict
     sections = {letter: letter + u"区" for letter in letters}
 
     # Currently Open Tables
-    open_tables = list(set([json.loads(order.container).get("table_name")
-                            for order in orders]))
+    open_tables = list(set([order.table_name for order in orders]))
 
     sections_2_tables = {section: [table
                         for table in Table.query.filter_by(section=section).all()
@@ -2871,155 +2887,141 @@ def view_table(table_name):
     # Check out form payment methods, discount and coupon code
     form = CheckoutForm()
 
-    # Filtering alacarte unpaid orders and the targeted table
+    # Filtering ala carte unpaid orders and the targeted table and order not cancelled
     orders = db.session.query(Order).filter(
         Order.type == "In",
-        Order.isPaid == False).all()
+        Order.isPaid == False,
+        Order.table_name == table_name,
+        Order.isCancelled == False).order_by(Order.timeCreated.desc()).all()
 
-    open_orders = [order for order in orders if
-                   json.loads(order.container).get('table_name') == table_name and
-                   order.timeCreated.date() == datetime.now(tz=pytz.timezone("Europe/Berlin")).date()
-                   and not json.loads(order.container).get('isCancelled')]
+    if len(orders) > 0:
 
-    # Calculate the total price for this table
-    total_price = sum([order.totalPrice for order in open_orders])
+        order = orders[0]
 
-    dish_varieties = [[key for key in (json.loads(order.items).keys())] for order in open_orders]
+        print(order)
 
-    varieties = []
-    for x in dish_varieties:
-        varieties.extend(x)
+        if order.timeCreated.date() == today:
 
-    varieties = list(set(varieties))
+            # Calculate the total price for this table
+            total_price = order.totalPrice
 
-    dishes = {
-        dish:
-            {
-                'quantity': sum([json.loads(order.items).get(dish).get('quantity')
-                                 for order in open_orders if json.loads(order.items).get(dish)]),
+            dishes = json.loads(order.items)
 
-                'price': Food.query.filter_by(name=dish).first_or_404().price_gross,
+            # Add cond if order not cancelled
+            # Check if a checkout button is clicked
+            if request.method == "POST" or form.validate_on_submit():
 
-                'class_name': Food.query.filter_by(name=dish).first_or_404().class_name,
-                'total': (sum([json.loads(order.items).get(dish).get('quantity')
-                                 for order in open_orders if json.loads(order.items).get(dish)])) \
-                                    * Food.query.filter_by(name=dish).first_or_404().price_gross,
+                # Set settleId and SettleTime
+                settle_id = str(uuid4().int)
+                settle_time = datetime.now(tz=pytz.timezone(timezone))
 
-            } for dish in varieties}
+                logging = {}
 
-    # Add cond if order not cancelled
-    # Check if a checkout button is clicked
-    if request.method == "POST":
+                pay_via = {}
 
-        # Set settleId and SettleTime
-        settle_id = str(uuid4().int)
-        settle_time = datetime.now(tz=pytz.timezone(timezone))
+                # Pay via cash
+                if form.cash_submit.data:
 
-        for order in open_orders:
+                    if form.coupon_amount.data:
 
-            logging = {}
+                        order.discount = form.coupon_amount.data
 
-            pay_via = {}
+                        pay_via['coupon_amount'] = form.coupon_amount.data
 
-            # Pay via cash
-            if form.cash_submit.data:
+                    elif form.discount_rate.data:
 
-                if form.coupon_amount.data:
+                        order.discount_rate = form.discount_rate.data
+                        pay_via['discount_rate'] = form.discount_rate.data
 
-                    order.totalPrice = order.totalPrice -\
-                                       (form.coupon_amount.data/len(open_orders))
+                    pay_via["method"] = "Cash"
+                    logging['Pay'] = u'现金'
 
-                    pay_via['coupon_amount'] = form.coupon_amount.data/len(open_orders)
+                # Pay via card
+                elif form.card_submit.data:
 
-                elif form.discount_rate.data:
+                    if form.coupon_amount.data:
 
-                    order.totalPrice = order.totalPrice * form.discount_rate.data
-                    pay_via['discount_rate'] = form.discount_rate.data
+                        order.discount = form.coupon_amount.data
 
-                pay_via["method"] = "Cash"
-                logging['Pay'] = u'现金'
+                        pay_via['coupon_amount'] = form.coupon_amount.data
 
-            # Pay via card
-            elif form.card_submit.data:
+                    elif form.discount_rate.data:
 
-                if form.coupon_amount.data:
+                        order.discount_rate = form.discount_rate.data
+                        pay_via['discount_rate'] = form.discount_rate.data
 
-                    order.totalPrice = order.totalPrice -\
-                                       (form.coupon_amount.data/len(open_orders))
+                    pay_via['method'] = "Card"
+                    logging['Pay'] = u'卡'
 
-                    pay_via['coupon_amount'] = form.coupon_amount.data/len(open_orders)
+                order.isPaid = True
 
-                elif form.discount_rate.data:
+                order.settleID = settle_id
+                order.settleTime = settle_time
 
-                    order.totalPrice = order.totalPrice * form.discount_rate.data
-                    pay_via['discount_rate'] = form.discount_rate.data
+                order.pay_via = json.dumps(pay_via)
 
-                pay_via['method'] = "Card"
-                logging['Pay'] = u'卡'
+                db.session.commit()
 
-            order.isPaid = True
+                # Writing logs to the csv file
+                activity_logger(order_id=order.id,
+                                operation_type=u'结账',
+                                page_name=u'跑堂界面 > 桌子详情',
+                                descr=f'''结账订单号:{order.id}\n
+                                        桌子编号：{order.table_name}-{order.seat_number}
+                                        支付方式:{logging.get('Pay')}\n
+                                        结账金额: {order.totalPrice}\n
+                                        订单类型:AlaCarte\n''',
+                                log_time=str(datetime.now(pytz.timezone('Europe/Berlin'))),
+                                status=u'成功')
 
-            order.settleID = settle_id
-            order.settleTime = settle_time
+                context = {"details": dishes,
+                           "company_name": company_info.get('company_name', ''),
+                           "address": company_info.get('address'),
+                           "now": format_datetime(datetime.now(), locale="de_DE"),
+                           "tax_id": company_info.get('tax_id'),
+                           "order_id": order.id,
+                           "table_name": table_name,
+                           "total": format_decimal(total_price, locale="de_DE"),
+                           "pay_via": json.loads(order.pay_via).get('method', ""),
+                           "VAT": format_decimal(
+                               round((total_price / tax_rate_out) * tax_rate_out, 2), locale="de_DE")}
 
-            order.pay_via = json.dumps(pay_via)
+                temp_file = str(Path(app.root_path) / 'static' / 'docx' / 'receipt_temp_inhouse.docx')
+                save_as = f"receipt_{order.id}"
 
-            db.session.commit()
+                with open(str(Path(app.root_path) / "settings" / "printer.json"), encoding="utf8") as file:
 
-            # Writing logs to the csv file
-            activity_logger(order_id=order.id,
-                            operation_type=u'结账',
-                            page_name=u'跑堂界面 > 桌子详情',
-                            descr=f'''结账订单号:{order.id}\n
-                                    桌子编号：{json.loads(order.container).get('table_name')}-{json.loads(order.container).get('seat_number')}
-                                    支付方式:{logging.get('Pay')}\n
-                                    结账金额: {order.totalPrice}\n
-                                    订单类型:AlaCarte\n''',
-                            log_time=str(datetime.now(pytz.timezone('Europe/Berlin'))),
-                            status=u'成功')
+                    data = file.read()
 
-        random_order_id = open_orders[0].id
-        context = {"details": dishes,
-                   "company_name": company_info.get('company_name', ''),
-                   "address": company_info.get('address'),
-                   "now": datetime.now().strftime("%Y-%m-%d %H:%M:%S"),
-                   "tax_id": company_info.get('tax_id'),
-                   "order_id": '-'.join([str(order.id) for order in open_orders]),
-                   "table_name": table_name,
-                   "total": total_price,
-                   "pay_via": json.loads(Order.query.filter_by(id=random_order_id).first_or_404().pay_via).get('method', ""),
-                   "VAT": round((total_price / 1.19) * 0.19, 2)}
+                data = json.loads(data)
 
-        temp_file = str(Path(app.root_path) / 'static' / 'docx' / 'receipt_temp_inhouse.docx')
-        save_as = f"receipt_{ '-'.join([str(order.id) for order in open_orders])}"
+                printer = data.get('receipt').get('printer')
 
-        with open(str(Path(app.root_path) / "settings" / "printer.json"), encoding="utf8") as file:
+                def master_printer():
 
-            data = file.read()
+                    receipt_templating(context=context,
+                                       temp_file=temp_file,
+                                       save_as=save_as,
+                                       printer=printer)
 
-        data = json.loads(data)
+                th = Thread(target=master_printer)
 
-        printer = data.get('receipt').get('printer')
+                th.start()
 
-        def master_printer():
+                return redirect(url_for('waiter_admin'))
 
-            receipt_templating(context=context,
-                               temp_file=temp_file,
-                               save_as=save_as,
-                               printer=printer)
+            # Else just render page as get method
+            return render_template('view_table_summary.html',
+                                   dishes=dishes,
+                                   table_name=table_name,
+                                   total_price=total_price,
+                                   form=form)
 
-        th = Thread(target=master_printer)
-
-        th.start()
-
+        flash(f"桌子{table_name}暂无最新订单！", category="error")
         return redirect(url_for('waiter_admin'))
 
-    # Else just render page as get method
-    return render_template('view_table_summary.html',
-                           dishes=dishes,
-                           table_name=table_name,
-                           total_price=total_price,
-                           form=form)
+    flash(f"桌子{table_name}暂无任何订单！", category="error")
+    return redirect(url_for('waiter_admin'))
 
 
 @app.route("/alacarte/orders/manage")
@@ -3343,13 +3345,11 @@ def return_table_status():
         Order.isPaid == False).all()
 
     # Filtering only orders which happened the same day.(TZ: Berlin)
-    orders = [order for order in orders if order.timeCreated.date()
-              == datetime.now(tz=pytz.timezone("Europe/Berlin")).date() and
-              not json.loads(order.container).get('isCancelled')]
+    open_orders = [order for order in orders if order.timeCreated.date() == today
+                   and not order.isCancelled]
 
     # Currently Open Tables
-    open_tables = list(set([json.loads(order.container).get("table_name")
-                            for order in orders]))
+    open_tables = list(set([order.table_name for order in open_orders]))
 
     tables = [Table.query.filter_by(name=table).first_or_404() for table in open_tables]
 
@@ -3368,13 +3368,11 @@ def tables_pay_called():
         Order.isPaid == False).all()
 
     # Filtering only orders which happened the same day.(TZ: Berlin)
-    orders = [order for order in orders if order.timeCreated.date()
-              == datetime.now(tz=pytz.timezone("Europe/Berlin")).date() and
-              not json.loads(order.container).get('isCancelled')]
+    open_orders = [order for order in orders if order.timeCreated.date()
+              == today and not order.isCancelled]
 
     # Currently Open Tables
-    open_tables = list(set([json.loads(order.container).get("table_name")
-                            for order in orders]))
+    open_tables = list(set([order.table_name for order in open_orders]))
 
     tables = [Table.query.filter_by(name=table).first_or_404() for table in open_tables]
 
@@ -3500,25 +3498,32 @@ def view_z_receipt():
     total_discounts = sum([order.discount for order
                                 in filtered_paid_orders if order.discount])
 
-    gross_revenue_from_paid_tables = gross_revenue1
+    cur_paid_alacarte_orders = [order for order in paid_orders if order.type == "In" and
+                                order.settleTime.date() == today]
 
-    gross_revenue_from_out_orders = gross_revenue2
+    revenue_from_cur_paid_tables = sum([order.totalPrice for
+                                        order in cur_paid_alacarte_orders])
 
-    ranged_unpaid_alacarte_orders = [order for order in unpaid_orders if order.type == "In" and
-                                   unpaid_from <= order.timeCreated <= now]
+    cur_unpaid_alacarte_orders = [order for order in unpaid_orders if
+                                  order.type == "In" and
+                                  order.timeCreated.date() == today]
 
-    ranged_unpaid_out_orders = [order for order in unpaid_orders if order.type == "Out" and
-                                   unpaid_from <= order.timeCreated <= now]
+    revenue_from_cur_unpaid_tables = sum([order.totalPrice for
+                                            order in cur_unpaid_alacarte_orders])
 
-    gross_revenue_from_unpaid_tables = sum([order.totalPrice for
-                                            order in ranged_unpaid_alacarte_orders])
+    cur_paid_orders = [order for order in paid_orders
+                       if order.settleTime.date() == today]
 
-    gross_revenue_from_unpaid_out_orders = sum([order.totalPrice for order in ranged_unpaid_out_orders])
+    cur_de_facto_revenue = sum([order.totalPrice for order in cur_paid_orders])
 
-    ranged_paid_orders_cash = [order for order in paid_orders if json.loads(order.pay_via).get('method') == "Cash"
-                          and from_time <= order.settleTime <= now]
+    dummy_cur_revenue = cur_de_facto_revenue + revenue_from_cur_unpaid_tables
 
-    ranged_paid_orders_card = [order for order in paid_orders if json.loads(order.pay_via).get('method') == "Card"
+    ranged_paid_orders_cash = [order for order in paid_orders if
+                               json.loads(order.pay_via).get('method') == "Cash"
+                               and from_time <= order.settleTime <= now]
+
+    ranged_paid_orders_card = [order for order in paid_orders if
+                               json.loads(order.pay_via).get('method') == "Card"
                                and from_time <= order.settleTime <= now]
 
     gross_cash_revenue = sum([order.totalPrice for order in ranged_paid_orders_cash])
@@ -3529,6 +3534,131 @@ def view_z_receipt():
                    title=u"打印Z单",
                    company_name=company_info.get('company_name'),
                    z_number=len(data)+1,
+                   now=format_datetime(now, locale="de_DE"),
+                   now_timestamp=datetime.timestamp(now),
+                   gross_revenue1=format_decimal(gross_revenue1, locale="de_DE"),
+                   net_revenue1=format_decimal(net_revenue1, locale="de_DE"),
+                   vat1=format_decimal(vat1, locale="de_DE"),
+                   gross_revenue2=format_decimal(gross_revenue2, locale="de_DE"),
+                   net_revenue2=format_decimal(net_revenue2, locale="de_DE"),
+                   vat2=format_decimal(vat2, locale="de_DE"),
+                   taxable_gross=format_decimal(taxable_gross, locale="de_DE"),
+                   taxable_net=format_decimal(taxable_net, locale="de_DE"),
+                   total_vat=format_decimal(total_vat, locale="de_DE"),
+                   total_taxable_gross=format_decimal(total_taxable_gross, locale="de_DE"),
+                   percentage_discounts=format_decimal(percentage_discounts, locale="de_DE"),
+                   total_discounts=format_decimal(total_discounts, locale="de_DE"),
+                   gross_cash_revenue=format_decimal(gross_cash_revenue, locale="de_DE"),
+                   gross_card_revenue=format_decimal(gross_card_revenue, locale="de_DE"),
+                   dummy_cur_revenue=format_decimal(dummy_cur_revenue, locale="de_DE"),
+                   revenue_from_cur_paid_tables=format_decimal(revenue_from_cur_paid_tables,
+                                                               locale="de_DE"),
+                   revenue_from_cur_unpaid_tables=format_decimal(revenue_from_cur_unpaid_tables,
+                                                                 locale="de_DE")
+
+                   )
+
+    return render_template("view_z_receipt.html", **context)
+
+
+@app.route('/print/z/receipt/<string:date_time>')
+@login_required
+def print_z_receipt(date_time):
+
+    til = datetime.fromtimestamp(float(date_time))
+
+    paid_orders = Order.query.filter(Order.isPaid == True).order_by(Order.settleTime.desc()).all()
+
+    unpaid_orders = Order.query.filter(Order.isPaid == False).order_by(Order.settleTime.desc()).all()
+
+    with open(str(Path(app.root_path) / 'cache' / 'z_bon_settings.pickle'),
+              mode="rb") as pickle_out:
+        data = pickle.load(pickle_out)
+
+    from_time = None
+    unpaid_from = None
+
+    if len(data) == 0:
+
+        unpaid_from = unpaid_orders[-1].timeCreated
+
+        from_time = paid_orders[-1].settleTime
+
+    else:
+
+        from_time = data[-1].get('lastPrinted')
+        unpaid_from = data[-1].get('unpaid_last_until')
+
+    now = til
+
+    ranged_paid_alacarte_orders = [order for order in paid_orders if order.type == "In" and
+                                   from_time <= order.settleTime <= now]
+
+    ranged_paid_out_orders = [order for order in paid_orders if order.type == "Out" and
+                              from_time <= order.settleTime <= now]
+
+    gross_revenue1 = sum([order.totalPrice for order in ranged_paid_alacarte_orders])
+
+    net_revenue1 = round(gross_revenue1 / (1 + tax_rate_in), 2)
+
+    vat1 = gross_revenue1 - net_revenue1
+
+    gross_revenue2 = sum([order.totalPrice for order in ranged_paid_out_orders])
+
+    net_revenue2 = round(gross_revenue2 / (1 + tax_rate_out), 2)
+
+    vat2 = gross_revenue2 - net_revenue2
+
+    taxable_gross = gross_revenue1 + gross_revenue2
+
+    taxable_net = net_revenue1 + net_revenue2
+
+    total_vat = vat1 + vat2
+
+    total_taxable_gross = gross_revenue2 + gross_revenue1
+
+    filtered_paid_orders = ranged_paid_alacarte_orders + ranged_paid_out_orders
+
+    percentage_discounts = sum([order.discount_rate * order.totalPrice for order
+                                in filtered_paid_orders if order.discount_rate])
+
+    total_discounts = sum([order.discount for order
+                           in filtered_paid_orders if order.discount])
+
+    cur_paid_alacarte_orders = [order for order in paid_orders if order.type == "In" and
+                                order.settleTime.date() == today]
+
+    revenue_from_cur_paid_tables = sum([order.totalPrice for
+                                        order in cur_paid_alacarte_orders])
+
+    cur_unpaid_alacarte_orders = [order for order in unpaid_orders if
+                                  order.type == "In" and
+                                  order.timeCreated.date() == today]
+
+    revenue_from_cur_unpaid_tables = sum([order.totalPrice for
+                                          order in cur_unpaid_alacarte_orders])
+
+    cur_paid_orders = [order for order in paid_orders
+                       if order.settleTime.date() == today]
+
+    cur_de_facto_revenue = sum([order.totalPrice for order in cur_paid_orders])
+
+    dummy_cur_revenue = cur_de_facto_revenue + revenue_from_cur_unpaid_tables
+
+    ranged_paid_orders_cash = [order for order in paid_orders if
+                               json.loads(order.pay_via).get('method') == "Cash"
+                               and from_time <= order.settleTime <= now]
+
+    ranged_paid_orders_card = [order for order in paid_orders if
+                               json.loads(order.pay_via).get('method') == "Card"
+                               and from_time <= order.settleTime <= now]
+
+    gross_cash_revenue = sum([order.totalPrice for order in ranged_paid_orders_cash])
+
+    gross_card_revenue = sum([order.totalPrice for order in ranged_paid_orders_card])
+
+    context = dict(
+                   z_number=len(data) + 1,
                    now=format_datetime(now, locale="de_DE"),
                    gross_revenue1=format_decimal(gross_revenue1, locale="de_DE"),
                    net_revenue1=format_decimal(net_revenue1, locale="de_DE"),
@@ -3542,31 +3672,45 @@ def view_z_receipt():
                    total_taxable_gross=format_decimal(total_taxable_gross, locale="de_DE"),
                    percentage_discounts=format_decimal(percentage_discounts, locale="de_DE"),
                    total_discounts=format_decimal(total_discounts, locale="de_DE"),
-                   gross_revenue_from_unpaid_tables=format_decimal(gross_revenue_from_unpaid_tables, locale="de_DE"),
                    gross_cash_revenue=format_decimal(gross_cash_revenue, locale="de_DE"),
                    gross_card_revenue=format_decimal(gross_card_revenue, locale="de_DE"),
-                   gross_revenue_from_unpaid_out_orders=format_decimal(gross_revenue_from_unpaid_tables, locale="de_DE")
-                   )
+                   dummy_cur_revenue=format_decimal(dummy_cur_revenue, locale="de_DE"),
+                   revenue_from_cur_paid_tables=format_decimal(revenue_from_cur_paid_tables,
+                                                               locale="de_DE"),
+                   revenue_from_cur_unpaid_tables=format_decimal(revenue_from_cur_unpaid_tables,
+                                                                 locale="de_DE"))
 
-    return render_template("view_z_receipt.html", **context)
+    temp_file = str(Path(app.root_path) / 'static' / 'docx' / 'z_receipt_temp.docx')
 
+    save_as = f"z_receipt_{str(uuid4())}"
 
-@app.route('/print/z/receipt/<string:date_time>')
-@login_required
-def print_z_receipt(date_time):
+    # Read the printer setting data from the json file
+    with open(str(Path(app.root_path) / "settings" / "printer.json"),
+              encoding="utf8") as file:
 
-    paid_orders = Order.query.filter(
-        Order.isPaid == True).order_by(Order.settleTime.desc()).all()
+        data1 = file.read()
+
+    data1 = json.loads(data1)
+
+    printer = data1.get('receipt').get('printer')
+
+    def z_receipt_printer():
+
+        z_receipt_templating(context=context,
+                             temp_file=temp_file,
+                             save_as=save_as,
+                             printer=printer)
+
+    th = Thread(target=z_receipt_printer)
+
+    th.start()
+
+    data.append({1: {"lastPrinted": now}})
 
     with open(str(Path(app.root_path) / 'cache' / 'z_bon_settings.pickle'),
-              mode="rb") as pickle_out:
-        data = pickle.load(pickle_out)
+              mode="wb") as pickle_in:
 
-    from_time = data[-1].get('lastPrinted')
-
-    if len(data) == 0:
-
-        from_time = paid_orders[-1].settleTime
+        pickle.dump(data, pickle_in)
 
     return redirect(url_for('view_z_receipts'))
 
@@ -4548,37 +4692,81 @@ def view_meallists():
         Order.type == "In",
         Order.isPaid == False).all()
 
+    cur_unpaid_alacarte_orders = [order for order in unpaid_alacarte_orders if
+                  order.timeCreated.date() == today]
+
     paid_out_orders = db.session.query(Order).filter(
         Order.type == "Out",
         Order.isPaid == True).all()
+
+    cur_paid_out_orders = [order for order in paid_out_orders if
+                                  order.timeCreated.date() == today]
+
+    out_meals = [{datetime.timestamp(order.timeCreated):
+                      {"items": json.loads(order.items), "order_id": order.id}}
+                 for order in cur_paid_out_orders]
+
+    alacarte_meals = [patch for order in
+                      cur_unpaid_alacarte_orders for patch in json.loads(order.dishes)]
+
+    meals = out_meals + alacarte_meals
 
     orders = unpaid_alacarte_orders + paid_out_orders
 
     cur_orders = [order for order in orders if
                   order.timeCreated.date() == today]
 
-    items = {order.id: json.loads(order.items) for order in cur_orders}
+    type_dict = {order.id: order.type for order in cur_orders}
+    table_dict= {order.id: order.table_name for order in cur_orders}
 
-    containers = {order.id: json.loads(order.container)
-                  for order in cur_orders if order.container}
-
-    context = dict(open_orders=cur_orders,
-                   items=items,
+    context = dict(meals=meals,
+                   type_dict=type_dict,
+                   table_dict=table_dict,
                    referrer=request.headers.get('Referer'),
                    title=u"菜品打印",
                    datetime_format=datetime_format,
-                   company_name=company_info.get('company_name'))
+                   company_name=company_info.get('company_name'),
+                   datetime=datetime,
+                   Order=Order,
+                   float=float)
 
+    # return jsonify(meals)
     return render_template("view_meallists.html", **context)
 
 
-@app.route("/print/meallist/<int:order_id>")
+@app.route("/print/meallist/<string:timestamp>")
 @login_required
-def print_meallist(order_id):
+def print_meallist(timestamp):
 
-    order = db.session.query(Order).get_or_404(int(order_id))
+    # Filtering alacarte unpaid orders and the targeted table
+    unpaid_alacarte_orders = db.session.query(Order).filter(
+        Order.type == "In",
+        Order.isPaid == False).all()
 
-    ordered_items = json.loads(order.items)
+    cur_unpaid_alacarte_orders = [order for order in unpaid_alacarte_orders if
+                                  order.timeCreated.date() == today]
+
+    paid_out_orders = db.session.query(Order).filter(
+        Order.type == "Out",
+        Order.isPaid == True).all()
+
+    cur_paid_out_orders = [order for order in paid_out_orders if
+                           order.timeCreated.date() == today]
+
+    out_meals = [{str(datetime.timestamp(order.timeCreated)):
+                      {"items": json.loads(order.items), "order_id": order.id}}
+                 for order in cur_paid_out_orders]
+
+    alacarte_meals = [patch for order in
+                      cur_unpaid_alacarte_orders for patch in json.loads(order.dishes)]
+
+    meals = out_meals + alacarte_meals
+
+    meal = [meal.get(timestamp) for meal in meals if meal.get(timestamp)][0]
+
+    order = Order.query.get_or_404(int(meal.get('order_id')))
+
+    ordered_items = meal.get('items')
 
     details_kitchen = {key: {'quantity': items.get('quantity'),
                              'total': items.get('quantity') * items.get('price')}
@@ -4588,19 +4776,43 @@ def print_meallist(order_id):
                          'total': items.get('quantity') * items.get('price')}
                    for key, items in ordered_items.items() if items.get("class_name") == "Drinks"}
 
-    context_kitchen = {"details": details_kitchen,
+    context_kitchen = None
+
+    context_bar = None
+
+    kitchen_temp = None
+
+    bar_temp = None
+
+    if order.type == "In":
+
+        kitchen_temp = str(Path(app.root_path) / 'static' / 'docx' / 'kitchen_alacarte.docx')
+
+        bar_temp = str(Path(app.root_path) / 'static' / 'docx' / 'bar_alacarte.docx')
+
+        context_kitchen = {"details": details_kitchen,
+                           "table_name": order.table_name,
+                           "now": format_datetime(datetime.now(), locale="de_DE")}
+
+        context_bar = {"details": details_bar,
+                       "table_name": order.table_name,
+                       "now": format_datetime(datetime.now(), locale="de_DE")}
+
+    else:
+
+        kitchen_temp = str(Path(app.root_path) / 'static' / 'docx' / 'kitchen.docx')
+
+        bar_temp = str(Path(app.root_path) / 'static' / 'docx' / 'bar.docx')
+
+        context_kitchen = {"details": details_kitchen,
+                           "wait_number": order.id}
+
+        context_bar = {"details": details_bar,
                        "wait_number": order.id}
 
-    kitchen_temp = str(Path(app.root_path) / 'static' / 'docx' / 'kitchen.docx')
+    save_as_kitchen = f"meallist_kitchen_{order.id}_{str(uuid4().int)}"
 
-    save_as_kitchen = f"meallist_kitchen_{order.id}"
-
-    context_bar = {"details": details_bar,
-                   "wait_number": order.id}
-
-    bar_temp = str(Path(app.root_path) / 'static' / 'docx' / 'bar.docx')
-
-    save_as_bar = f"meallist_bar_{order.id}"
+    save_as_bar = f"meallist_bar_{order.id}_{str(uuid4().int)}"
 
     # Read the printer setting data from the json file
     with open(str(Path(app.root_path) / "settings" / "printer.json"), encoding="utf8") as file:
@@ -4638,26 +4850,52 @@ def print_meallist(order_id):
     return redirect(url_for('view_meallists'))
 
 
-@app.route("/view/meallist/<int:order_id>")
+@app.route("/view/meallist/<string:timestamp>")
 @login_required
-def view_meallist(order_id):
+def view_meallist(timestamp):
 
-    order = Order.query.get_or_404(int(order_id))
+    # Filtering alacarte unpaid orders and the targeted table
+    unpaid_alacarte_orders = db.session.query(Order).filter(
+        Order.type == "In",
+        Order.isPaid == False).all()
 
-    ordered_items = json.loads(order.items)
+    cur_unpaid_alacarte_orders = [order for order in unpaid_alacarte_orders if
+                                  order.timeCreated.date() == today]
 
-    container = {}
+    paid_out_orders = db.session.query(Order).filter(
+        Order.type == "Out",
+        Order.isPaid == True).all()
 
-    if order.container:
+    cur_paid_out_orders = [order for order in paid_out_orders if
+                           order.timeCreated.date() == today]
 
-        container = json.loads(order.container)
+    out_meals = [{str(datetime.timestamp(order.timeCreated)):
+                      {"items": json.loads(order.items), "order_id": order.id}}
+                 for order in cur_paid_out_orders]
 
-    context = dict(order=order,
+    alacarte_meals = [patch for order in
+                      cur_unpaid_alacarte_orders for patch in json.loads(order.dishes)]
+
+    meals = out_meals + alacarte_meals
+
+    print(meals)
+
+    meal = [meal.get(timestamp) for meal in meals if meal.get(timestamp)][0]
+
+    print(meal)
+
+    order = Order.query.get_or_404(int(meal.get('order_id')))
+
+    context = dict(meals=meals,
+                   meal=meal,
+                   timeOrdered=datetime.fromtimestamp(float(timestamp)).strftime(datetime_format),
+                   ordered_items=meal.get('items'),
                    referrer=request.headers.get('Referer'),
+                   order=order,
                    title=u"查看菜品",
                    datetime_format=datetime_format,
-                   ordered_items=ordered_items,
-                   container=container)
+                   timestamp=timestamp,
+                   company_name=company_info.get('company_name'))
 
     return render_template('view_meallist.html', **context)
 
@@ -4667,7 +4905,7 @@ def view_meallist(order_id):
 def view_printing_receipts():
 
     # Filtering alacarte unpaid orders and the targeted table
-    orders = db.session.query(Order).filter(Order.isPaid == True).all()
+    orders = db.session.query(Order).all()
 
     cur_orders = [order for order in orders if
                   order.timeCreated.date() == today]
@@ -4679,7 +4917,7 @@ def view_printing_receipts():
                    company_name=company_info.get('company_name'))
 
     return render_template("view_receipts.html", **context)
-    # return jsonify(data)
+    # return jsonify(cur_orders)
 
 
 @app.route('/print/receipt/<int:order_id>')
@@ -4702,12 +4940,26 @@ def view_receipt(order_id):
 
     ordered_items = json.loads(order.items)
 
+    total = round(order.totalPrice, 2)
+
+    vat = None
+
+    if order.type == "In":
+
+        vat = (order.totalPrice / (1 + tax_rate_in)) * tax_rate_in
+
+    else:
+
+        vat = (order.totalPrice / (1 + tax_rate_out)) * tax_rate_out
+
     context = dict(order=order,
                    ordered_items=ordered_items,
                    referrer=request.headers.get('Referer'),
                    title=u"查看发票",
                    datetime_format=datetime_format,
-                   company_name=company_info.get('company_name'))
+                   company_name=company_info.get('company_name'),
+                   total=format_decimal(total, locale="de_DE"),
+                   vat=format_decimal(round(vat, 2), locale="de_DE"))
 
     return render_template("view_receipt.html", **context)
 

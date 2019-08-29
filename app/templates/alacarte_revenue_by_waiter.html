@@ -21,21 +21,21 @@
     .a {color: rgb(247, 249, 252)
 
     }
+
+    #back{
+
+      margin-left: 912px;
+      margin-bottom:20px;
+
+    }
+
 </style>
 {% endblock %}
 
 
 {% block title %}
 
-<h1 class="h3 mb-2 text-gray-800">当天营业额</h1>
-<hr>
-<button type="button" class="btn btn-secondary">
-  <a href={{ url_for('waiter_admin') }} style="color: rgb(247, 249, 252)">
-    返回
-  </a>
-</button>
-
-
+<h1 class="h3 mb-2 text-gray-800">{{title}}</h1>
 
 {% endblock %}
 
@@ -82,15 +82,17 @@
           <!-- start of table body -->
           {% for section in open_sections %}
           <tr>
-            <td>Haijun Du</td>
-            <td>Waiter1</td>
+            <td>{{sections2users.get(section).alias}}</td>
+            <td>{{sections2users.get(section).username}}</td>
             <td>{{section}}</td>
 
-            <td>
+            <td style="text-align:right">
               <span>
-                <button type="button" class="btn btn-info">
-                  <a href={{ url_for('revenue_by_section', section=section) }} style="color: rgb(247, 249, 252)">
-                    查看今日营业额
+                <button type="button" class="btn btn-info" style="border-color:#26a69a; background-color:#26a69a;">
+                  <a href={{ url_for('revenue_view_auth',
+                  user_name=sections2users.get(section).username,
+                  section=section) }} style="color: rgb(247, 249, 252)">
+                    查看
                   </a>
                 </button>
               </span>
@@ -109,6 +111,12 @@
   </div>
 
 </div>
+<br>
+<button type="button" class="btn btn-secondary" id="back">
+  <a href={{ url_for('waiter_admin') }} style="color: rgb(247, 249, 252)">
+    返回
+  </a>
+</button>
 
 
 

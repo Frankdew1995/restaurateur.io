@@ -109,7 +109,7 @@ class Visit(db.Model):
 class Log(db.Model):
 
     id = db.Column(db.Integer, primary_key=True, unique=True, index=True)
-    order_id = db.Column(db.Integer, unique=True)
+    order_id = db.Column(db.Integer)
     operation = db.Column(db.String(100))
     page = db.Column(db.String(100))
     desc = db.Column(db.String(2000))

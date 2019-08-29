@@ -21,13 +21,15 @@
     .a {color: rgb(247, 249, 252)
 
     }
+
+
 </style>
 {% endblock %}
 
 
 {% block title %}
 
-<h1 class="h3 mb-2 text-gray-800">今日营收统计 - 分区{{ section }}</h1>
+<h1 class="h3 mb-2 text-gray-800">{{title}}</h1>
 <hr>
 
 
@@ -103,8 +105,7 @@
 
 <br>
 
-
-<button type="button" class="btn btn-danger" style="margin-left:800px">
+<button type="button" class="btn btn-secondary" style="margin-left:800px">
   <a href={{ url_for('render_revenue_by_waiter') }} style="color: rgb(247, 249, 252)" >
     返回
   </a>

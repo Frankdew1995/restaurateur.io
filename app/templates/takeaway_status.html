@@ -34,6 +34,16 @@
 
       }
 
+      h2{
+
+        font-size: 7rem;
+
+      }
+
+      h1{
+        font-size: 4.5rem;
+      }
+
 
   </style>
 
@@ -46,16 +56,20 @@
         <div class="row">
 
           <div class="column">
-            <center><h1 class="alert alert-primary">Zubereitung</h1></center>
+            <center>
+              <h1 class="alert alert-primary">
+                Zubereitung
+              </h1>
+            </center>
             {% for order in orders %}
             {% if order.isPaid and not order.isReady %}
-
-            <div class="card bg-danger">
+            <br>
+            <div class="card">
 
               <div class="card-body">
                 <center>
                   <h2>
-                    <font color="white">
+                    <font color="black">
                       {{ order.id }}
                     </font>
                   </h2>
@@ -77,12 +91,12 @@
             {% for order in orders %}
             {% if order.isReady and not order.isPickedUp %}
 
-            <div class="card bg-success">
+            <div class="card">
 
               <div class="card-body">
                 <center>
                   <h2>
-                    <font color="white">
+                    <font color="black">
                       {{ order.id }}
                     </font>
                   </h2>
@@ -99,19 +113,6 @@
 
         </div>
 
-
-
-
-
-      <div class="" id='datetime'>
-
-
-
-      </div>
-
-
-
-
     </div>
 
 
@@ -122,19 +123,6 @@
     <script src="https://code.jquery.com/jquery-3.3.1.slim.min.js" integrity="sha384-q8i/X+965DzO0rT7abK41JStQIAqVgRVzpbzo5smXKp4YfRvH+8abtTE1Pi6jizo" crossorigin="anonymous"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/popper.js/1.14.7/umd/popper.min.js" integrity="sha384-UO2eT0CpHqdSJQ6hJty5KVphtPhzWj9WO1clHTMGa3JDZwrnQq4sF86dIHNDz0W1" crossorigin="anonymous"></script>
     <script src="https://stackpath.bootstrapcdn.com/bootstrap/4.3.1/js/bootstrap.min.js" integrity="sha384-JjSmVgyd0p3pXB1rRibZUAYoIIy6OrQ6VrjIEaFf/nJGzIxFDsf4x0xIM+B07jRM" crossorigin="anonymous"></script>
-    <!-- <script type="text/javascript">
-          window.onload = startInterval;
-          function startInterval() {
-              setInterval("startTime();",1000);
-          }
-
-          function startTime() {
-              var now = new Date();
-              document.getElementById('datetime').innerHTML = now.getHours() + ":" + now.getMinutes() + ":" +now.getSeconds();
-      }
-    </script> -->
-
-
 
   </body>
 </html>

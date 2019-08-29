@@ -1,6 +1,6 @@
 [
   {
-    "STORE_NAME": "Xstar Resturant",
+    "STORE_NAME": "Xstar GmbH",
     "CITY": "Koeln",
     "STREET": "Maxmann Strasse",
     "STREET NO.": "555",
@@ -11,6 +11,6 @@
       "takeaway": 0.07,
       "Inhouse Order": 0.19
     },
-    "LOGO": "logo.png"
+    "LOGO": null
   }
 ]

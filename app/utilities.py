@@ -496,15 +496,26 @@ def call2print(table_name):
     subprocess.Popen(f'{printer_path} {out_save_path} "{printer_name}"', shell=True)
 
 
-def void_pickle_dumper():
+def void_pickle_dumper(r_type):
 
-    pass
+    '''
+    :param r_type: receipt type z or x
+    :return:
+    '''
 
+    import pickle
 
-def z_receipt_templating(context,
-                       temp_file,
-                       save_as,
-                       printer):
+    with open(str(Path(app.root_path) / 'cache' / f'{r_type}_bon_settings.pickle'),
+              mode="wb") as pickle_in:
+
+        pickle.dump([], pickle_in)
+
+    return pickle_in
+
+def x_z_receipt_templating(context,
+                           temp_file,
+                           save_as,
+                           printer):
 
     '''
     :param context: a dictionary key-value pair

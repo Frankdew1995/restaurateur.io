@@ -1,8 +1,8 @@
-"""order model
+"""log order.is is not unique
 
-Revision ID: 4403d98d9e88
+Revision ID: 62ceaef584af
 Revises: 
-Create Date: 2019-08-27 21:34:06.515946
+Create Date: 2019-08-29 19:50:44.947881
 
 """
 from alembic import op
@@ -10,7 +10,7 @@ import sqlalchemy as sa
 
 
 # revision identifiers, used by Alembic.
-revision = '4403d98d9e88'
+revision = '62ceaef584af'
 down_revision = None
 branch_labels = None
 depends_on = None

@@ -76,12 +76,12 @@
         </thead>
         <tbody>
 
-          <!-- start of table body -->
-          {% for record in data %}
-          <tr>
-            <th scope="row">{{list(record.items())[0][0]}}</th>
 
-            <th>{{list(record.items())[0][1].get('lastPrinted').strftime(datetime_format)}}</th>
+          <!-- start of table body -->
+          <tr>
+            <th scope="row"> </th>
+
+            <th> </th>
 
             <td style="text-align:center">
               <span>
@@ -101,7 +101,6 @@
             </td>
           </tr>
           <!-- end of table body -->
-          {% endfor %}
 
         </tbody>
       </table>

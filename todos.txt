@@ -29,6 +29,7 @@ Done:
 27. Logout Function admin,waiter and takeaway
 25. takeout order printing
 20. Remove email attr from user model
+31. dishes in Order model: use timestamp as the string to record
 
 
 To Dos:
@@ -45,7 +46,6 @@ To Dos:
 
     admin, waiter, takeaway and boss
 
-31. dishes in Order model: use timestamp as the string to record
-32.
+32. Use Javascript to add users and tables !!!!!!
 
 

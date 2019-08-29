@@ -23,6 +23,12 @@ class LoginForm(FlaskForm):
     remember_me = BooleanField(u'记住我')
     submit = SubmitField(u'登陆')
 
+class AuthForm(FlaskForm):
+
+    username = StringField('用户名', validators=[DataRequired()])
+    password = PasswordField(u'密码', validators=[DataRequired()])
+    submit = SubmitField(u'验证')
+
 
 # Registration Form
 class RegistrationForm(FlaskForm):

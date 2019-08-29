@@ -55,60 +55,22 @@
 {% endwith %}
 
 
+<button type="button" class="btn btn-info" style="border-color:#26a69a; background-color:#26a69a;">
+  <a href={{ url_for('view_x_receipt') }} style="color: rgb(247, 249, 252)">
+     打印X单
+  </a>
+</button>
+
+
+<hr>
+
 
 <div class="container">
 
-
-  <div class="row">
-
-
-    <div class="col-sm-12">
-
-
-      <table id="example" class="table table-striped table-bordered">
-
-        <thead>
-          <tr>
-            <th scope="col">Z单号#</th>
-            <th scope="col">打印时间</th>
-            <th scope="col">操作</th>
-          </tr>
-        </thead>
-        <tbody>
-
-          <!-- start of table body -->
-          {% for record in data %}
-          <tr>
-            <th scope="row">{{list(record.items())[0][0]}}</th>
-
-            <th>{{list(record.items())[0][1].get('lastPrinted').strftime(datetime_format)}}</th>
-
-            <td style="text-align:center">
-              <span>
-                <button type="button" class="btn btn-info">
-                  <a href="#" style="color: rgb(247, 249, 252)">
-                    查看
-                  </a>
-                </button>
-              </span>
-              <span>
-                <button type="button" class="btn btn-info">
-                  <a href="#" style="color: rgb(247, 249, 252)">
-                    打印
-                  </a>
-                </button>
-              </span>
-            </td>
-          </tr>
-          <!-- end of table body -->
-          {% endfor %}
-
-        </tbody>
-      </table>
-
-    </div>
-
+  <div class="alert alert-info" role="alert">
+      暂未打印过X单，请点击"打印X单"打印首次X单
   </div>
+
 
 </div>
 

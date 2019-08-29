@@ -15,13 +15,14 @@ from .forms import (AddDishForm, StoreSettingForm,
                     AddUserForm, EditUserForm,
                     EditPrinterForm, EditBuffetPriceForm,
                     AddHolidayForm, EditHolidayForm,
-                    AddCategoryForm, EditCategoryForm)
+                    AddCategoryForm, EditCategoryForm,
+                    AuthForm)
 
 from .utilities import (json_reader, store_picture,
                         generate_qrcode, activity_logger,
                         qrcode2excel, call2print, receipt_templating,
                         bar_templating, kitchen_templating,
-                        terminal_templating, z_receipt_templating)
+                        terminal_templating, x_z_receipt_templating)
 
 from pathlib import Path
 import json
@@ -32,7 +33,7 @@ from threading import Thread
 from werkzeug.utils import secure_filename
 import pickle
 from babel.dates import format_date, format_datetime, format_time
-from babel.numbers import format_number, format_decimal, format_percent
+from babel.numbers import format_decimal, format_percent
 
 # Some global variables - read from config file.
 
@@ -518,6 +519,21 @@ def pickup_order():
     return redirect(url_for('takeaway_orders_manage'))
 
 
+@app.route('/takeaway/cancel/<int:order_id>')
+@login_required
+def cancel_out_order(order_id):
+
+    order = db.session.query(Order).get_or_404(int(order_id))
+
+    order.isCancelled = True
+
+    db.session.commit()
+
+    flash(f"外卖订单{order.id}已经取消", category="success")
+
+    return redirect(url_for('takeaway_orders_manage'))
+
+
 # Checkout a takeaway order ????
 @app.route("/orders/<string:order_id>/checkout", methods=["GET", "POST"])
 def checkout_order(order_id):
@@ -558,6 +574,7 @@ def checkout_order(order_id):
 
 
 @app.route("/takeaway/order/<int:order_id>/checkout", methods=["POST", "GET"])
+@login_required
 def checkout_takeaway_admin(order_id):
 
     form = CheckoutForm()
@@ -566,180 +583,189 @@ def checkout_takeaway_admin(order_id):
 
     order_items = json.loads(order.items)
 
-    for key, details in order_items.items():
+    if not order.isCancelled:
 
-        item = Food.query.filter_by(name=key).first()
+        for key, details in order_items.items():
 
-        if item:
+            item = Food.query.filter_by(name=key).first()
 
-            details["image"] = item.image
-            details["descr"] = item.description
-            details["price"] = item.price_gross
-            details["class_name"] = item.class_name
-            details["category"] = item.category
+            if item:
 
-    prices = {'tax': round((order.totalPrice / (1 + tax_rate_out)) * tax_rate_out, 2),
-              'subtotal': round(order.totalPrice / (1 + tax_rate_out), 2)}
+                details["image"] = item.image
+                details["descr"] = item.description
+                details["price"] = item.price_gross
+                details["class_name"] = item.class_name
+                details["category"] = item.category
 
-    # Logging Data Store
-    logging = {}
+        prices = {'tax': round((order.totalPrice / (1 + tax_rate_out)) * tax_rate_out, 2),
+                  'subtotal': round(order.totalPrice / (1 + tax_rate_out), 2)}
 
-    logging['Order ID'] = order.id
+        # Logging Data Store
+        logging = {}
 
-    if request.method == "POST":
+        logging['Order ID'] = order.id
 
-        pay_via = {}
+        if request.method == "POST":
 
-        # Set the settleID and settleTime
-        settle_id = str(uuid4().int)
-        settle_time = datetime.now(tz=pytz.timezone(timezone))
+            pay_via = {}
 
-        # Pay via cash
-        if form.cash_submit.data:
+            # Set the settleID and settleTime
+            settle_id = str(uuid4().int)
+            settle_time = datetime.now(tz=pytz.timezone(timezone))
 
-            if form.coupon_amount.data:
+            # Pay via cash
+            if form.cash_submit.data:
 
-                order.totalPrice = form.grandtotal.data - form.coupon_amount.data
-                pay_via['coupon_amount'] = form.coupon_amount.data
-                logging['Total'] = order.totalPrice
+                if form.coupon_amount.data:
 
-            elif form.discount_rate.data:
+                    order.totalPrice = form.grandtotal.data - form.coupon_amount.data
+                    pay_via['coupon_amount'] = form.coupon_amount.data
+                    logging['Total'] = order.totalPrice
 
-                order.totalPrice = form.grandtotal.data * form.discount_rate.data
-                pay_via['discount_rate'] = form.discount_rate.data
-                logging['Total'] = order.totalPrice
+                elif form.discount_rate.data:
 
-            pay_via["method"] = "Cash"
+                    order.totalPrice = form.grandtotal.data * form.discount_rate.data
+                    pay_via['discount_rate'] = form.discount_rate.data
+                    logging['Total'] = order.totalPrice
 
-            logging['Pay'] = u'现金'
+                pay_via["method"] = "Cash"
 
-        # Pay via card
-        elif form.card_submit.data:
+                logging['Pay'] = u'现金'
 
-            if form.coupon_amount.data:
+            # Pay via card
+            elif form.card_submit.data:
 
-                order.totalPrice = form.grandtotal.data - form.coupon_amount.data
-                pay_via['coupon_amount'] = form.coupon_amount.data
+                if form.coupon_amount.data:
 
-                logging['Total'] = order.totalPrice
+                    order.totalPrice = form.grandtotal.data - form.coupon_amount.data
+                    pay_via['coupon_amount'] = form.coupon_amount.data
 
-            elif form.discount_rate.data:
+                    logging['Total'] = order.totalPrice
 
-                order.totalPrice = form.grandtotal.data * form.discount_rate.data
-                pay_via['discount_rate'] = form.discount_rate.data
+                elif form.discount_rate.data:
 
-                logging['Total'] = order.totalPrice
+                    order.totalPrice = form.grandtotal.data * form.discount_rate.data
+                    pay_via['discount_rate'] = form.discount_rate.data
 
-            pay_via['method'] = "Card"
-            logging['Pay'] = u'卡'
+                    logging['Total'] = order.totalPrice
 
-        order.settleTime = settle_time
-        order.settleID = settle_id
+                pay_via['method'] = "Card"
+                logging['Pay'] = u'卡'
 
-        order.isPaid = True
+            order.settleTime = settle_time
+            order.settleID = settle_id
 
-        order.pay_via = json.dumps(pay_via)
+            order.isPaid = True
 
-        order.type = 'Out'
-        logging['Type'] = u'外卖'
+            order.pay_via = json.dumps(pay_via)
 
-        db.session.commit()
+            order.type = 'Out'
+            logging['Type'] = u'外卖'
 
-        details = {key: {'quantity': items.get('quantity'),
-                         'total': items.get('quantity') * items.get('price')}
-                            for key, items in json.loads(order.items).items()}
+            db.session.commit()
 
-        details_kitchen = {key: {'quantity': items.get('quantity'),
-                                 'total': items.get('quantity') * items.get('price')}
-                                    for key, items in order_items.items() if items.get("class_name") == "Food"}
-
-        details_bar = {key: {'quantity': items.get('quantity'),
+            details = {key: {'quantity': items.get('quantity'),
                              'total': items.get('quantity') * items.get('price')}
-                                for key, items in order_items.items() if items.get("class_name") == "Drinks"}
+                                for key, items in json.loads(order.items).items()}
 
-        context_kitchen = {"details": details_kitchen,
+            details_kitchen = {key: {'quantity': items.get('quantity'),
+                                     'total': items.get('quantity') * items.get('price')}
+                                        for key, items in order_items.items() if items.get("class_name") == "Food"}
+
+            details_bar = {key: {'quantity': items.get('quantity'),
+                                 'total': items.get('quantity') * items.get('price')}
+                                    for key, items in order_items.items() if items.get("class_name") == "Drinks"}
+
+            context_kitchen = {"details": details_kitchen,
+                               "wait_number": order.id}
+
+            kitchen_temp = str(Path(app.root_path) / 'static' / 'docx' / 'kitchen.docx')
+            save_as_kitchen = f"meallist_kitchen_{order.id}"
+
+            context_bar = {"details": details_bar,
                            "wait_number": order.id}
 
-        kitchen_temp = str(Path(app.root_path) / 'static' / 'docx' / 'kitchen.docx')
-        save_as_kitchen = f"meallist_kitchen_{order.id}"
+            bar_temp = str(Path(app.root_path) / 'static' / 'docx' / 'bar.docx')
+            save_as_bar = f"meallist_bar_{order.id}"
 
-        context_bar = {"details": details_bar,
-                       "wait_number": order.id}
+            context = {"details": details,
+                         "company_name": company_info.get('company_name', ''),
+                         "address": company_info.get('address'),
+                         "now": datetime.now().strftime("%Y-%m-%d %H:%M:%S"),
+                         "tax_id": company_info.get('tax_id'),
+                         "wait_number": order.id,
+                         "total": order.totalPrice,
+                         "pay_via": json.loads(order.pay_via).get('method', ""),
+                         "VAT": round((order.totalPrice / 1.07)*0.07, 2)}
 
-        bar_temp = str(Path(app.root_path) / 'static' / 'docx' / 'bar.docx')
-        save_as_bar = f"meallist_bar_{order.id}"
+            temp_file = str(Path(app.root_path) / 'static' / 'docx' / 'receipt_temp_out.docx')
+            save_as = f"receipt_{order.id}"
 
-        context = {"details": details,
-                     "company_name": company_info.get('company_name', ''),
-                     "address": company_info.get('address'),
-                     "now": datetime.now().strftime("%Y-%m-%d %H:%M:%S"),
-                     "tax_id": company_info.get('tax_id'),
-                     "wait_number": order.id,
-                     "total": order.totalPrice,
-                     "pay_via": json.loads(order.pay_via).get('method', ""),
-                     "VAT": round((order.totalPrice / 1.07)*0.07, 2)}
-        temp_file = str(Path(app.root_path) / 'static' / 'docx' / 'receipt_temp_out.docx')
-        save_as = f"receipt_{order.id}"
+            # Read the printer setting data from the json file
+            with open(str(Path(app.root_path) / "settings" / "printer.json"), encoding="utf8") as file:
 
-        # Read the printer setting data from the json file
-        with open(str(Path(app.root_path) / "settings" / "printer.json"), encoding="utf8") as file:
+                data = file.read()
 
-            data = file.read()
+            data = json.loads(data)
 
-        data = json.loads(data)
+            def master_printer():
 
-        def master_printer():
+                # Print Receipt
+                receipt_templating(context=context,
+                                   temp_file=temp_file,
+                                   save_as=save_as,
+                                   printer=data.get('receipt').get('printer')
+                                   )
 
-            # Print Receipt
-            receipt_templating(context=context,
-                               temp_file=temp_file,
-                               save_as=save_as,
-                               printer=data.get('receipt').get('printer')
-                               )
+                # Print to kitchen
+                kitchen_templating(context=context_kitchen,
+                                   temp_file=kitchen_temp,
+                                   save_as=save_as_kitchen,
+                                   printer=data.get('kitchen').get('printer'))
 
-            # Print to kitchen
-            kitchen_templating(context=context_kitchen,
-                               temp_file=kitchen_temp,
-                               save_as=save_as_kitchen,
-                               printer=data.get('kitchen').get('printer'))
+                # Print to bar
+                bar_templating(context=context_bar,
+                               temp_file=bar_temp,
+                               save_as=save_as_bar,
+                               printer=data.get('bar').get('printer'))
 
-            # Print to bar
-            bar_templating(context=context_bar,
-                           temp_file=bar_temp,
-                           save_as=save_as_bar,
-                           printer=data.get('bar').get('printer'))
+            # Start the thread
+            th = Thread(target=master_printer)
+            th.start()
+            try:
+                # Writing logs to the csv file
+                activity_logger(order_id=order.id,
+                                operation_type=u'结账',
+                                page_name=u'外卖界面 > 订单结账',
+                                descr=f'''结账订单号:{order.id}\n
+                                支付方式:{logging.get('Pay')}\n
+                                账单金额: {order.totalPrice}\n
+                                订单类型:{logging.get('Type')}\n''',
+                                log_time=str(datetime.now(tz=pytz.timezone(timezone))),
+                                status=u'成功')
+            except:
 
-        # Start the thread
-        th = Thread(target=master_printer)
-        th.start()
-        try:
-            # Writing logs to the csv file
-            activity_logger(order_id=order.id,
-                            operation_type=u'结账',
-                            page_name=u'外卖界面 > 订单结账',
-                            descr=f'''结账订单号:{order.id}\n
-                            支付方式:{logging.get('Pay')}\n
-                            账单金额: {order.totalPrice}\n
-                            订单类型:{logging.get('Type')}\n''',
-                            log_time=str(datetime.now(tz=pytz.timezone('Europe/Berlin'))),
-                            status=u'成功')
-        except:
+                pass
 
-            pass
+            flash(f"已经为订单{order.id}结账")
 
-        flash(f"已经为订单{order.id}结账")
+            return redirect(url_for('takeaway_orders_manage'))
+
+        return render_template('takeaway_checkout_admin.html',
+                               order=order,
+                               order_items=order_items,
+                               prices=prices,
+                               form=form,
+                               datetime_format=datetime_format)
+
+    else:
+
+        flash(f'订单{order.id}不存在！')
 
         return redirect(url_for('takeaway_orders_manage'))
 
-    return render_template('takeaway_checkout_admin.html',
-                           order=order,
-                           order_items=order_items,
-                           prices=prices,
-                           form=form,
-                           datetime_format=datetime_format)
 
-
-@app.route("/takeaway_orders/view")
+@app.route("/takeaway/orders/view")
 @login_required
 def takeaway_orders_manage():
 
@@ -747,29 +773,42 @@ def takeaway_orders_manage():
 
         return render_template('suspension_error.html')
 
-    orders = Order.query.filter(Order.type == "Out").all()
+    orders = Order.query.filter(
+        Order.type == "Out",
+        Order.isCancelled == False,
+        Order.isPaid == False).all()
 
     # Filtering only orders today based on timezone Berlin
     orders = [order for order in orders if
-              order.timeCreated.date() ==
-              datetime.now(tz=pytz.timezone("Europe/Berlin")).date()]
+              order.timeCreated.date() == today]
 
     # Convert json string to Python objects so that it can be used in Templates
     indexedDict = {order.id: json.loads(order.items) for order in orders}
 
-    return render_template('takeaway_orders_view.html', orders=orders, items=indexedDict)
+    context = dict(title=u"订单查看",
+                   company_name=company_info.get('company_name'),
+                   orders=orders,
+                   items=indexedDict)
+
+    return render_template('takeaway_orders_view.html', **context)
 
 
 @app.route("/takeaway/orders/admin")
 def takeaway_orders_admin():
 
-    orders = Order.query.filter(Order.type=="Out").all()
+    orders = Order.query.filter(
+        Order.type == "Out").all()
 
     # Filtering only orders today based on timezone Berlin
-    open_orders = [order for order in orders if order.timeCreated.date()
-                   == datetime.now(tz=pytz.timezone("Europe/Berlin")).date()]
+    open_orders = [order for order in orders if order.timeCreated.date() == today]
 
-    return render_template('takeaway_orders_admin.html', open_orders=open_orders)
+    context = dict(title=u"订单查看",
+                   company_name=company_info.get('company_name'),
+                   open_orders=open_orders,
+                   referrer=request.headers.get('Referer'),
+                   datetime_format=datetime_format)
+
+    return render_template('takeaway_orders_admin.html', **context)
 
 
 @app.route("/takeaway/order/<int:order_id>/edit")
@@ -779,9 +818,23 @@ def takeaway_order_edit(order_id):
 
     ordered_items = json.loads(order.items)
 
-    return render_template('takeaway_order_edit.html',
-                           order=order,
-                           ordered_items=ordered_items)
+    title = None
+    if order.isPaid:
+
+        title = "订单查看"
+
+    else:
+
+        title = "订单修改"
+
+    context=dict(order=order,
+                 ordered_items=ordered_items,
+                 title=title,
+                 company_name=company_info.get('company_name'),
+                 referrer=request.headers.get('Referer'),
+                 datetime_format=datetime_format)
+
+    return render_template('takeaway_order_edit.html', **context)
 
 
 # Handling data transmissioned via Ajax
@@ -1092,45 +1145,28 @@ def takeaway_cur_revenue():
     orders = Order.query.filter_by(type="Out").all()
 
     # Filtering only orders today based on timezone Berlin and paid orders
-    cur_paid_orders = [order for order in orders
-                       if order.timeCreated.date() == datetime.now(tz=pytz.timezone("Europe/Berlin")).date()
-                       and order.isPaid]
+    cur_paid_orders = [order for order in orders if
+                       order.timeCreated.date() == today and order.isPaid]
 
-    cur_revenue_sum = 0
-    for order in cur_paid_orders:
+    cur_revenue_sum = sum([order.totalPrice for order in cur_paid_orders])
 
-        cur_revenue_sum += order.totalPrice
 
-    cur_revenue_card = 0
-    for order in cur_paid_orders:
+    cur_revenue_card = sum([order.totalPrice for order in cur_paid_orders if
+                            json.loads(order.pay_via).get('method') == "Card"])
 
-        try:
-
-            pay_details = json.loads(order.pay_via)
-            if pay_details.get('method') == "Card":
-
-                cur_revenue_card += order.totalPrice
-
-        except:
-            cur_revenue_card += 0
-
-    cur_revenue_cash = 0
-    for order in cur_paid_orders:
-
-        try:
-
-            pay_details = json.loads(order.pay_via)
-            if pay_details.get('method') == "Cash":
-                cur_revenue_cash += order.totalPrice
-
-        except:
-            cur_revenue_cash += 0
+    cur_revenue_cash = sum([order.totalPrice for order in cur_paid_orders if
+                            json.loads(order.pay_via).get('method') == "Cash"])
 
     revenues = {"All": cur_revenue_sum,
                 'Card': cur_revenue_card,
                 'Cash': cur_revenue_cash}
 
-    return render_template('current_out_revenue.html', revenues=revenues)
+    context = dict(revenues=revenues,
+                 referrer=request.headers.get('Referer'),
+                 company_name=company_info.get('company_name'),
+                 title=u"当天营业额")
+
+    return render_template('current_out_revenue.html', **context)
 
 
 # takeaway order status view
@@ -1138,14 +1174,17 @@ def takeaway_cur_revenue():
 def display_status():
 
     #Filtering only takeaway orders
-    orders = Order.query.filter(Order.type == "Out").all()
+    orders = Order.query.filter(
+        Order.type == "Out",
+        Order.isPaid == True).all()
 
     # Filtering only orders today based on timezone Berlin
     orders = [order for order in orders if
-              order.timeCreated.date() ==
-              datetime.now(tz=pytz.timezone("Europe/Berlin")).date()]
+              order.timeCreated.date() == today]
 
-    return render_template("takeaway_status.html", title="Bestell Status", orders=orders)
+    return render_template("takeaway_status.html",
+                           title="Bestell Status",
+                           orders=orders)
 
 
 @app.route("/categories/view")
@@ -1738,7 +1777,10 @@ def set_store():
 
         # Save the logo file
         logo_file = form.logo.data
-        logo_file.save(str(Path(app.root_path) / 'static' / 'img' / 'logo.png'))
+
+        if logo_file:
+
+            logo_file.save(str(Path(app.root_path) / 'static' / 'img' / 'logo.png'))
 
         # Transmitting data in the form into the dictionary
         data = {
@@ -1750,9 +1792,8 @@ def set_store():
           "ZIP": form.zip.data,
           "TAX_ID": form.tax_id.data,
           "TAX_RATE": {"takeaway": form.tax_rate_takeaway.data,
-                       "Inhouse Order": form.tax_rate_InHouse.data},
-           "LOGO": secure_filename(logo_file.filename)
-               },
+                       "Inhouse Order": form.tax_rate_InHouse.data}
+        }
 
         with open(str(Path.cwd() / 'app' / 'settings' / 'config.json'), 'w') as f:
 
@@ -1773,7 +1814,7 @@ def set_store():
     form.tax_rate_InHouse.data = data.get("TAX_RATE").get("Inhouse Order")
     form.tax_rate_takeaway.data = data.get("TAX_RATE").get("takeaway")
 
-    logo = data.get('LOGO')
+    logo = "logo.PNG"
 
     context = dict(referrer=request.headers.get('Referer'),
                    title=u'餐馆设置',
@@ -1832,7 +1873,7 @@ def add_user():
     # Instantiate some options for select fields
     form.section.choices.extend(holder)
 
-    if request.method == "POST":
+    if request.method == "POST" or form.validate_on_submit():
 
         username = form.username.data
         alias = form.alias.data
@@ -1849,7 +1890,7 @@ def add_user():
                         alias=alias,
                         container=json.dumps({"section": section, 'inUse': True}),
                         permissions=permissions,
-                        email=f"{str(uuid4())[:11]}@cnfrien.com")
+                        email=f"{str(uuid4())}@cnfrien.com")
             # Email attr will be deprecated
 
             user.set_password(password=password)
@@ -1862,11 +1903,9 @@ def add_user():
 
             return redirect(url_for('users_manage'))
 
-        else:
-
-            flash(message=f"账户名{username}已经存在, 请重新再试!", category="error")
-
-            return redirect(url_for('add_user'))
+        # flash(message=f"账户名{username}已经存在, 请重新再试!", category="error")
+        #
+        # return redirect(url_for('add_user'))
 
     context = dict(referrer=referrer,
                    company_name=company_info.get('company_name'),
@@ -1899,27 +1938,19 @@ def edit_user(user_id):
 
     if request.method == "POST":
 
-        if not User.query.filter_by(username=form.username.data).first_or_404():
+        user.username = form.username.data
+        user.alias = form.alias.data
 
-            user.username = form.username.data
-            user.alias = form.alias.data
+        container = json.loads(user.container)
+        container['section'] = form.section.data
 
-            container = json.loads(user.container)
-            container['section'] = form.section.data
+        user.container = json.dumps(container)
 
-            user.container = json.dumps(container)
+        db.session.commit()
 
-            db.session.commit()
+        flash(message=f"已经更新跑堂{user.username}的资料", category="success")
 
-            flash(message=f"已经更新跑堂{user.username}的资料", category="success")
-
-            return redirect(url_for('users_manage'))
-
-        else:
-
-            flash(message=f"账户名{form.username.data}已经存在, 请重新再试!", category="error")
-
-            return redirect(url_for('edit_user', user_id=user.id))
+        return redirect(url_for('users_manage'))
 
     form.username.data = user.username
     form.alias.data = user.alias
@@ -1974,7 +2005,7 @@ def update_password(user_id):
 
     form = EditUserForm()
 
-    if request.method=="POST":
+    if request.method == "POST" or form.validate_on_submit():
 
         user.set_password(password=form.password.data)
 
@@ -2063,16 +2094,14 @@ def admin_transfer_table(table_name):
     # Filtering alacarte unpaid orders
     orders = db.session.query(Order).filter(
         Order.type == "In",
-        Order.isPaid==False).all()
+        Order.isPaid == False).all()
 
     # Filtering only orders which happened the same day.(TZ: Berlin) + order is not cancelled
     open_orders = [order for order in orders if
-                   order.timeCreated.date() == datetime.now(tz=pytz.timezone("Europe/Berlin")).date() and
-                   not json.loads(order.container).get('isCancelled')]
+                   order.timeCreated.date() == today and not order.isCancelled]
 
     # Currently Open Tables
-    open_tables = list(set([json.loads(order.container).get("table_name")
-                            for order in open_orders]))
+    open_tables = list(set([order.table_name for order in open_orders]))
 
     available_tables = [table for table in all_tables if table.name not in open_tables]
 
@@ -2081,22 +2110,18 @@ def admin_transfer_table(table_name):
 
     if form.validate_on_submit():
 
-        cur_table_orders = [order for order in open_orders
-                            if json.loads(order.container).get('table_name') == table_name]
+        cur_table_orders = [order for order in open_orders if
+                            order.table_name == table_name]
 
         target_table = form.target_table.data
 
         for order in cur_table_orders:
 
             logging = {}
-            logging['table_before'] = json.loads(order.container).get('table_name')
+            logging['table_before'] = order.table_name
             logging['table_cur'] = target_table
 
-            container = json.loads(order.container)
-
-            container['table_name'] = target_table
-
-            order.container = json.dumps(container)
+            order.table_name = target_table
 
             db.session.commit()
 
@@ -2223,11 +2248,26 @@ def admin_view_table(table_name):
 
             dishes = json.loads(order.items)
 
-            return render_template('admin_view_table_summary.html',
-                                   dishes=dishes,
-                                   table_name=table_name,
-                                   total_price=total_price,
-                                   form=form)
+            section = Table.query.filter_by(name=table_name).first_or_404().section
+
+            users = User.query.all()
+
+            # Exclude the super user/ boss account
+            section2user = {section: user for user in users if user.permissions != 100
+                            and section in json.loads(user.container).get('section')}
+
+            waiter_name = section2user.get(section).alias
+
+            context = dict(title="桌子详情",
+                           dishes=dishes,
+                           table_name=table_name,
+                           total_price=total_price,
+                           form=form,
+                           company_name=company_info.get('company_name'),
+                           waiter_name=waiter_name,
+                           referrer=request.headers.get('Referer'))
+
+            return render_template('admin_view_table_summary.html', **context)
 
         flash(f"{table_name}暂无订单！")
         return redirect(url_for('admin_active_tables'))
@@ -2808,8 +2848,8 @@ def waiter_admin():
 
     # Filtering alacarte unpaid orders
     orders = Order.query.filter(
-        Order.type=="In",
-        Order.isPaid==False).all()
+        Order.type == "In",
+        Order.isPaid == False).all()
 
     # Filtering only orders which happened the same day.(TZ: Berlin)
     orders = [order for order in orders if
@@ -2877,7 +2917,9 @@ def waiter_admin():
     return render_template('alacarte_tables_view.html',
                            ordered_sections=ordered_sections,
                            form=form,
-                           selected_sections=selected_sections)
+                           selected_sections=selected_sections,
+                           company_name=company_info.get('company_name'),
+                           title="订单查看")
 
 
 # Waiter views a table's aggregated order summary
@@ -3010,12 +3052,27 @@ def view_table(table_name):
 
                 return redirect(url_for('waiter_admin'))
 
+            section = Table.query.filter_by(name=table_name).first_or_404().section
+
+            users = User.query.all()
+
+            # Exclude the super user/ boss account
+            section2user = {section: user for user in users if user.permissions != 100
+                            and section in json.loads(user.container).get('section')}
+
+            waiter_name = section2user.get(section).alias
+
+            context = dict(title="桌子详情",
+                           dishes=dishes,
+                           table_name=table_name,
+                           total_price=total_price,
+                           form=form,
+                           company_name=company_info.get('company_name'),
+                           waiter_name=waiter_name,
+                           referrer=request.headers.get('Referer'))
+
             # Else just render page as get method
-            return render_template('view_table_summary.html',
-                                   dishes=dishes,
-                                   table_name=table_name,
-                                   total_price=total_price,
-                                   form=form)
+            return render_template('view_table_summary.html', **context)
 
         flash(f"桌子{table_name}暂无最新订单！", category="error")
         return redirect(url_for('waiter_admin'))
@@ -3032,17 +3089,20 @@ def alacarte_orders_manage():
         Order.type == "In").all()
 
     cur_orders = [order for order in orders if order.timeCreated.date()
-                  == datetime.now(tz=pytz.timezone("Europe/Berlin")).date()]
+                  == today]
 
 
     items = {order.id: json.loads(order.items) for order in cur_orders}
 
-    containers = {order.id: json.loads(order.container) for order in cur_orders}
+    context = dict(title="订单管理",
+                   open_orders=cur_orders,
+                   items=items,
+                   company_name=company_info.get('company_name'),
+                   referrer=request.headers.get('Referer'),
+                   datetime_format=datetime_format,
+                   )
 
-    return render_template("alacarte_orders_admin.html",
-                           open_orders=cur_orders,
-                           items=items,
-                           containers=containers)
+    return render_template("alacarte_orders_admin.html", **context)
 
 
 @app.route("/alacarte/order/<int:order_id>/edit")
@@ -3051,14 +3111,27 @@ def alacarte_order_edit(order_id):
 
     order = Order.query.get_or_404(int(order_id))
 
+    title = None
+
+    if order.isPaid or order.isCancelled:
+
+        title = "订单查看"
+
+    else:
+
+        title = "订单修改"
+
     ordered_items = json.loads(order.items)
 
-    container = json.loads(order.container)
+    context = dict(title=title,
+                   order=order,
+                   ordered_items=ordered_items,
+                   company_name=company_info.get('company_name'),
+                   referrer=request.headers.get('Referer'),
+                   datetime_format=datetime_format,
+                   )
 
-    return render_template('alacarte_order_edit.html',
-                           order=order,
-                           ordered_items=ordered_items,
-                           container=container)
+    return render_template('alacarte_order_edit.html', **context)
 
 
 @app.route('/alacarte/orders/update', methods=["GET", "POST"])
@@ -3174,23 +3247,64 @@ def render_revenue_by_waiter():
         Order.type == "In",
         Order.isPaid == True).all()
 
-    # Filtering only orders which happened the same day.(TZ: Berlin)
-    orders = [order for order in orders if order.timeCreated.date()
-              == datetime.now(tz=pytz.timezone("Europe/Berlin")).date() and
-              not json.loads(order.container).get('isCancelled')]
-    # Order is not cancelled added
+    # Filtering only orders which happened the same day.(TZ: Berlin) Order is not cancelled added
+    cur_orders = [order for order in orders if order.timeCreated.date() == today
+                  and not order.isCancelled]
 
     # Currently Open Tables
-    open_tables = list(set([json.loads(order.container).get("table_name")
-                            for order in orders]))
+    open_tables = list(set([order.table_name for order in cur_orders]))
 
-    open_sections = list(set([Table.query.filter_by(name=table).first_or_404().section \
+    open_sections = list(set([Table.query.filter_by(name=table).first_or_404().section
                      for table in open_tables]))
+
+    users = User.query.all()
+
+    # Exclude the super user/ boss account
+    sections2users = {section: user for user in users if user.permissions != 100
+                      for section in open_sections if
+                      section in json.loads(user.container).get('section')}
 
     open_sections.sort()
 
-    return render_template('alacarte_revenue_by_waiter.html',
-                           open_sections=open_sections)
+    context = dict(title="当天营业额",
+                   open_sections=open_sections,
+                   company_name=company_info.get('company_name'),
+                   referrer=request.headers.get('Referer'),
+                   sections2users=sections2users)
+
+    return render_template('alacarte_revenue_by_waiter.html', **context)
+
+
+@app.route("/revenue/view/auth/<string:user_name>/<string:section>",
+           methods=["POST", "GET"])
+@login_required
+def revenue_view_auth(user_name, section):
+
+    form = AuthForm()
+
+    user = User.query.filter_by(username=user_name).first_or_404()
+
+    form.username = user.username
+
+    if request.method == "POST" or form.validate_on_submit():
+
+        if user is None or not user.check_password(password=form.password.data):
+
+            flash(u"密码或者用户名无效!")
+            return redirect(url_for('revenue_view_auth',
+                                    user_name=user_name,
+                                    section=section))
+
+        return redirect(url_for("revenue_by_section", section=section))
+
+    context = dict(title="请输入账号密码查看营业额",
+                   user=user,
+                   company_name=company_info.get('company_name'),
+                   referrer=request.headers.get('Referer'),
+                   form=form
+                   )
+
+    return render_template("revenue_view_auth.html", **context)
 
 
 @app.route('/revenue/alacarte/<string:section>')
@@ -3203,14 +3317,11 @@ def revenue_by_section(section):
 
     # Filtering only orders which happened the same day.(TZ: Berlin) + order is not cancelled
     cur_paid_orders = [order for order in paid_orders if order.timeCreated.date()
-                       == datetime.now(tz=pytz.timezone("Europe/Berlin")).date() and
-                       not json.loads(order.container).get('isCancelled')]
+                       == today and not order.isCancelled]
 
-
-    cur_paid_section_orders = [order for order in cur_paid_orders \
-                               if Table.query.filter_by(name=json.loads\
-                                (order.container).get('table_name')).\
-                                first_or_404().section==section]
+    cur_paid_section_orders = [order for order in cur_paid_orders
+                               if Table.query.filter_by(name=order.table_name)\
+                                   .first_or_404().section == section]
 
     revenue = {}
     revenue['total'] = sum([order.totalPrice for order in cur_paid_section_orders])
@@ -3221,9 +3332,13 @@ def revenue_by_section(section):
     revenue['by_cash'] = sum([order.totalPrice for order in cur_paid_section_orders if
                                 json.loads(order.pay_via).get('method') == "Cash"])
 
-    return render_template('revenue_by_section.html',
-                           section=section,
-                           revenue=revenue)
+    context = dict(title=f"今日营收统计 - 分区{section}",
+                   company_name=company_info.get('company_name'),
+                   referrer=request.headers.get('Referer'),
+                   section=section,
+                   revenue=revenue)
+
+    return render_template('revenue_by_section.html', **context)
 
 
 @app.route("/tables/alacarte/active", methods=["POST", "GET"])
@@ -3235,33 +3350,34 @@ def active_alacarte_tables():
     # Filtering alacarte unpaid orders
     orders = Order.query.filter(
         Order.type == "In",
-        Order.isPaid==False).all()
+        Order.isPaid == False).all()
 
     # Filtering only orders which happened the same day.(TZ: Berlin) + order is not cancelled
-    open_orders = [order for order in orders if order.timeCreated.date()
-                   == datetime.now(tz=pytz.timezone("Europe/Berlin")).date() and
-                   not json.loads(order.container).get('isCancelled')]
+    open_orders = [order for order in orders if order.timeCreated.date() == today
+                   and not order.isCancelled]
 
     # Currently Open Tables
-    open_tables = list(set([json.loads(order.container).get("table_name")
-                            for order in open_orders]))
+    open_tables = list(set([order.table_name for order in open_orders]))
 
     # Extend the choices of current form
     form.select_table.choices.extend([(i, i) for i in open_tables])
 
+    context = dict(title="已点餐桌子",
+                   open_tables=open_tables,
+                   company_name=company_info.get('company_name'),
+                   referrer=request.headers.get('Referer'),
+                   form=form)
 
     if form.validate_on_submit():
 
         selected_table = form.select_table.data
-        open_tables = [table for table in open_tables if table==selected_table]
+        open_tables = [table for table in open_tables if table == selected_table]
 
-        return render_template('active_alacarte_tables.html',
-                               form=form,
-                               open_tables=open_tables)
+        context['open_tables'] = open_tables
 
-    return render_template('active_alacarte_tables.html',
-                           form=form,
-                           open_tables=open_tables)
+        return render_template('active_alacarte_tables.html', **context)
+
+    return render_template('active_alacarte_tables.html', **context)
 
 
 @app.route('/transfer/table/<string:table_name>', methods=["POST", "GET"])
@@ -3281,7 +3397,7 @@ def transfer_table(table_name):
 
     # Filtering only orders which happened the same day.(TZ: Berlin) + order is not cancelled
     open_orders = [order for order in orders if order.timeCreated.date()
-                   == datetime.now(tz=pytz.timezone("Europe/Berlin")).date()
+                   == today
                    and not json.loads(order.container).get('isCancelled')]
 
     # Currently Open Tables
@@ -3430,15 +3546,19 @@ def z_receipts_manage():
     context = dict(referrer=request.headers.get('Referer'),
                    title=u"Z单(每日一次)",
                    company_name=company_info.get('company_name'),
-                   data=data)
+                   data=data,
+                   timestamp=datetime.timestamp(datetime.now()),
+                   list=list,
+                   datetime_format=datetime_format)
 
+    # return jsonify(data)
     return render_template("view_void_z_receipts.html", **context) \
         if len(data) == 0 else render_template("view_z_receipts.html", **context)
 
 
-@app.route('/view/z/receipt')
+@app.route('/view/z/receipt/<string:timestamp>')
 @login_required
-def view_z_receipt():
+def view_z_receipt(timestamp):
 
     paid_orders = Order.query.filter(Order.isPaid == True).order_by(Order.settleTime.desc()).all()
 
@@ -3448,21 +3568,23 @@ def view_z_receipt():
               mode="rb") as pickle_out:
         data = pickle.load(pickle_out)
 
+    first_order_time = unpaid_orders[-1].timeCreated
+
+    first_pay_time = paid_orders[-1].settleTime
+
     from_time = None
     unpaid_from = None
 
     if len(data) == 0:
 
-        unpaid_from = unpaid_orders[-1].timeCreated
-
-        from_time = paid_orders[-1].settleTime
+        from_time = min([first_order_time, first_pay_time])
 
     else:
 
         from_time = data[-1].get('lastPrinted')
         unpaid_from = data[-1].get('unpaid_last_until')
 
-    now = datetime.now(tz=None)
+    now = datetime.fromtimestamp(float(timestamp))
 
     ranged_paid_alacarte_orders = [order for order in paid_orders if order.type == "In" and
                                    from_time <= order.settleTime <= now]
@@ -3561,7 +3683,7 @@ def view_z_receipt():
     return render_template("view_z_receipt.html", **context)
 
 
-@app.route('/print/z/receipt/<string:date_time>')
+@app.route('/print/z/receipt/<string:date_time>', methods=["POST", "GET"])
 @login_required
 def print_z_receipt(date_time):
 
@@ -3575,6 +3697,10 @@ def print_z_receipt(date_time):
               mode="rb") as pickle_out:
         data = pickle.load(pickle_out)
 
+    first_pay_time = paid_orders[-1].settleTime
+
+    first_order_time = unpaid_orders[-1].timeCreated
+
     from_time = None
     unpaid_from = None
 
@@ -3582,7 +3708,7 @@ def print_z_receipt(date_time):
 
         unpaid_from = unpaid_orders[-1].timeCreated
 
-        from_time = paid_orders[-1].settleTime
+        from_time = min([first_pay_time, first_order_time])
 
     else:
 
@@ -3696,23 +3822,352 @@ def print_z_receipt(date_time):
 
     def z_receipt_printer():
 
-        z_receipt_templating(context=context,
-                             temp_file=temp_file,
-                             save_as=save_as,
-                             printer=printer)
+        x_z_receipt_templating(context=context,
+                               temp_file=temp_file,
+                               save_as=save_as,
+                               printer=printer)
 
     th = Thread(target=z_receipt_printer)
 
+    form = ConfirmForm()
+
+    if len(cur_unpaid_alacarte_orders) > 0:
+
+        if request.method == "POST" or form.validate_on_submit():
+
+            th.start()
+
+            if len(data) == 0:
+
+                data.append({1: {"lastPrinted": now}})
+
+            else:
+
+                data.append({len(data) + 1: {"lastPrinted": now}})
+
+            with open(str(Path(app.root_path) / 'cache' / 'z_bon_settings.pickle'),
+                      mode="wb") as pickle_in:
+
+                pickle.dump(data, pickle_in)
+
+            flash(f"Z单正在打印，请耐心等待.若未打印，\
+                            请确认打印机是否处于打开状态及正确配置.", category='success')
+
+            return redirect(url_for('z_receipts_manage'))
+
+        context = dict(referrer=request.headers.get('Referer'),
+                       title=u"打印Z单",
+                       company_name=company_info.get('company_name'),
+                       form=form)
+
+        return render_template("print_z_receipt_confirm.html", **context)
+
+    else:
+
+        th.start()
+
+        if len(data) == 0:
+
+            data.append({1: {"lastPrinted": now}})
+
+        else:
+
+            data.append({len(data) + 1: {"lastPrinted": now}})
+
+        with open(str(Path(app.root_path) / 'cache' / 'z_bon_settings.pickle'),
+                  mode="wb") as pickle_in:
+
+            pickle.dump(data, pickle_in)
+
+    flash(f"Z单正在打印，请耐心等待.若未打印，\
+                请确认打印机是否处于打开状态及正确配置.", category='success')
+
+    return redirect(url_for('z_receipts_manage'))
+
+
+@app.route("/x/receipts/manage")
+@login_required
+def x_receipts_manage():
+
+    with open(str(Path(app.root_path) / 'cache' / 'x_bon_settings.pickle'),
+              mode="rb") as pickle_out:
+        data = pickle.load(pickle_out)
+
+    context = dict(referrer=request.headers.get('Referer'),
+                   title=u"X单(每日多次)",
+                   company_name=company_info.get('company_name'),
+                   data=data)
+
+    return render_template("view_void_x_receipts.html", **context) \
+        if len(data) == 0 else render_template("view_x_receipts.html", **context)
+
+
+@app.route('/view/x/receipt')
+@login_required
+def view_x_receipt():
+
+    paid_orders = Order.query.filter(Order.isPaid == True).order_by(Order.settleTime.desc()).all()
+
+    unpaid_orders = Order.query.filter(Order.isPaid == False).order_by(Order.settleTime.desc()).all()
+
+    with open(str(Path(app.root_path) / 'cache' / 'x_bon_settings.pickle'),
+              mode="rb") as pickle_out:
+        data = pickle.load(pickle_out)
+
+    first_order_time = unpaid_orders[-1].timeCreated
+
+    first_pay_time = paid_orders[-1].settleTime
+
+    from_time = min([first_pay_time, first_order_time])
+
+    now = datetime.now(tz=None)
+
+    ranged_paid_alacarte_orders = [order for order in paid_orders if order.type == "In" and
+                                   from_time <= order.settleTime <= now]
+
+    ranged_paid_out_orders = [order for order in paid_orders if order.type == "Out" and
+                                   from_time <= order.settleTime <= now]
+
+    gross_revenue1 = sum([order.totalPrice for order in ranged_paid_alacarte_orders])
+
+    net_revenue1 = round(gross_revenue1 / (1 + tax_rate_in), 2)
+
+    vat1 = gross_revenue1 - net_revenue1
+
+    gross_revenue2 = sum([order.totalPrice for order in ranged_paid_out_orders])
+
+    net_revenue2 = round(gross_revenue2 / (1 + tax_rate_out), 2)
+
+    vat2 = gross_revenue2 - net_revenue2
+
+    taxable_gross = gross_revenue1 + gross_revenue2
+
+    taxable_net = net_revenue1 + net_revenue2
+
+    total_vat = vat1 + vat2
+
+    total_taxable_gross = gross_revenue2 + gross_revenue1
+
+    filtered_paid_orders = ranged_paid_alacarte_orders + ranged_paid_out_orders
+
+    percentage_discounts = sum([order.discount_rate * order.totalPrice for order
+                                in filtered_paid_orders if order.discount_rate])
+
+    total_discounts = sum([order.discount for order
+                                in filtered_paid_orders if order.discount])
+
+    cur_paid_alacarte_orders = [order for order in paid_orders if order.type == "In" and
+                                order.settleTime.date() == today]
+
+    revenue_from_cur_paid_tables = sum([order.totalPrice for
+                                        order in cur_paid_alacarte_orders])
+
+    cur_unpaid_alacarte_orders = [order for order in unpaid_orders if
+                                  order.type == "In" and
+                                  order.timeCreated.date() == today]
+
+    revenue_from_cur_unpaid_tables = sum([order.totalPrice for
+                                            order in cur_unpaid_alacarte_orders])
+
+    cur_paid_orders = [order for order in paid_orders
+                       if order.settleTime.date() == today]
+
+    cur_de_facto_revenue = sum([order.totalPrice for order in cur_paid_orders])
+
+    dummy_cur_revenue = cur_de_facto_revenue + revenue_from_cur_unpaid_tables
+
+    ranged_paid_orders_cash = [order for order in paid_orders if
+                               json.loads(order.pay_via).get('method') == "Cash"
+                               and from_time <= order.settleTime <= now]
+
+    ranged_paid_orders_card = [order for order in paid_orders if
+                               json.loads(order.pay_via).get('method') == "Card"
+                               and from_time <= order.settleTime <= now]
+
+    gross_cash_revenue = sum([order.totalPrice for order in ranged_paid_orders_cash])
+
+    gross_card_revenue = sum([order.totalPrice for order in ranged_paid_orders_card])
+
+    context = dict(referrer=request.headers.get('Referer'),
+                   title=u"打印X单",
+                   company_name=company_info.get('company_name'),
+                   x_number=len(data)+1,
+                   now=format_datetime(now, locale="de_DE"),
+                   now_timestamp=datetime.timestamp(now),
+                   gross_revenue1=format_decimal(gross_revenue1, locale="de_DE"),
+                   net_revenue1=format_decimal(net_revenue1, locale="de_DE"),
+                   vat1=format_decimal(vat1, locale="de_DE"),
+                   gross_revenue2=format_decimal(gross_revenue2, locale="de_DE"),
+                   net_revenue2=format_decimal(net_revenue2, locale="de_DE"),
+                   vat2=format_decimal(vat2, locale="de_DE"),
+                   taxable_gross=format_decimal(taxable_gross, locale="de_DE"),
+                   taxable_net=format_decimal(taxable_net, locale="de_DE"),
+                   total_vat=format_decimal(total_vat, locale="de_DE"),
+                   total_taxable_gross=format_decimal(total_taxable_gross, locale="de_DE"),
+                   percentage_discounts=format_decimal(percentage_discounts, locale="de_DE"),
+                   total_discounts=format_decimal(total_discounts, locale="de_DE"),
+                   gross_cash_revenue=format_decimal(gross_cash_revenue, locale="de_DE"),
+                   gross_card_revenue=format_decimal(gross_card_revenue, locale="de_DE"),
+                   dummy_cur_revenue=format_decimal(dummy_cur_revenue, locale="de_DE"),
+                   revenue_from_cur_paid_tables=format_decimal(revenue_from_cur_paid_tables,
+                                                               locale="de_DE"),
+                   revenue_from_cur_unpaid_tables=format_decimal(revenue_from_cur_unpaid_tables,
+                                                                 locale="de_DE"))
+
+    return render_template("view_x_receipt.html", **context)
+
+
+@app.route('/print/x/receipt/<string:date_time>')
+@login_required
+def print_x_receipt(date_time):
+
+    til = datetime.fromtimestamp(float(date_time))
+
+    paid_orders = Order.query.filter(Order.isPaid == True).order_by(Order.settleTime.desc()).all()
+
+    unpaid_orders = Order.query.filter(Order.isPaid == False).order_by(Order.settleTime.desc()).all()
+
+    with open(str(Path(app.root_path) / 'cache' / 'x_bon_settings.pickle'),
+              mode="rb") as pickle_out:
+
+        data = pickle.load(pickle_out)
+
+    first_order_time = unpaid_orders[-1].timeCreated
+
+    first_pay_time = paid_orders[-1].settleTime
+
+    from_time = min([first_order_time, first_pay_time])
+
+    now = til
+
+    ranged_paid_alacarte_orders = [order for order in paid_orders if order.type == "In" and
+                                   from_time <= order.settleTime <= now]
+
+    ranged_paid_out_orders = [order for order in paid_orders if order.type == "Out" and
+                              from_time <= order.settleTime <= now]
+
+    gross_revenue1 = sum([order.totalPrice for order in ranged_paid_alacarte_orders])
+
+    net_revenue1 = round(gross_revenue1 / (1 + tax_rate_in), 2)
+
+    vat1 = gross_revenue1 - net_revenue1
+
+    gross_revenue2 = sum([order.totalPrice for order in ranged_paid_out_orders])
+
+    net_revenue2 = round(gross_revenue2 / (1 + tax_rate_out), 2)
+
+    vat2 = gross_revenue2 - net_revenue2
+
+    taxable_gross = gross_revenue1 + gross_revenue2
+
+    taxable_net = net_revenue1 + net_revenue2
+
+    total_vat = vat1 + vat2
+
+    total_taxable_gross = gross_revenue2 + gross_revenue1
+
+    filtered_paid_orders = ranged_paid_alacarte_orders + ranged_paid_out_orders
+
+    percentage_discounts = sum([order.discount_rate * order.totalPrice for order
+                                in filtered_paid_orders if order.discount_rate])
+
+    total_discounts = sum([order.discount for order
+                           in filtered_paid_orders if order.discount])
+
+    cur_paid_alacarte_orders = [order for order in paid_orders if order.type == "In" and
+                                order.settleTime.date() == today]
+
+    revenue_from_cur_paid_tables = sum([order.totalPrice for
+                                        order in cur_paid_alacarte_orders])
+
+    cur_unpaid_alacarte_orders = [order for order in unpaid_orders if
+                                  order.type == "In" and
+                                  order.timeCreated.date() == today]
+
+    revenue_from_cur_unpaid_tables = sum([order.totalPrice for
+                                          order in cur_unpaid_alacarte_orders])
+
+    cur_paid_orders = [order for order in paid_orders
+                       if order.settleTime.date() == today]
+
+    cur_de_facto_revenue = sum([order.totalPrice for order in cur_paid_orders])
+
+    dummy_cur_revenue = cur_de_facto_revenue + revenue_from_cur_unpaid_tables
+
+    ranged_paid_orders_cash = [order for order in paid_orders if
+                               json.loads(order.pay_via).get('method') == "Cash"
+                               and from_time <= order.settleTime <= now]
+
+    ranged_paid_orders_card = [order for order in paid_orders if
+                               json.loads(order.pay_via).get('method') == "Card"
+                               and from_time <= order.settleTime <= now]
+
+    gross_cash_revenue = sum([order.totalPrice for order in ranged_paid_orders_cash])
+
+    gross_card_revenue = sum([order.totalPrice for order in ranged_paid_orders_card])
+
+    context = dict(
+                   z_number=len(data) + 1,
+                   now=format_datetime(now, locale="de_DE"),
+                   gross_revenue1=format_decimal(gross_revenue1, locale="de_DE"),
+                   net_revenue1=format_decimal(net_revenue1, locale="de_DE"),
+                   vat1=format_decimal(vat1, locale="de_DE"),
+                   gross_revenue2=format_decimal(gross_revenue2, locale="de_DE"),
+                   net_revenue2=format_decimal(net_revenue2, locale="de_DE"),
+                   vat2=format_decimal(vat2, locale="de_DE"),
+                   taxable_gross=format_decimal(taxable_gross, locale="de_DE"),
+                   taxable_net=format_decimal(taxable_net, locale="de_DE"),
+                   total_vat=format_decimal(total_vat, locale="de_DE"),
+                   total_taxable_gross=format_decimal(total_taxable_gross, locale="de_DE"),
+                   percentage_discounts=format_decimal(percentage_discounts, locale="de_DE"),
+                   total_discounts=format_decimal(total_discounts, locale="de_DE"),
+                   gross_cash_revenue=format_decimal(gross_cash_revenue, locale="de_DE"),
+                   gross_card_revenue=format_decimal(gross_card_revenue, locale="de_DE"),
+                   dummy_cur_revenue=format_decimal(dummy_cur_revenue, locale="de_DE"),
+                   revenue_from_cur_paid_tables=format_decimal(revenue_from_cur_paid_tables,
+                                                               locale="de_DE"),
+                   revenue_from_cur_unpaid_tables=format_decimal(revenue_from_cur_unpaid_tables,
+                                                                 locale="de_DE"))
+
+    temp_file = str(Path(app.root_path) / 'static' / 'docx' / 'x_receipt_temp.docx')
+
+    save_as = f"x_receipt_{str(uuid4())}"
+
+    # Read the printer setting data from the json file
+    with open(str(Path(app.root_path) / "settings" / "printer.json"),
+              encoding="utf8") as file:
+
+        data1 = file.read()
+
+    data1 = json.loads(data1)
+
+    printer = data1.get('receipt').get('printer')
+
+    def x_receipt_printer():
+
+        x_z_receipt_templating(context=context,
+                               temp_file=temp_file,
+                               save_as=save_as,
+                               printer=printer)
+
+    th = Thread(target=x_receipt_printer)
+
     th.start()
 
-    data.append({1: {"lastPrinted": now}})
+    if len(data) == 0:
 
-    with open(str(Path(app.root_path) / 'cache' / 'z_bon_settings.pickle'),
+        data.append({1: {"lastPrinted": now}})
+
+    else:
+
+        data.append({len(data)+1: {"lastPrinted": now}})
+
+    with open(str(Path(app.root_path) / 'cache' / 'x_bon_settings.pickle'),
               mode="wb") as pickle_in:
 
         pickle.dump(data, pickle_in)
 
-    return redirect(url_for('view_z_receipts'))
+    return redirect(url_for('view_x_receipts'))
 
 
 @app.route('/revenue/by/days', methods=["POST", "GET"])
@@ -4028,7 +4483,7 @@ def boss_active_tables():
 
     # Filtering only orders which happened the same day.(TZ: Berlin) + order is not cancelled
     open_orders = [order for order in orders if
-                   order.timeCreated.date() == datetime.now(tz=pytz.timezone("Europe/Berlin")).date() and
+                   order.timeCreated.date() == today and
                    not json.loads(order.container).get('isCancelled')]
 
     # Currently Open Tables
@@ -4146,7 +4601,7 @@ def boss_view_alacarte_open_orders():
         Order.isPaid == False).all()
 
     cur_orders = [order for order in orders if order.timeCreated.date()
-                  == datetime.now(tz=pytz.timezone("Europe/Berlin")).date()]
+                  == today]
 
     items = {order.id: json.loads(order.items) for order in cur_orders}
 
@@ -4176,7 +4631,7 @@ def boss_transfer_table(table_name):
 
     # Filtering only orders which happened the same day.(TZ: Berlin) + order is not cancelled
     open_orders = [order for order in orders if
-                   order.timeCreated.date() == datetime.now(tz=pytz.timezone("Europe/Berlin")).date() and
+                   order.timeCreated.date() == today and
                    not json.loads(order.container).get('isCancelled')]
 
     # Currently Open Tables
@@ -4244,7 +4699,7 @@ def boss_view_table(table_name):
 
     open_orders = [order for order in orders if
                    json.loads(order.container).get('table_name') == table_name and
-                   order.timeCreated.date() == datetime.now(tz=pytz.timezone("Europe/Berlin")).date() and
+                   order.timeCreated.date() == today and
                    not json.loads(order.container).get('isCancelled')]
 
     # Add cond if order not cancelled

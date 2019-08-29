@@ -12,16 +12,18 @@
 {% block title %}
 
 
-<h1 class="h3 mb-2 text-gray-800">{{ title }}</h1>
+<h1 class="h3 mb-2 text-gray-800">{{title}}</h1>
+
 
 {% endblock %}
 
 
 {% block content %}
 
-<h3 class="h3 mb-2 text-gray-800">确定删除菜品{{dish.name}}?</h3>
 
-<br>
+<h3 class="h3 mb-2 text-gray-800">还有订单餐桌未结账, 确定打印z单吗?</h3>
+
+<hr>
 
 <form action='' method="POST" enctype="multipart/form-data">
 
@@ -30,30 +32,22 @@
 
     <div class='form-group'>
 
-      <p>
-        <img src={{ url_for('static', filename="img/"+dish.image) }} alt="" height="100" width="115">
-      </p>
+        <p>
 
-      <p>
+            {{ form.submit(class='btn btn-danger')}}
 
-          {{ form.submit(class='btn btn-danger')}}
+            <button type="button" class="btn btn-secondary">
+              <a style="color: rgb(247, 249, 252)" href={{ referrer }}>
+                  取消
+              </a>
+            </button>
 
-          <button type="button" class="btn btn-secondary">
-            <a style="color: rgb(247, 249, 252)" href={{ referrer }}>
-                取消
-            </a>
-          </button>
-
-      </p>
+        </p>
 
     </div>
 
 
 </form>
-
-
-
-
 
 
 {% endblock %}

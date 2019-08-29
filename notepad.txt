@@ -8,3 +8,24 @@ settle_time = datetime.now(tz=pytz.timezone(timezone))
 btn btn-info style="border-color:#26a69a; background-color:#26a69a;"
 
 btn btn-danger style="border-color:#E57373; background-color:##E57373;"
+
+
+#back{
+
+      margin-left: 912px;
+      margin-bottom:20px;
+
+    }
+
+<br>
+<button type="button" class="btn btn-secondary" id="back">
+  <a style="color: rgb(247, 249, 252)" href={{ referrer }}>
+    返回
+  </a>
+</button>
+
+context = dict(title="当天营业额",
+                   open_sections=open_sections,
+                   company_name=company_info.get('company_name'),
+                   referrer=request.headers.get('Referer')
+                   )

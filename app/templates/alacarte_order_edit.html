@@ -27,6 +27,13 @@
 
     }
 
+    #back{
+
+      margin-left: 815px;
+      margin-bottom:20px;
+
+    }
+
 
 </style>
 {% endblock %}
@@ -35,9 +42,7 @@
 
 {% block title %}
 
-<h1 class="h3 mb-2 text-gray-800">订单修改</h1>
-<hr>
-
+<h1 class="h3 mb-2 text-gray-800">{{title}}</h1>
 
 
 {% endblock %}
@@ -62,7 +67,7 @@
       <div class="product-title">{{ item }}</div>
     </div>
     <div class="product-price">{{ details.get('price') }}</div>
-    {% if not order.isPaid and not container.get('isCancelled') %}
+    {% if not order.isPaid and not order.isCancelled %}
     <div class="product-quantity">
       <input type="number" value={{ details.get('quantity')  }} min="1">
     </div>
@@ -87,48 +92,44 @@
       {{order.id}}
     </span>
   </p>
-  <p>桌子号: {{ container.get('table_name') }}</p>
-  <p>座位号: {{ container.get('seat_number') }}</p>
-  <p>生成时间: {{ order.timeCreated }}</p>
+  <p>桌子号: {{ order.table_name }}</p>
+  <p>生成时间: {{ order.timeCreated.strftime(datetime_format) }}</p>
 
   <p>状态:
     <span>
-      {% if not container.get('isCancelled') %}
+      {% if not order.isCancelled %}
       {{"已结账" if order.isPaid else "就餐中"}}
+      {% else %}
+      已取消
       {% endif %}
-    </span>
-    <span>
-      {{"已取消" if container.get('isCancelled') }}
     </span>
   </p>
 
 
-
-
-
-
-
-  {% if not order.isPaid and not container.get('isCancelled') %}
+  {% if not order.isPaid and not order.isCancelled %}
   <button id="update" class="btn btn-danger">
     <a href={{ url_for('alacarte_orders_manage') }} style="color: rgb(247, 249, 252)">
       确定更新
     </a>
   </button>
 
-  {% endif %}
-
-
-  <button type="button" class="btn btn-secondary">
-    <a href={{ url_for('alacarte_orders_manage') }} style="color: rgb(247, 249, 252)">
-      返回
+  <button id="update" class="btn btn-secondary">
+    <a style="color: rgb(247, 249, 252)" href={{ referrer }}>
+      取消
     </a>
   </button>
 
-
-
+  {% endif %}
 
 
 </div>
+<br>
+<button type="button" class="btn btn-secondary" id="back">
+  <a href="{{ referrer }}" style="color: rgb(247, 249, 252)">
+    返回
+  </a>
+</button>
+
 
 
 

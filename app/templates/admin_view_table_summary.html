@@ -32,7 +32,7 @@
 
 {% block title %}
 
-<h1 class="h3 mb-2 text-gray-800">桌子详情</h1>
+<h1 class="h3 mb-2 text-gray-800">{{title}}</h1>
 
 {% endblock %}
 
@@ -72,7 +72,7 @@
           <thead>
             <tr>
               <th scope="col">跑堂名称</th>
-              <th>杜海军</th>
+              <th>{{waiter_name}}</th>
             </tr>
           </thead>
         </table>
@@ -144,7 +144,7 @@
 
         <hr>
         <button type="button" class="btn btn-secondary" style="margin-left:25px;margin-top:50px">
-          <a href={{ url_for('admin_active_tables') }} style="color: rgb(247, 249, 252)">
+          <a style="color: rgb(247, 249, 252)" href={{ referrer }} >
             返回
           </a>
         </button>

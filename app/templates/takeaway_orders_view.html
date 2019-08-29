@@ -36,7 +36,7 @@
 
 {% block title %}
 
-<h1 class="h3 mb-2 text-gray-800">订单查看</h1>
+<h1 class="h3 mb-2 text-gray-800">{{title}}</h1>
 <hr>
 
 
@@ -45,7 +45,21 @@
 
 {% block content %}
 
+{% with messages = get_flashed_messages() %}
 
+  {% if messages %}
+
+    {% for message in messages %}
+
+    <div class="alert alert-success" role="alert">
+        {{ message }}
+    </div>
+
+    {% endfor %}
+
+  {% endif %}
+
+{% endwith %}
 
 
 <div class="container">
@@ -70,7 +84,22 @@
 
         <div class="card-footer collapse" id="collapse{{ order.id }}" style="text-align:center">
 
-          <a href={{url_for('checkout_takeaway_admin', order_id=order.id)}} class="btn btn-secondary" style="color: rgb(247, 249, 252)">结账</a>
+          <p style="text-align:center">
+            <span>
+              <button type="button" class="btn btn-info pickup" style="border-color:#26a69a; background-color:#26a69a;">
+                <a href={{url_for('checkout_takeaway_admin', order_id=order.id)}} style="color: rgb(247, 249, 252)">
+                  结账
+                </a>
+              </button>
+            </span>
+            <span>
+              <button type="button" class="btn btn-secondary">
+                <a href={{ url_for('cancel_out_order', order_id=order.id) }} style="color: rgb(247, 249, 252)">
+                  取消
+                </a>
+              </button>
+            </span>
+          </p>
 
         </div>
 
@@ -112,7 +141,7 @@
             </span>
             <span>
               <button type="button" class="btn btn-secondary">
-                <a href={{ url_for('takeaway_order_view', order_id=order.id) }} style="color: rgb(247, 249, 252)">
+                <a href={{ url_for('takeaway_order_edit', order_id=order.id) }} style="color: rgb(247, 249, 252)">
                   查看
                 </a>
               </button>
@@ -158,7 +187,7 @@
             </span>
             <span>
               <button type="button" class="btn btn-secondary">
-                <a href={{ url_for('takeaway_order_view', order_id=order.id) }} style="color: rgb(247, 249, 252)">
+                <a href={{ url_for('takeaway_order_edit', order_id=order.id) }} style="color: rgb(247, 249, 252)">
                   查看
                 </a>
               </button>

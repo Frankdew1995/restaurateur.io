@@ -1,4 +1,4 @@
-{% extends 'base.html' %}
+{% extends 'waiter_admin.html' %}
 
 
 {% block css %}
@@ -12,16 +12,32 @@
 {% block title %}
 
 
-<h1 class="h3 mb-2 text-gray-800">{{ title }}</h1>
+<h1 class="h3 mb-2 text-gray-800">账号验证</h1>
+
 
 {% endblock %}
 
 
 {% block content %}
 
-<h3 class="h3 mb-2 text-gray-800">确定删除菜品{{dish.name}}?</h3>
 
-<br>
+<h3 class="h3 mb-2 text-gray-800">{{title}}</h3>
+
+{% with messages = get_flashed_messages() %}
+
+  {% if messages %}
+
+    {% for message in messages %}
+
+    <div class="alert alert-warning" role="alert">
+        {{ message }}
+    </div>
+
+    {% endfor %}
+
+  {% endif %}
+
+{% endwith %}
 
 <form action='' method="POST" enctype="multipart/form-data">
 
@@ -30,30 +46,33 @@
 
     <div class='form-group'>
 
-      <p>
-        <img src={{ url_for('static', filename="img/"+dish.image) }} alt="" height="100" width="115">
-      </p>
+        <p>
 
-      <p>
+          {{form.username.label}}<br>
+          {{form.username}}
 
-          {{ form.submit(class='btn btn-danger')}}
+        </p>
 
-          <button type="button" class="btn btn-secondary">
-            <a style="color: rgb(247, 249, 252)" href={{ referrer }}>
-                取消
-            </a>
-          </button>
+        <p>
+          {{form.password(placeholder="请输入该账号密码")}}
+        </p>
 
-      </p>
+        <p>
+
+            {{ form.submit(class='btn btn-info')}}
+
+            <button type="button" class="btn btn-secondary">
+              <a style="color: rgb(247, 249, 252)" href={{ referrer }}>
+                  取消
+              </a>
+            </button>
+
+
+        </p>
 
     </div>
 
-
 </form>
-
-
-
-
 
 
 {% endblock %}

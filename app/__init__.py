@@ -27,9 +27,6 @@ migrate = Migrate(app, db)
 
 login = LoginManager(app)
 
-
-
-
 # Set the Login View to protect a view
 login.login_view = "login"
 

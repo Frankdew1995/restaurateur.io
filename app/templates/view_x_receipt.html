@@ -65,9 +65,9 @@
     <!-- start of form -->
       <br>
       <div>
-        
+
           <button type="button" class="btn btn-info" style="border-color:#26a69a; background-color:#26a69a;">
-            <a href={{ url_for('print_z_receipt', date_time=now_timestamp) }} style="color: rgb(247, 249, 252)">
+            <a href="#coupon" style="color: rgb(247, 249, 252)">
               打印
             </a>
           </button>
@@ -84,12 +84,7 @@
         <table class="table table-bordered" style="width:100%">
           <thead>
             <tr>
-              <th colspan="5" style="text-align:center">Z Bericht Nr.{{z_number}}</th>
-            </tr>
-
-            <tr>
-              <th colspan="5" style="text-align:center">-----Finanzbericht Tag------</th>
-
+              <th colspan="5" style="text-align:center">X Bericht Nr.{{x_number}}</th>
             </tr>
           </thead>
 
@@ -228,7 +223,7 @@
               <th scope="row">BAR</th>
               <th colspan="2">{{gross_cash_revenue}}</th>
             </tr>
-
+            
             <tr>
               <th scope="row">KARTE</th>
               <th colspan="2">{{gross_card_revenue}}</th>

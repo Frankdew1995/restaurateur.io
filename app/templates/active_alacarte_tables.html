@@ -22,21 +22,20 @@
     .a {color: rgb(247, 249, 252)
 
     }
+
+    #back{
+
+      margin-left: 912px;
+      margin-bottom:20px;
+
+    }
 </style>
 {% endblock %}
 
 
 {% block title %}
 
-<h1 class="h3 mb-2 text-gray-800">已点餐桌子</h1>
-<hr>
-<button type="button" class="btn btn-secondary">
-  <a href={{ url_for('waiter_admin') }} style="color: rgb(247, 249, 252)">
-    返回
-  </a>
-</button>
-
-
+<h1 class="h3 mb-2 text-gray-800">{{title}}</h1>
 
 {% endblock %}
 
@@ -67,7 +66,7 @@
       class='form-control',
       style="width: 25%") }}
     <br>
-    {{form.submit(class='btn btn-secondary', style="margin-left:5px")}}
+    {{form.submit(class='btn btn-secondary', style="margin-left:5px;border-color:#26a69a; background-color:#26a69a;")}}
 
 </form>
 
@@ -93,23 +92,23 @@
           <!-- start of table body -->
           <tr>
             <td>{{ table }}</td>
-            <td>
+            <td style="text-align:right">
               <span>
-                <button type="button" class="btn btn-info">
-                  <a href={{ url_for('view_table', table_name=table) }} target="blank" style="color: rgb(247, 249, 252)">
+                <button type="button" class="btn btn-info" style="border-color:#26a69a; background-color:#26a69a;">
+                  <a href={{ url_for('view_table', table_name=table) }} style="color: rgb(247, 249, 252)">
                     详情
                   </a>
                 </button>
               </span>
               <span>
-                <button type="button" class="btn btn-info">
+                <button type="button" class="btn btn-info" style="border-color:#26a69a; background-color:#26a69a;">
                   <a href={{ url_for('transfer_table', table_name=table) }} style="color: rgb(247, 249, 252)">
                     转台
                   </a>
                 </button>
               </span>
               <span>
-                <button type="button" class="btn btn-info">
+                <button type="button" class="btn btn-info" style="border-color:#26a69a; background-color:#26a69a;">
                   <a href="#" style="color: rgb(247, 249, 252)">
                     分台
                   </a>
@@ -129,6 +128,12 @@
   </div>
 
 </div>
+<br>
+<button type="button" class="btn btn-secondary" id="back">
+  <a href={{ url_for('waiter_admin') }} style="color: rgb(247, 249, 252)">
+    返回
+  </a>
+</button>
 
 
 

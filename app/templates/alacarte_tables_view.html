@@ -23,19 +23,24 @@
 
     }
 
+    #search{
+
+      border-color:#26a69a;
+      background-color:#26a69a;
+      margin-top:30px;
+    }
+
 
 </style>
 {% endblock %}
 
 {% block title %}
 
-<h1 class="h3 mb-2 text-gray-800">订单查看</h1>
+<h1 class="h3 mb-2 text-gray-800">{{title}}</h1>
 
 {% endblock %}
 
 {% block content %}
-
-<hr>
 
 <form action='' method="POST" enctype="multipart/form-data">
 
@@ -62,8 +67,6 @@
             class='form-control',
             style="width: 100%") }}
 
-
-
         </p>
 
 
@@ -72,7 +75,7 @@
 
       <div class="col">
 
-        {{form.submit(class='btn btn-secondary')}}
+        {{form.submit(class='btn btn-secondary', id="search")}}
 
       </div>
 

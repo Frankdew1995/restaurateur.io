@@ -24,6 +24,13 @@
 
     }
 
+    #back{
+
+      margin-left: 912px;
+      margin-bottom:20px;
+
+    }
+
 
 </style>
 {% endblock %}
@@ -31,14 +38,7 @@
 
 {% block title %}
 
-<h1 class="h3 mb-2 text-gray-800">订单管理</h1>
-<hr>
-<button type="button" class="btn btn-secondary">
-  <a href={{ url_for('takeaway_orders_manage') }} style="color: rgb(247, 249, 252)">
-    返回
-  </a>
-</button>
-
+<h1 class="h3 mb-2 text-gray-800">{{title}}</h1>
 
 {% endblock %}
 
@@ -59,7 +59,7 @@
             <th scope="col">订单号#</th>
             <th scope="col">状态</th>
             <th scope="col">下单时间</th>
-            <th scope="col">菜品价格 €</th>
+            <th scope="col">总金额 €</th>
             <th scope="col">操作</th>
           </tr>
         </thead>
@@ -70,6 +70,12 @@
           <tr>
             <th scope="row">{{order.id}}</th>
             <td>
+              <span>
+
+                  {{"已取消" if order.isCancelled }}
+
+              </span>
+
               <span>
                 {{"已支付" if order.isPaid else "未支付"}}
               </span>
@@ -83,16 +89,30 @@
                 {{"已完结" if order.isPickedUp }}
               </span>
             </td>
-            <td>{{ order.timeCreated }}</td>
+            <td>{{ order.timeCreated.strftime(datetime_format) }}</td>
             <td>{{ order.totalPrice }}</td>
-            <td>
+            <td style="text-align:right">
               <span>
-                <button type="button" class="btn btn-info">
+                <button type="button" class="btn btn-info" style="border-color:#26a69a; background-color:#26a69a;">
+
                   <a href={{ url_for('takeaway_order_edit', order_id=order.id ) }} style="color: rgb(247, 249, 252)">
-                    查看/修改
+                    {{"查看" if order.isPaid or order.isCancelled else "修改"}}
                   </a>
                 </button>
               </span>
+
+              {% if not order.isCancelled and not order.isPaid %}
+              <span>
+
+                <button type="button" class="btn btn-danger" style="border-color:#E57373; background-color:##E57373;">
+
+                  <a href={{ url_for('cancel_out_order', order_id=order.id ) }} style="color: rgb(247, 249, 252)">
+                    取消
+                  </a>
+                </button>
+
+              </span>
+              {% endif %}
             </td>
           </tr>
           <!-- end of table body -->
@@ -102,6 +122,13 @@
     </div>
   </div>
 </div>
+
+<br>
+<button type="button" class="btn btn-secondary" id="back">
+  <a style="color: rgb(247, 249, 252)" href={{ referrer }}>
+    返回
+  </a>
+</button>
 
 
 

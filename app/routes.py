@@ -97,7 +97,7 @@ def login():
             # Boss Account
             else:
 
-                return redirect(url_for('boss_active_tables'))
+                return redirect(url_for('index'))
 
         else:
 
@@ -139,7 +139,7 @@ def login():
 
             # Boss Account
             else:
-                return redirect(url_for('boss_active_tables'))
+                return redirect(url_for('index'))
 
         else:
 
@@ -2364,6 +2364,55 @@ def add_table():
 
 
 # Table view function
+@app.route("/js/tables/add", methods=["POST"])
+def js_add_table():
+
+    table_name = request.form.get('name').upper()
+    number = request.form.get('persons')
+    section = request.form.get('section')
+
+    print(section)
+
+    # Check Duplicates
+    if not Table.query.filter_by(name=table_name).first_or_404():
+
+        def async_job():
+
+            suffix_url = "alacarte/interface"
+
+            qrcodes = [generate_qrcode(table=table_name,
+                                       base_url=base_url,
+                                       suffix_url=suffix_url,
+                                       seat=str(i + 1)) for i in range(number)]
+
+            table = Table(
+                name=table_name,
+                number=number,
+                section=section,
+                timeCreated=datetime.now(tz=pytz.timezone(timezone)),
+                container=json.dumps({'isCalled': False,
+                                      'payCalled': False,
+                                      'qrcodes': qrcodes}),
+
+                seats="\n".join([f"{table_name}-{i+1}" for
+                                 i in range(number)])
+            )
+
+            db.session.add(table)
+
+            db.session.commit()
+
+        th = Thread(target=async_job)
+        th.start()
+
+        return jsonify({"success": f"已经成功创建桌子：{table_name}"})
+
+    else:
+
+        return jsonify({"error": f"{table_name}已经存在，请重新输入桌子名称"})
+
+
+# Table view function
 @app.route("/table/<int:table_id>/edit", methods=["POST", "GET"])
 @login_required
 def edit_table(table_id):
@@ -2481,6 +2530,35 @@ def buffet_price_settings():
                    company_name=company_info.get('company_name'))
 
     return render_template("buffet_price_setting.html", **context)
+
+
+@app.route('/buffet/price/settings/auth/<string:week_number>', methods=["POST", "GET"])
+@login_required
+def buffet_price_auth(week_number):
+
+    form = AuthForm()
+
+    user = current_user
+
+    form.username.data = user.username
+
+    if request.method == "POST" or form.validate_on_submit():
+
+        if user is None or not user.check_password(password=form.password.data):
+
+            flash(u"密码或者用户名无效!")
+            return redirect(url_for('buffet_price_auth',
+                                    week_number=week_number))
+
+        return redirect(url_for("edit_buffet_price", week_number=week_number))
+
+    context = dict(title="请输入账号密码修改自助餐",
+                   user=current_user,
+                   company_name=company_info.get('company_name'),
+                   form=form,
+                   week_number=week_number)
+
+    return render_template("buffet_price_setting_auth.html", **context)
 
 
 @app.route('/buffet/prices/edit/<string:week_number>', methods=["GET", "POST"])
@@ -3549,7 +3627,8 @@ def z_receipts_manage():
                    data=data,
                    timestamp=datetime.timestamp(datetime.now()),
                    list=list,
-                   datetime_format=datetime_format)
+                   datetime_format=datetime_format,
+                   datetime=datetime)
 
     # return jsonify(data)
     return render_template("view_void_z_receipts.html", **context) \
@@ -3573,7 +3652,6 @@ def view_z_receipt(timestamp):
     first_pay_time = paid_orders[-1].settleTime
 
     from_time = None
-    unpaid_from = None
 
     if len(data) == 0:
 
@@ -3581,8 +3659,7 @@ def view_z_receipt(timestamp):
 
     else:
 
-        from_time = data[-1].get('lastPrinted')
-        unpaid_from = data[-1].get('unpaid_last_until')
+        from_time = list(data[-1].items())[0][1].get('lastPrinted')
 
     now = datetime.fromtimestamp(float(timestamp))
 
@@ -3676,11 +3753,124 @@ def view_z_receipt(timestamp):
                    revenue_from_cur_paid_tables=format_decimal(revenue_from_cur_paid_tables,
                                                                locale="de_DE"),
                    revenue_from_cur_unpaid_tables=format_decimal(revenue_from_cur_unpaid_tables,
-                                                                 locale="de_DE")
-
-                   )
+                                                                 locale="de_DE"))
 
     return render_template("view_z_receipt.html", **context)
+
+
+@app.route('/view/printed/z/receipt/<string:from_timestamp>/<string:til_timestamp>/<string:z_number>')
+@login_required
+def view_printed_z_receipt(from_timestamp,
+                           til_timestamp,
+                           z_number):
+
+    paid_orders = Order.query.filter(Order.isPaid == True).order_by(Order.settleTime.desc()).all()
+
+    unpaid_orders = Order.query.filter(Order.isPaid == False).order_by(Order.settleTime.desc()).all()
+
+    with open(str(Path(app.root_path) / 'cache' / 'z_bon_settings.pickle'),
+              mode="rb") as pickle_out:
+        data = pickle.load(pickle_out)
+
+    from_time = datetime.fromtimestamp(float(from_timestamp))
+
+    til = datetime.fromtimestamp(float(til_timestamp))
+
+    ranged_paid_alacarte_orders = [order for order in paid_orders if order.type == "In" and
+                                   from_time <= order.settleTime <= til]
+
+    ranged_paid_out_orders = [order for order in paid_orders if order.type == "Out" and
+                                   from_time <= order.settleTime <= til]
+
+    gross_revenue1 = sum([order.totalPrice for order in ranged_paid_alacarte_orders])
+
+    net_revenue1 = round(gross_revenue1 / (1 + tax_rate_in), 2)
+
+    vat1 = gross_revenue1 - net_revenue1
+
+    gross_revenue2 = sum([order.totalPrice for order in ranged_paid_out_orders])
+
+    net_revenue2 = round(gross_revenue2 / (1 + tax_rate_out), 2)
+
+    vat2 = gross_revenue2 - net_revenue2
+
+    taxable_gross = gross_revenue1 + gross_revenue2
+
+    taxable_net = net_revenue1 + net_revenue2
+
+    total_vat = vat1 + vat2
+
+    total_taxable_gross = gross_revenue2 + gross_revenue1
+
+    filtered_paid_orders = ranged_paid_alacarte_orders + ranged_paid_out_orders
+
+    percentage_discounts = sum([order.discount_rate * order.totalPrice for order
+                                in filtered_paid_orders if order.discount_rate])
+
+    total_discounts = sum([order.discount for order
+                                in filtered_paid_orders if order.discount])
+
+    cur_paid_alacarte_orders = [order for order in paid_orders if order.type == "In" and
+                                order.settleTime.date() == today]
+
+    revenue_from_cur_paid_tables = sum([order.totalPrice for
+                                        order in cur_paid_alacarte_orders])
+
+    cur_unpaid_alacarte_orders = [order for order in unpaid_orders if
+                                  order.type == "In" and
+                                  order.timeCreated.date() == today]
+
+    revenue_from_cur_unpaid_tables = sum([order.totalPrice for
+                                            order in cur_unpaid_alacarte_orders])
+
+    cur_paid_orders = [order for order in paid_orders
+                       if order.settleTime.date() == today]
+
+    cur_de_facto_revenue = sum([order.totalPrice for order in cur_paid_orders])
+
+    dummy_cur_revenue = cur_de_facto_revenue + revenue_from_cur_unpaid_tables
+
+    ranged_paid_orders_cash = [order for order in paid_orders if
+                               json.loads(order.pay_via).get('method') == "Cash"
+                               and from_time <= order.settleTime <= til]
+
+    ranged_paid_orders_card = [order for order in paid_orders if
+                               json.loads(order.pay_via).get('method') == "Card"
+                               and from_time <= order.settleTime <= til]
+
+    gross_cash_revenue = sum([order.totalPrice for order in ranged_paid_orders_cash])
+
+    gross_card_revenue = sum([order.totalPrice for order in ranged_paid_orders_card])
+
+    context = dict(referrer=request.headers.get('Referer'),
+                   title=u"查看历史Z单",
+                   company_name=company_info.get('company_name'),
+                   z_number=z_number,
+                   now=format_datetime(til, locale="de_DE"),
+                   gross_revenue1=format_decimal(gross_revenue1, locale="de_DE"),
+                   net_revenue1=format_decimal(net_revenue1, locale="de_DE"),
+                   vat1=format_decimal(vat1, locale="de_DE"),
+                   gross_revenue2=format_decimal(gross_revenue2, locale="de_DE"),
+                   net_revenue2=format_decimal(net_revenue2, locale="de_DE"),
+                   vat2=format_decimal(vat2, locale="de_DE"),
+                   taxable_gross=format_decimal(taxable_gross, locale="de_DE"),
+                   taxable_net=format_decimal(taxable_net, locale="de_DE"),
+                   total_vat=format_decimal(total_vat, locale="de_DE"),
+                   total_taxable_gross=format_decimal(total_taxable_gross, locale="de_DE"),
+                   percentage_discounts=format_decimal(percentage_discounts, locale="de_DE"),
+                   total_discounts=format_decimal(total_discounts, locale="de_DE"),
+                   gross_cash_revenue=format_decimal(gross_cash_revenue, locale="de_DE"),
+                   gross_card_revenue=format_decimal(gross_card_revenue, locale="de_DE"),
+                   dummy_cur_revenue=format_decimal(dummy_cur_revenue, locale="de_DE"),
+                   revenue_from_cur_paid_tables=format_decimal(revenue_from_cur_paid_tables,
+                                                               locale="de_DE"),
+                   revenue_from_cur_unpaid_tables=format_decimal(revenue_from_cur_unpaid_tables,
+                                                                 locale="de_DE"),
+                   from_timestamp=from_timestamp,
+                   til_timestamp=til_timestamp
+                   )
+
+    return render_template("view_printed_z_receipt.html", **context)
 
 
 @app.route('/print/z/receipt/<string:date_time>', methods=["POST", "GET"])
@@ -3702,18 +3892,20 @@ def print_z_receipt(date_time):
     first_order_time = unpaid_orders[-1].timeCreated
 
     from_time = None
-    unpaid_from = None
+
+    cur_z_receipt_printed = False
 
     if len(data) == 0:
-
-        unpaid_from = unpaid_orders[-1].timeCreated
 
         from_time = min([first_pay_time, first_order_time])
 
     else:
 
-        from_time = data[-1].get('lastPrinted')
-        unpaid_from = data[-1].get('unpaid_last_until')
+        from_time = list(data[-1].items())[0][1].get('lastPrinted')
+
+        if from_time.date() == today:
+
+            cur_z_receipt_printed = True
 
     now = til
 
@@ -3831,53 +4023,197 @@ def print_z_receipt(date_time):
 
     form = ConfirmForm()
 
-    if len(cur_unpaid_alacarte_orders) > 0:
+    # if today's z receipt is not printed
+    if not cur_z_receipt_printed:
 
-        if request.method == "POST" or form.validate_on_submit():
+        if len(cur_unpaid_alacarte_orders) > 0:
+
+            if request.method == "POST" or form.validate_on_submit():
+
+                th.start()
+
+                if len(data) == 0:
+
+                    data.append({1: {"printedFrom": from_time,
+                                     "lastPrinted": now}})
+
+                else:
+
+                    data.append({len(data) + 1: {"printedFrom": from_time,
+                                                 "lastPrinted": now}})
+
+                with open(str(Path(app.root_path) / 'cache' / 'z_bon_settings.pickle'),
+                          mode="wb") as pickle_in:
+
+                    pickle.dump(data, pickle_in)
+
+                flash(f"Z单正在打印，请耐心等待.若未打印，\
+                                请确认打印机是否处于打开状态及正确配置.", category='success')
+
+                return redirect(url_for('z_receipts_manage'))
+
+            context = dict(referrer=request.headers.get('Referer'),
+                           title=u"打印Z单",
+                           company_name=company_info.get('company_name'),
+                           form=form)
+
+            return render_template("print_z_receipt_confirm.html", **context)
+
+        else:
 
             th.start()
 
             if len(data) == 0:
 
-                data.append({1: {"lastPrinted": now}})
+                data.append({1: {"printedFrom": from_time,
+                                 "lastPrinted": now}})
 
             else:
 
-                data.append({len(data) + 1: {"lastPrinted": now}})
+                data.append({len(data) + 1: {"printedFrom": from_time,
+                                             "lastPrinted": now}})
 
             with open(str(Path(app.root_path) / 'cache' / 'z_bon_settings.pickle'),
                       mode="wb") as pickle_in:
 
                 pickle.dump(data, pickle_in)
 
-            flash(f"Z单正在打印，请耐心等待.若未打印，\
-                            请确认打印机是否处于打开状态及正确配置.", category='success')
+        flash(f"Z单正在打印，请耐心等待.若未打印，\
+                    请确认打印机是否处于打开状态及正确配置.", category='success')
 
-            return redirect(url_for('z_receipts_manage'))
-
-        context = dict(referrer=request.headers.get('Referer'),
-                       title=u"打印Z单",
-                       company_name=company_info.get('company_name'),
-                       form=form)
-
-        return render_template("print_z_receipt_confirm.html", **context)
+        return redirect(url_for('z_receipts_manage'))
 
     else:
 
-        th.start()
+        flash(f"今天已经打印过Z单，当天不能二次打印新的z单，但您可以查看和打印历史Z单.")
+        return redirect(url_for('z_receipts_manage'))
 
-        if len(data) == 0:
 
-            data.append({1: {"lastPrinted": now}})
+@app.route('/print/printed/z/receipt/<string:from_timestamp>/<string:til_timestamp>/<string:z_number>')
+@login_required
+def print_printed_z_receipt(from_timestamp, til_timestamp, z_number):
 
-        else:
+    til = datetime.fromtimestamp(float(til_timestamp))
 
-            data.append({len(data) + 1: {"lastPrinted": now}})
+    paid_orders = Order.query.filter(Order.isPaid == True).order_by(Order.settleTime.desc()).all()
 
-        with open(str(Path(app.root_path) / 'cache' / 'z_bon_settings.pickle'),
-                  mode="wb") as pickle_in:
+    unpaid_orders = Order.query.filter(Order.isPaid == False).order_by(Order.settleTime.desc()).all()
 
-            pickle.dump(data, pickle_in)
+    from_time = datetime.fromtimestamp(float(from_timestamp))
+
+    ranged_paid_alacarte_orders = [order for order in paid_orders if order.type == "In" and
+                                   from_time <= order.settleTime <= til]
+
+    ranged_paid_out_orders = [order for order in paid_orders if order.type == "Out" and
+                              from_time <= order.settleTime <= til]
+
+    gross_revenue1 = sum([order.totalPrice for order in ranged_paid_alacarte_orders])
+
+    net_revenue1 = round(gross_revenue1 / (1 + tax_rate_in), 2)
+
+    vat1 = gross_revenue1 - net_revenue1
+
+    gross_revenue2 = sum([order.totalPrice for order in ranged_paid_out_orders])
+
+    net_revenue2 = round(gross_revenue2 / (1 + tax_rate_out), 2)
+
+    vat2 = gross_revenue2 - net_revenue2
+
+    taxable_gross = gross_revenue1 + gross_revenue2
+
+    taxable_net = net_revenue1 + net_revenue2
+
+    total_vat = vat1 + vat2
+
+    total_taxable_gross = gross_revenue2 + gross_revenue1
+
+    filtered_paid_orders = ranged_paid_alacarte_orders + ranged_paid_out_orders
+
+    percentage_discounts = sum([order.discount_rate * order.totalPrice for order
+                                in filtered_paid_orders if order.discount_rate])
+
+    total_discounts = sum([order.discount for order
+                           in filtered_paid_orders if order.discount])
+
+    cur_paid_alacarte_orders = [order for order in paid_orders if order.type == "In" and
+                                order.settleTime.date() == today]
+
+    revenue_from_cur_paid_tables = sum([order.totalPrice for
+                                        order in cur_paid_alacarte_orders])
+
+    cur_unpaid_alacarte_orders = [order for order in unpaid_orders if
+                                  order.type == "In" and
+                                  order.timeCreated.date() == today]
+
+    revenue_from_cur_unpaid_tables = sum([order.totalPrice for
+                                          order in cur_unpaid_alacarte_orders])
+
+    cur_paid_orders = [order for order in paid_orders
+                       if order.settleTime.date() == today]
+
+    cur_de_facto_revenue = sum([order.totalPrice for order in cur_paid_orders])
+
+    dummy_cur_revenue = cur_de_facto_revenue + revenue_from_cur_unpaid_tables
+
+    ranged_paid_orders_cash = [order for order in paid_orders if
+                               json.loads(order.pay_via).get('method') == "Cash"
+                               and from_time <= order.settleTime <= til]
+
+    ranged_paid_orders_card = [order for order in paid_orders if
+                               json.loads(order.pay_via).get('method') == "Card"
+                               and from_time <= order.settleTime <= til]
+
+    gross_cash_revenue = sum([order.totalPrice for order in ranged_paid_orders_cash])
+
+    gross_card_revenue = sum([order.totalPrice for order in ranged_paid_orders_card])
+
+    context = dict(
+                   z_number=z_number,
+                   now=format_datetime(til, locale="de_DE"),
+                   gross_revenue1=format_decimal(gross_revenue1, locale="de_DE"),
+                   net_revenue1=format_decimal(net_revenue1, locale="de_DE"),
+                   vat1=format_decimal(vat1, locale="de_DE"),
+                   gross_revenue2=format_decimal(gross_revenue2, locale="de_DE"),
+                   net_revenue2=format_decimal(net_revenue2, locale="de_DE"),
+                   vat2=format_decimal(vat2, locale="de_DE"),
+                   taxable_gross=format_decimal(taxable_gross, locale="de_DE"),
+                   taxable_net=format_decimal(taxable_net, locale="de_DE"),
+                   total_vat=format_decimal(total_vat, locale="de_DE"),
+                   total_taxable_gross=format_decimal(total_taxable_gross, locale="de_DE"),
+                   percentage_discounts=format_decimal(percentage_discounts, locale="de_DE"),
+                   total_discounts=format_decimal(total_discounts, locale="de_DE"),
+                   gross_cash_revenue=format_decimal(gross_cash_revenue, locale="de_DE"),
+                   gross_card_revenue=format_decimal(gross_card_revenue, locale="de_DE"),
+                   dummy_cur_revenue=format_decimal(dummy_cur_revenue, locale="de_DE"),
+                   revenue_from_cur_paid_tables=format_decimal(revenue_from_cur_paid_tables,
+                                                               locale="de_DE"),
+                   revenue_from_cur_unpaid_tables=format_decimal(revenue_from_cur_unpaid_tables,
+                                                                 locale="de_DE"))
+
+    temp_file = str(Path(app.root_path) / 'static' / 'docx' / 'z_receipt_temp.docx')
+
+    save_as = f"z_receipt_{str(uuid4())}"
+
+    # Read the printer setting data from the json file
+    with open(str(Path(app.root_path) / "settings" / "printer.json"),
+              encoding="utf8") as file:
+
+        data1 = file.read()
+
+    data1 = json.loads(data1)
+
+    printer = data1.get('receipt').get('printer')
+
+    def z_receipt_printer():
+
+        x_z_receipt_templating(context=context,
+                               temp_file=temp_file,
+                               save_as=save_as,
+                               printer=printer)
+
+    th = Thread(target=z_receipt_printer)
+
+    th.start()
 
     flash(f"Z单正在打印，请耐心等待.若未打印，\
                 请确认打印机是否处于打开状态及正确配置.", category='success')
@@ -3896,15 +4232,19 @@ def x_receipts_manage():
     context = dict(referrer=request.headers.get('Referer'),
                    title=u"X单(每日多次)",
                    company_name=company_info.get('company_name'),
-                   data=data)
+                   data=data,
+                   timestamp=datetime.timestamp(datetime.now()),
+                   list=list,
+                   datetime_format=datetime_format,
+                   datetime=datetime)
 
     return render_template("view_void_x_receipts.html", **context) \
         if len(data) == 0 else render_template("view_x_receipts.html", **context)
 
 
-@app.route('/view/x/receipt')
+@app.route('/view/x/receipt/<string:timestamp>')
 @login_required
-def view_x_receipt():
+def view_x_receipt(timestamp):
 
     paid_orders = Order.query.filter(Order.isPaid == True).order_by(Order.settleTime.desc()).all()
 
@@ -3920,7 +4260,7 @@ def view_x_receipt():
 
     from_time = min([first_pay_time, first_order_time])
 
-    now = datetime.now(tz=None)
+    now = datetime.fromtimestamp(float(timestamp))
 
     ranged_paid_alacarte_orders = [order for order in paid_orders if order.type == "In" and
                                    from_time <= order.settleTime <= now]
@@ -4167,7 +4507,10 @@ def print_x_receipt(date_time):
 
         pickle.dump(data, pickle_in)
 
-    return redirect(url_for('view_x_receipts'))
+    flash(f"X单正在打印，请耐心等待.若未打印，\
+                    请确认打印机是否处于打开状态及正确配置.", category='success')
+
+    return redirect(url_for('x_receipts_manage'))
 
 
 @app.route('/revenue/by/days', methods=["POST", "GET"])
@@ -4857,9 +5200,13 @@ def boss_users_manage():
 
     user_in_use = {user.id: json.loads(user.container).get('inUse') for user in users}
 
-    return render_template('boss_users_manage.html',
-                           users=users,
-                           user_in_use=user_in_use)
+    context = dict(users=users,
+                   user_in_use=user_in_use,
+                   referrer=request.headers.get('Referer'),
+                   title=u'账户管理',
+                   company_name=company_info.get('company_name'))
+
+    return render_template('boss_users_manage.html', **context)
 
 
 @app.route('/boss/users/add', methods=["GET", "POST"])
@@ -4898,10 +5245,12 @@ def boss_add_user():
 
         return redirect(url_for('boss_users_manage'))
 
-    return render_template('boss_add_user.html',
-                           referrer=referrer,
-                           form=form,
-                           title=u"添加账户")
+    context=dict(referrer=referrer,
+                 form=form,
+                 title=u"添加账户",
+                 company_name=company_info.get('company_name'))
+
+    return render_template('boss_add_user.html', **context)
 
 
 @app.route("/boss/user/<int:user_id>/edit", methods=["GET", "POST"])
@@ -4932,10 +5281,15 @@ def boss_edit_user(user_id):
     form.username.data = user.username
     form.permissions.data = user.permissions
 
+    context = dict(title="修改账号",
+                   form=form,
+                   user=user,
+                   company_name=company_info.get('company_name'),
+                   referrer=request.headers.get('Referer')
+                   )
+
     return render_template('boss_edit_user.html',
-                           form=form,
-                           user=user,
-                           referrer=referrer)
+                           **context)
 
 
 @app.route('/boss/update/<int:user_id>/password', methods=["GET", "POST"])
@@ -4964,10 +5318,14 @@ def boss_update_password(user_id):
 
     form.username.data = user.username
 
-    return render_template('boss_update_password.html',
-                           referrer=referrer,
-                           form=form,
-                           user=user)
+    context = dict(title="修改账号密码",
+                   form=form,
+                   user=user,
+                   company_name=company_info.get('company_name'),
+                   referrer=request.headers.get('Referer')
+                   )
+
+    return render_template('boss_update_password.html', **context)
 
 
 @app.route('/boss/user/<int:user_id>/delete', methods=['GET', 'POST'])
@@ -4996,7 +5354,8 @@ def boss_delete_user(user_id):
     return render_template('boss_remove_user.html',
                            user=user,
                            referrer=referrer,
-                           form=form)
+                           form=form,
+                           company_name=company_info.get('company_name'))
 
 
 # boss / admin switch user on and off

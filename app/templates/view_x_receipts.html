@@ -58,6 +58,12 @@
 
 <div class="container">
 
+  <button type="button" class="btn btn-info" style="border-color:#26a69a; background-color:#26a69a;">
+    <a href={{ url_for('view_x_receipt', timestamp=timestamp) }} style="color: rgb(247, 249, 252)">
+       打印X单
+    </a>
+  </button>
+  <hr>
 
   <div class="row">
 
@@ -69,8 +75,8 @@
 
         <thead>
           <tr>
-            <th scope="col">Z单号#</th>
-            <th scope="col">打印时间</th>
+            <th scope="col">X单号#</th>
+            <th scope="col">截止时间</th>
             <th scope="col">操作</th>
           </tr>
         </thead>
@@ -78,22 +84,24 @@
 
 
           <!-- start of table body -->
+          {% for record in data %}
+          {% with timestamp=datetime.timestamp(list(record.items())[0][1].get('lastPrinted')) %}
           <tr>
-            <th scope="row"> </th>
+            <th scope="row">{{list(record.items())[0][0]}}</th>
 
-            <th> </th>
+            <th>{{list(record.items())[0][1].get('lastPrinted').strftime(datetime_format)}}</th>
 
-            <td style="text-align:center">
+            <td style="text-align:right">
               <span>
-                <button type="button" class="btn btn-info">
-                  <a href="#" style="color: rgb(247, 249, 252)">
+                <button type="button" class="btn btn-info" style="border-color:#26a69a; background-color:#26a69a;">
+                  <a href={{ url_for('view_x_receipt', timestamp=timestamp) }} style="color: rgb(247, 249, 252)">
                     查看
                   </a>
                 </button>
               </span>
               <span>
-                <button type="button" class="btn btn-info">
-                  <a href="#" style="color: rgb(247, 249, 252)">
+                <button type="button" class="btn btn-info" style="border-color:#26a69a; background-color:#26a69a;">
+                  <a href={{ url_for('print_x_receipt', date_time=timestamp) }} style="color: rgb(247, 249, 252)">
                     打印
                   </a>
                 </button>
@@ -101,6 +109,8 @@
             </td>
           </tr>
           <!-- end of table body -->
+          {% endwith %}
+          {% endfor %}
 
         </tbody>
       </table>
@@ -112,7 +122,7 @@
 </div>
 
 <br>
-<button type="button" class="btn btn-secondary" style="margin-left:792px">
+<button type="button" class="btn btn-secondary" style="margin-left:912px">
   <a style="color: rgb(247, 249, 252)" href={{ referrer }} >
     返回
   </a>
@@ -125,7 +135,9 @@
 {% block scripts %}
 <script>
     $(document).ready(function() {
-    $('#example').DataTable();
+    $('#example').DataTable({
+      'order':[[0, 'desc']]
+    });
 } );
 </script>
 <script type="text/javascript" charset="utf8" src="https://cdn.datatables.net/1.10.19/js/dataTables.bootstrap4.min.js"></script>

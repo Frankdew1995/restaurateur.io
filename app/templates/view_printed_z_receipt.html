@@ -60,14 +60,14 @@
 
       <p>BRUTTO1: </p>
 
-
-
     <!-- start of form -->
       <br>
       <div>
 
           <button type="button" class="btn btn-info" style="border-color:#26a69a; background-color:#26a69a;">
-            <a href={{ url_for('print_x_receipt', date_time=now_timestamp) }} style="color: rgb(247, 249, 252)">
+            <a href={{ url_for('print_printed_z_receipt', from_timestamp=from_timestamp,
+            til_timestamp=til_timestamp,
+            z_number=z_number) }} style="color: rgb(247, 249, 252)">
               打印
             </a>
           </button>
@@ -84,7 +84,12 @@
         <table class="table table-bordered" style="width:100%">
           <thead>
             <tr>
-              <th colspan="5" style="text-align:center">X Bericht Nr.{{x_number}}</th>
+              <th colspan="5" style="text-align:center">Z Bericht Nr.{{z_number}}</th>
+            </tr>
+
+            <tr>
+              <th colspan="5" style="text-align:center">-----Finanzbericht Tag------</th>
+
             </tr>
           </thead>
 

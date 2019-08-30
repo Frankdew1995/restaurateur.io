@@ -24,7 +24,7 @@
     }
 
     #back {
-      margin-left: 795px;
+      margin-left: 912px;
       margin-bottom:20px;
     }
 </style>
@@ -64,7 +64,7 @@
       class='form-control',
       style="width: 25%") }}
     <br>
-    {{form.submit(class='btn btn-secondary', style="margin-left:5px")}}
+    {{form.submit(class='btn btn-secondary', style="margin-left:5px;border-color:#26a69a;background-color:#26a69a")}}
 
 </form>
 
@@ -90,7 +90,7 @@
           <!-- start of table body -->
           <tr>
             <td>{{ table }}</td>
-            <td style="text-align:center">
+            <td style="text-align:right">
               <span>
                 <button type="button" class="btn btn-info" style="border-color:#26a69a; background-color:#26a69a;">
                   <a href={{ url_for('admin_view_table', table_name=table) }} style="color: rgb(247, 249, 252)">

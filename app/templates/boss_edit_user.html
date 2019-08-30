@@ -1,11 +1,23 @@
-{% extends "boss.html" %}
+{% extends "base.html" %}
 
 
+{% block css %}
+
+<style media="screen">
+
+  #back {
+    margin-left: 815px;
+    margin-bottom:20px;
+  }
+
+</style>
+
+{% endblock %}
 
 {% block title %}
 
 
-<h1 class="h3 mb-2 text-gray-800">修改账号</h1>
+<h1 class="h3 mb-2 text-gray-800">{{title}}</h1>
 <hr>
 
 
@@ -13,15 +25,6 @@
 
 
 {% block content %}
-
-
-<button type="button" class="btn btn-danger">
-  <a href={{ referrer }} style="color: rgb(247, 249, 252)">
-    返回
-  </a>
-</button>
-
-<hr>
 
 <form action='' method="POST" enctype="multipart/form-data">
 
@@ -56,12 +59,17 @@
             </button>
         </p>
 
-
-
     </div>
 
 
 </form>
+<br>
+<button type="button" class="btn btn-secondary" id="back">
+  <a style="color: rgb(247, 249, 252)" href={{ referrer }}>
+    返回
+  </a>
+</button>
+
 
 
 

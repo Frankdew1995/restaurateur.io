@@ -8,7 +8,7 @@
 <link rel="stylesheet" type="text/css" href="https://cdn.datatables.net/1.10.19/css/dataTables.bootstrap4.min.css">
 <style media="screen">
   #back{
-    margin-left: 817px;
+    margin-left: 937px;
     margin-bottom: 20px;
   }
 </style>
@@ -62,11 +62,11 @@
 
           <td>{{items.get('note', '')}}</td>
 
-          <td style="text-align:center">
+          <td style="text-align:right">
 
             <span>
               <button type="button" class="btn btn-info" style="border-color:#26a69a; background-color:#26a69a;">
-                <a href={{ url_for('edit_buffet_price', week_number=key) }} style="color: rgb(247, 249, 252)">
+                <a href={{ url_for('buffet_price_auth', week_number=key) }} style="color: rgb(247, 249, 252)">
                   修改
                 </a>
               </button>

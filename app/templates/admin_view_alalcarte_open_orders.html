@@ -67,7 +67,7 @@
             <td>{{ order.table_name }}</td>
             <td>{{ order.timeCreated.strftime(datetime_format) }}</td>
             <td>{{ order.totalPrice }}</td>
-            <td style="text-align:center">
+            <td style="text-align:right">
               <span>
                 <button type="button" class="btn btn-info" style="border-color:#26a69a; background-color:#26a69a;">
                   <a href={{ url_for('admin_alacarte_order_edit', order_id=order.id) }} style="color: rgb(247, 249, 252)">
@@ -100,7 +100,7 @@
 </div>
 
 <br>
-<button type="button" class="btn btn-secondary" style="margin-left:795px">
+<button type="button" class="btn btn-secondary" style="margin-left:912px">
   <a style="color: rgb(247, 249, 252)" href={{ referrer }} >
     返回
   </a>

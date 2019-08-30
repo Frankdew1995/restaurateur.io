@@ -1,4 +1,4 @@
-{% extends 'base.html' %}
+{% extends 'waiter_admin.html' %}
 
 
 {% block css %}
@@ -9,21 +9,34 @@
 
 {% endblock %}
 
-
 {% block title %}
 
-<h1 class="h3 mb-2 text-gray-800">删除账号</h1>
-<br>
+
+<h1 class="h3 mb-2 text-gray-800">账号验证</h1>
+
 
 {% endblock %}
 
 
 {% block content %}
 
+<h3 class="h3 mb-2 text-gray-800">{{title}}</h3>
 
-<h3 class="h3 mb-2 text-gray-800">确定删除账号{{user.username}}?</h3>
+{% with messages = get_flashed_messages() %}
 
-<hr>
+  {% if messages %}
+
+    {% for message in messages %}
+
+    <div class="alert alert-warning" role="alert">
+        {{ message }}
+    </div>
+
+    {% endfor %}
+
+  {% endif %}
+
+{% endwith %}
 
 <form action='' method="POST" enctype="multipart/form-data">
 
@@ -31,22 +44,34 @@
     {{ form.hidden_tag() }}
 
     <div class='form-group'>
+
         <p>
-            {{ form.submit(class='btn btn-danger')}}
+
+          {{form.username.label}}<br>
+          {{form.username}}
+
+        </p>
+
+        <p>
+          {{form.password(placeholder="请输入该账号密码")}}
+        </p>
+
+        <p>
+
+            {{ form.submit(class='btn btn-info')}}
+
             <button type="button" class="btn btn-secondary">
-              <a style="color: rgb(247, 249, 252)" href={{ referrer }}>
+              <a style="color: rgb(247, 249, 252)" href={{ url_for('buffet_price_settings') }}>
                   取消
               </a>
             </button>
+
+
         </p>
+
     </div>
 
-
 </form>
-
-
-
-
 
 
 {% endblock %}

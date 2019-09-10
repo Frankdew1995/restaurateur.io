@@ -30,7 +30,13 @@ Done:
 25. takeout order printing
 20. Remove email attr from user model
 31. dishes in Order model: use timestamp as the string to record
-
+30. Sort the order by settleTime desc and use the \ admin, waiter, takeaway and boss
+28. revenue by waiters and sections in waiter admin
+32. Use Javascript to add users and tables !!!!!!
+27. mongo and japan buffet guests routes
+30. Japan Buffet time limit implementation per round.
+31. If  a seat is associated with an order, the guest \
+shall be redirected to the corresponding page;
 
 To Dos:
 
@@ -39,13 +45,12 @@ To Dos:
 17. Product detail view page (width 100%)
 19. License Key to redirect to register page
 26. User Avatar >> Default
-28. revenue by waiters and sections in waiter admin
-29. Serialize orders daily.
+28. German Localization for datetime and local decimals
+29. Round 2 for all decimal values
 
-30. Sort the order by settleTime desc and use the \
 
-    admin, waiter, takeaway and boss
 
-32. Use Javascript to add users and tables !!!!!!
+
+
 
 

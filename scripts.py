@@ -1,19 +1,15 @@
 from app.utilities import void_pickle_dumper
 
-void_pickle_dumper(r_type="z")
-
-
-
-from app import app
+# void_pickle_dumper(r_type="z")
+import json
 from pathlib import Path
-import pickle
-from datetime import datetime
+from app import app
+# Read the business hours config setting data from the json file
 
-with open(str(Path(app.root_path) / 'cache' / 'z_bon_settings.pickle'),
-          mode="rb") as pickle_out:
-    data = pickle.load(pickle_out)
+with open(str(Path(app.root_path) / "settings" / "config.json"),
+          encoding="utf8") as file:
+    config = file.read()
 
+hours = json.loads(config)[0].get('BUSINESS_HOURS')
 
-dtime = list(data[-1].items())[0][1]
-
-print(dtime)
+print(hours)

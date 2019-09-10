@@ -75,7 +75,7 @@
 
 
       <li>
-         <a href={{ url_for('alacarte_navigate', table_name=table_name, seat_number=seat_number) }}>
+         <a href={{ referrer }}>
            <i class="fas fa-home"></i>
          </a>
       </li>
@@ -172,7 +172,8 @@
             <div class="card-body" id={{dish.id}}>
               <div class="card-text d-flex justify-content-between text-capitalize">
                 <h5 id="store-item-name">{{ dish.name }}</h5>
-                <h5 class="store-item-value">€ <strong id="store-item-price" class="font-weight-bold">{{ dish.price_gross  }}</strong></h5>
+                <h5 class="store-item-value">€<strong id="store-item-price" class="font-weight-bold">{{ format_decimal(dish.price_gross,
+                  locale="de_DE")  }}</strong></h5>
               </div>
 
               <div class="input-group">

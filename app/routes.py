@@ -27,7 +27,7 @@ from .utilities import (json_reader, store_picture,
 from pathlib import Path
 import json
 from uuid import uuid4
-from datetime import datetime, timedelta
+from datetime import datetime, timedelta, time
 import pytz
 from threading import Thread
 from werkzeug.utils import secure_filename
@@ -45,18 +45,26 @@ company_info = {
             "tax_rate_in": info.get('TAX_RATE').get('Inhouse Order'),
             "company_name": info.get('STORE_NAME'),
             "address": f'{info.get("STREET")} {info.get("STREET NO.")}, {info.get("ZIP")} {info.get("CITY")}',
-            "tax_id": info.get('TAX_ID')
+            "tax_id": info.get('TAX_ID'),
+
         }
 
-date_format = "%Y.%-m.%-d"
+hours = info.get('BUSINESS_HOURS')
 
-datetime_format = "%Y.%-m.%-d %H:%M:%S"
+time_buffer_mins = int(info.get('BUFFET_TIME_BUFFER'))
+
+max_rounds = int(info.get('ORDER_TIMES'))
+
+date_format = "%Y.%m.%d"
+
+datetime_format = "%Y.%m.%d %H:%M:%S"
 
 tax_rate_in = float(company_info.get('tax_rate_in', 0.0))
 
 tax_rate_out = float(company_info.get('tax_rate_out', 0.0))
 
-base_url = "http://a6d6fd65.ngrok.io"
+base_url = "http://4cb0771c.ngrok.io"
+suffix_url = "guest/navigation"
 
 timezone = 'Europe/Berlin'
 
@@ -688,15 +696,18 @@ def checkout_takeaway_admin(order_id):
             bar_temp = str(Path(app.root_path) / 'static' / 'docx' / 'bar.docx')
             save_as_bar = f"meallist_bar_{order.id}"
 
+            vat = format_decimal(round((order.totalPrice / tax_rate_out)*tax_rate_out, 2),
+                                 locale="de_DE")
+
             context = {"details": details,
                          "company_name": company_info.get('company_name', ''),
                          "address": company_info.get('address'),
                          "now": datetime.now().strftime("%Y-%m-%d %H:%M:%S"),
                          "tax_id": company_info.get('tax_id'),
                          "wait_number": order.id,
-                         "total": order.totalPrice,
+                         "total": format_decimal(round(order.totalPrice, 2),locale="de_DE"),
                          "pay_via": json.loads(order.pay_via).get('method', ""),
-                         "VAT": round((order.totalPrice / 1.07)*0.07, 2)}
+                         "VAT": vat}
 
             temp_file = str(Path(app.root_path) / 'static' / 'docx' / 'receipt_temp_out.docx')
             save_as = f"receipt_{order.id}"
@@ -1225,7 +1236,7 @@ def add_category():
 
     form = AddCategoryForm()
 
-    form.name_class .choices.extend([(i, i) for i in all_classes])
+    form.name_class.choices.extend([(i, i) for i in all_classes])
     form.name_category.choices.extend([(i, i) for i in all_categories])
 
     if form.validate_on_submit() or request.method == "POST":
@@ -1388,7 +1399,7 @@ def add_dish():
     form.class_name.choices.extend([(i, i) for i in class_names])
     form.category.choices.extend([(i, i) for i in sub_categories])
 
-    if request.method == "POST" and form.validate_on_submit():
+    if request.method == "POST" or form.validate_on_submit():
 
         name = form.name.data
         class_name = form.class_name.data
@@ -1413,7 +1424,7 @@ def add_dish():
                     price_net_in=price / (1 + tax_rate_in),
                     price_net_out=price / (1 + tax_rate_out),
                     image=image_path,
-                    eat_manner=json.dumps(eat_manner),
+                    eat_manner=eat_manner,
                     class_name=class_name,
                     inUse=True,
                     cn_description=cn_desc)
@@ -1483,7 +1494,7 @@ def edit_dish(dish_id):
 
     dish = db.session.query(Food).get_or_404(int(dish_id))
 
-    if request.method == "POST":
+    if request.method == "POST" or form.validate_on_submit():
 
         dish.name = form.name.data
         dish.category = form.category.data
@@ -1496,7 +1507,7 @@ def edit_dish(dish_id):
 
         dish.description = form.description.data
 
-        dish.eat_manner = json.dumps(form.eat_manner.data)
+        dish.eat_manner = form.eat_manner.data
 
         file = request.files["file"]
 
@@ -1773,7 +1784,24 @@ def set_store():
 
     form = StoreSettingForm()
 
-    if form.validate_on_submit():
+    clocks = [(time(i, 0), f"0{i}:00") if i <= 9 else (time(i, 0), f"{i}:00") for i in range(24)]
+
+    half_clocks = [(time(i, 30), f"0{i}:30") if i <= 9 else (time(i, 30), f"{i}:30") for i in range(24)]
+
+    all_clocks = sorted(clocks + half_clocks)
+
+    all_clocks.append((time(23, 59), "23:59"))
+
+    form.business_hours_start_morning.choices.extend(all_clocks)
+
+    form.business_hours_end_morning.choices.extend(all_clocks)
+
+    form.business_hours_start_evening.choices.extend(all_clocks)
+    form.business_hours_end_evening.choices.extend(all_clocks)
+
+    if form.validate_on_submit() or request.method == "POST":
+
+        print("Ok")
 
         # Save the logo file
         logo_file = form.logo.data
@@ -1783,7 +1811,7 @@ def set_store():
             logo_file.save(str(Path(app.root_path) / 'static' / 'img' / 'logo.png'))
 
         # Transmitting data in the form into the dictionary
-        data = {
+        data = [{
           "STORE_NAME": form.store_name.data,
           "CITY": form.city.data,
           "STREET": form.street.data,
@@ -1792,10 +1820,21 @@ def set_store():
           "ZIP": form.zip.data,
           "TAX_ID": form.tax_id.data,
           "TAX_RATE": {"takeaway": form.tax_rate_takeaway.data,
-                       "Inhouse Order": form.tax_rate_InHouse.data}
-        }
+                       "Inhouse Order": form.tax_rate_InHouse.data},
+            "BUFFET_TIME_BUFFER": form.jp_buffet_time_buffer.data,
+            "ORDER_TIMES": form.order_times.data,
+            "ORDER_AMOUNT_PER_ROUND": form.order_amount_per_round.data,
+            "BUSINESS_HOURS": {"MORNING": {"START": form.business_hours_start_morning.data,
+                                           "END": form.business_hours_end_morning.data
+                                           },
 
-        with open(str(Path.cwd() / 'app' / 'settings' / 'config.json'), 'w') as f:
+                               "EVENING": {"START": form.business_hours_start_evening.data,
+                                           "END": form.business_hours_end_evening.data
+                                           }
+                            }
+        }]
+
+        with open(str(Path(app.root_path) / 'settings' / 'config.json'), 'w') as f:
 
             json.dump(data, f, indent=2)
 
@@ -1803,7 +1842,7 @@ def set_store():
 
         return redirect(url_for("set_store"))
 
-    data = json_reader(file=str(Path.cwd() / 'app' / 'settings' / 'config.json'))
+    data = json_reader(file=str(Path(app.root_path) / 'settings' / 'config.json'))
     form.store_name.data = data.get("STORE_NAME")
     form.street_no.data = data.get("STREET NO.")
     form.street.data = data.get("STREET")
@@ -1813,6 +1852,19 @@ def set_store():
     form.tax_id.data = data.get('TAX_ID')
     form.tax_rate_InHouse.data = data.get("TAX_RATE").get("Inhouse Order")
     form.tax_rate_takeaway.data = data.get("TAX_RATE").get("takeaway")
+    form.jp_buffet_time_buffer.data = data.get('BUFFET_TIME_BUFFER')
+    form.order_times.data = data.get('ORDER_TIMES')
+
+    try:
+        form.business_hours_start_morning.data = data.get('BUSINESS_HOURS').get('MORNING').get('START')
+        form.business_hours_end_morning.data = data.get('BUSINESS_HOURS').get('MORNING').get('END')
+
+        form.business_hours_start_evening.data = data.get('BUSINESS_HOURS').get('EVENING').get('START')
+        form.business_hours_end_evening.data = data.get('BUSINESS_HOURS').get('EVENING').get('END')
+
+    except AttributeError as e:
+
+        print(str(e))
 
     logo = "logo.PNG"
 
@@ -2159,7 +2211,7 @@ def admin_view_table(table_name):
     # Check out form payment methods, discount and coupon code
     form = CheckoutForm()
 
-    # Filtering ala carte unpaid orders and the targeted table and order not cancelled
+    # Filtering InHouse unpaid orders and the targeted table and order not cancelled
     orders = db.session.query(Order).filter(
         Order.type == "In",
         Order.isPaid == False,
@@ -2248,6 +2300,19 @@ def admin_view_table(table_name):
 
             dishes = json.loads(order.items)
 
+            subtype = order.subtype
+
+            cuisines = {"mongo": u"蒙古餐",
+                        "jpbuffet": u"日本餐"}
+
+            batches = json.loads(order.dishes)
+
+            number_of_kids = len(set([tuple(i.items())[0][1].get('order_by')
+                            for i in batches if tuple(i.items())[0][1].get('is_kid') == 1]))
+
+            number_of_adults = len(set([tuple(i.items())[0][1].get('order_by')
+                            for i in batches if tuple(i.items())[0][1].get('is_kid') == 0]))
+
             section = Table.query.filter_by(name=table_name).first_or_404().section
 
             users = User.query.all()
@@ -2265,7 +2330,11 @@ def admin_view_table(table_name):
                            form=form,
                            company_name=company_info.get('company_name'),
                            waiter_name=waiter_name,
-                           referrer=request.headers.get('Referer'))
+                           referrer=request.headers.get('Referer'),
+                           cuisines=cuisines,
+                           subtype=subtype,
+                           number_of_kids=number_of_kids,
+                           number_of_adults=number_of_adults)
 
             return render_template('admin_view_table_summary.html', **context)
 
@@ -2300,85 +2369,38 @@ def switch_table():
         return jsonify({'status': 200})
 
 
-# Table view function
-@app.route("/tables/add", methods=["POST", "GET"])
+@app.route('/admin/tables/add', methods=["GET", "POST"])
 @login_required
-def add_table():
+def admin_add_table():
+
+    referrer = request.headers.get('Referer')
 
     form = AddTableForm()
+
     import string
+
     letter_string = string.ascii_uppercase
+
     letters = [letter for letter in letter_string]
 
-    # Instantiate some options for select fields
     form.section.choices.extend([(i, i) for i in letters])
 
-    if form.validate_on_submit() or request.method == "POST":
+    if request.method == "POST":
 
-        table_name = form.name.data.upper()
+        table_name = form.name.data
 
-        # Check Duplicates
-        if not Table.query.filter_by(name=table_name).first_or_404():
+        number = form.persons.data
 
-            suffix_url = "alacarte/interface"
+        section = form.section.data
 
-            qrcodes = [generate_qrcode(table=form.name.data.upper(),
-                                       base_url=base_url,
-                                       suffix_url=suffix_url,
-                                       seat=str(i+1)) for i in range(form.persons.data)]
-
-            table = Table(
-                name=form.name.data.upper(),
-                number=form.persons.data,
-                section=form.section.data,
-                timeCreated=datetime.now(tz=pytz.timezone("Europe/Berlin")),
-                container=json.dumps({'isCalled': False,
-                                      'payCalled': False,
-                                      'qrcodes': qrcodes}),
-
-                seats="\n".join([f"{form.name.data.upper()}-{i+1}" for
-                                 i in range(form.persons.data)])
-            )
-
-            db.session.add(table)
-
-            db.session.commit()
-
-            flash(f"已经成功创建桌子：{form.name.data}")
-
-            return redirect(url_for('view_tables'))
-
-        else:
+        # Checking Table duplicates
+        if Table.query.filter_by(name=table_name).first_or_404():
 
             flash(f"{table_name}已经存在，请重新输入桌子名称")
 
-            return redirect(url_for('add_table'))
-
-    context = dict(referrer=request.headers.get('Referer'),
-                   title=u"添加桌子",
-                   company_name=company_info.get('company_name'),
-                   format=datetime_format,
-                   form=form)
-
-    return render_template("add_table.html", **context)
-
-
-# Table view function
-@app.route("/js/tables/add", methods=["POST"])
-def js_add_table():
-
-    table_name = request.form.get('name').upper()
-    number = request.form.get('persons')
-    section = request.form.get('section')
-
-    print(section)
-
-    # Check Duplicates
-    if not Table.query.filter_by(name=table_name).first_or_404():
+            return redirect(url_for('admin_add_table'))
 
         def async_job():
-
-            suffix_url = "alacarte/interface"
 
             qrcodes = [generate_qrcode(table=table_name,
                                        base_url=base_url,
@@ -2395,8 +2417,7 @@ def js_add_table():
                                       'qrcodes': qrcodes}),
 
                 seats="\n".join([f"{table_name}-{i+1}" for
-                                 i in range(number)])
-            )
+                                 i in range(number)]))
 
             db.session.add(table)
 
@@ -2404,12 +2425,17 @@ def js_add_table():
 
         th = Thread(target=async_job)
         th.start()
+        flash(f"已经成功创建桌子：{table_name}")
 
-        return jsonify({"success": f"已经成功创建桌子：{table_name}"})
+        return redirect(url_for("view_tables"))
 
-    else:
+    context = dict(referrer=referrer,
+                   title=u"添加桌子",
+                   company_name=company_info.get('company_name'),
+                   format=datetime_format,
+                   form=form)
 
-        return jsonify({"error": f"{table_name}已经存在，请重新输入桌子名称"})
+    return render_template('add_table.html', **context)
 
 
 # Table view function
@@ -2434,42 +2460,30 @@ def edit_table(table_id):
 
             table_name = form.name.data.upper()
 
-            # Check Duplicates
-            if not Table.query.filter_by(name=table_name).first_or_404():
+            table.name = form.name.data.upper()
+            table.number = form.persons.data
+            table.section = form.section.data.upper()
 
-                table.name = form.name.data.upper()
-                table.number = form.persons.data
-                table.section = form.section.data.upper()
+            seats = "\n".join([f"{table_name}-{i+1}" for i in range(form.persons.data)])
 
-                seats = "\n".join([f"{table.name}-{i+1}" for i in range(form.persons.data)])
+            table.seats = seats
 
-                table.seats = seats
+            qrcodes = [generate_qrcode(table=form.name.data.upper(),
+                                       base_url=base_url,
+                                       suffix_url=suffix_url,
+                                       seat=str(i+1)) for i in range(form.persons.data)]
 
-                suffix_url = "alacarte/interface"
+            container = {'isCalled': False,
+                         'payCalled': False,
+                         'qrcodes': qrcodes}
 
-                qrcodes = [generate_qrcode(table=form.name.data.upper(),
-                                           base_url=base_url,
-                                           suffix_url=suffix_url,
-                                           seat=str(i+1)) for i in range(form.persons.data)]
+            table.container = json.dumps(container)
 
-                container = {'isCalled': False,
-                             'payCalled': False,
-                             'qrcodes': qrcodes}
+            db.session.commit()
 
-                table.container = json.dumps(container)
+            flash(f"桌子{table.name}更新成功")
 
-                db.session.commit()
-
-                flash(f"桌子{table.name}更新成功")
-
-                return redirect(url_for("view_tables"))
-
-            else:
-
-                flash(f"{table_name}已经存在，请重新修改桌子名称")
-
-                return redirect(url_for('edit_table', table_id=table.id))
-
+            return redirect(url_for("view_tables"))
 
     form.name.data = table.name
     form.persons.data = table.number
@@ -2647,7 +2661,8 @@ def order_alacarte(table_name, seat_number):
 
     table = Table.query.filter_by(name=table_name).first_or_404()
 
-    dishes = Food.query.all()
+    dishes = Food.query.filter(Food.inUse == True,
+                               Food.eat_manner == "alacarte").all()
 
     for dish in dishes:
 
@@ -2659,12 +2674,18 @@ def order_alacarte(table_name, seat_number):
 
     categories = list(set([dish.category for dish in dishes]))
 
+    context=dict(referrer=request.headers.get('Referer'),
+                 dishes=dishes,
+                 categories=categories,
+                 title=u"À la carte",
+                 table_name=table_name,
+                 seat_number=seat_number,
+                 format_decimal=format_decimal)
+
     if table and table.is_on:
 
-        return render_template('alacarte2.html', dishes=dishes,
-                               categories=categories, title='Xstar Bar',
-                               table_name=table_name,
-                               seat_number=seat_number)
+        return render_template('alacarte2.html', **context)
+
     else:
 
         msg = "Bestellung Service fuer diese Tisch steht noch nicht zu Verfuegung. Bitte melden Sie sich bei Gast Service"
@@ -2678,8 +2699,6 @@ def alacarte_guest_checkout():
 
         # Json Data Posted via AJAX
         json_data = request.json
-
-        print(json_data)
 
         table_name = json_data.get('tableName').upper()
         seat_number = json_data.get('seatNumber')
@@ -2850,6 +2869,8 @@ def alacarte_guest_checkout():
 @app.route('/service/call/<string:table_name>/<string:seat_number>', methods=['GET', 'POST'])
 def guest_call_service(table_name, seat_number):
 
+    referrer = request.headers.get('Referer')
+
     table = db.session.query(Table).filter_by(name=table_name.upper()).first_or_404()
 
     container = json.loads(table.container)
@@ -2867,13 +2888,18 @@ def guest_call_service(table_name, seat_number):
 
     flash('Ein Herr Ober kommt bald!!')
 
-    return redirect(url_for('alacarte_navigate',
-                            table_name=table_name,
-                            seat_number=seat_number))
+    if "mongo/index" in str(referrer):
+
+        return redirect(url_for("mongo_index",
+                                table_name=table_name,
+                                seat_number=seat_number,
+                                is_kid=0))
 
 
-@app.route('/pay/call/<string:table_name>/<string:seat_number>',methods=['GET', 'POST'])
+@app.route('/pay/call/<string:table_name>/<string:seat_number>', methods=['GET', 'POST'])
 def guest_call_pay(table_name, seat_number):
+
+    referrer = request.headers.get('Referer')
 
     table = db.session.query(Table).filter_by(name=table_name.upper()).first_or_404()
 
@@ -2887,9 +2913,7 @@ def guest_call_pay(table_name, seat_number):
 
     flash('In Ordnung, ein Mitarbeiter kommt bald mit Kasse.')
 
-    return redirect(url_for('alacarte_navigate',
-                            table_name=table_name,
-                            seat_number=seat_number))
+    return redirect(url_for(referrer))
 
 
 # Waiter Admin Section
@@ -3018,8 +3042,6 @@ def view_table(table_name):
 
         order = orders[0]
 
-        print(order)
-
         if order.timeCreated.date() == today:
 
             # Calculate the total price for this table
@@ -3134,6 +3156,21 @@ def view_table(table_name):
 
             users = User.query.all()
 
+            subtype = order.subtype
+
+            cuisines = {"mongo": u"蒙古餐",
+                        "jpbuffet": u"日本餐"}
+
+            batches = json.loads(order.dishes)
+
+            number_of_kids = len(set([tuple(i.items())[0][1].get('order_by')
+                                      for i in batches
+                                      if tuple(i.items())[0][1].get('is_kid') == 1]))
+
+            number_of_adults = len(set([tuple(i.items())[0][1].get('order_by')
+                                      for i in batches
+                                      if not tuple(i.items())[0][1].get('is_kid') == 0]))
+
             # Exclude the super user/ boss account
             section2user = {section: user for user in users if user.permissions != 100
                             and section in json.loads(user.container).get('section')}
@@ -3147,7 +3184,11 @@ def view_table(table_name):
                            form=form,
                            company_name=company_info.get('company_name'),
                            waiter_name=waiter_name,
-                           referrer=request.headers.get('Referer'))
+                           referrer=request.headers.get('Referer'),
+                           subtype=subtype,
+                           cuisines=cuisines,
+                           number_of_adults=number_of_adults,
+                           number_of_kids=number_of_kids)
 
             # Else just render page as get method
             return render_template('view_table_summary.html', **context)
@@ -3669,7 +3710,7 @@ def view_z_receipt(timestamp):
     ranged_paid_out_orders = [order for order in paid_orders if order.type == "Out" and
                                    from_time <= order.settleTime <= now]
 
-    gross_revenue1 = sum([order.totalPrice for order in ranged_paid_alacarte_orders])
+    gross_revenue1 = round(sum([order.totalPrice for order in ranged_paid_alacarte_orders]), 2)
 
     net_revenue1 = round(gross_revenue1 / (1 + tax_rate_in), 2)
 
@@ -4548,7 +4589,6 @@ def revenue_by_days():
         end = form.end_date.data
 
         # Accumulating for in/alacarte orders
-
         alacarte_total = sum(
                            [order.totalPrice for order in
                             [order for order in paid_alacarte_orders
@@ -5731,7 +5771,6 @@ def view_printing_receipts():
                    company_name=company_info.get('company_name'))
 
     return render_template("view_receipts.html", **context)
-    # return jsonify(cur_orders)
 
 
 @app.route('/print/receipt/<int:order_id>')
@@ -5739,6 +5778,55 @@ def view_printing_receipts():
 def print_receipt(order_id):
 
     order = Order.query.get_or_404(int(order_id))
+
+    dishes = json.loads(order.items)
+
+    table_name = order.table_name
+
+    total_price = order.totalPrice
+
+    tax_rate = None
+
+    if order.type == "In":
+
+        tax_rate = tax_rate_in
+
+    else:
+
+        tax_rate = tax_rate_out
+
+    context = {"details": dishes,
+               "company_name": company_info.get('company_name', ''),
+               "address": company_info.get('address'),
+               "now": format_datetime(datetime.now(), locale="de_DE"),
+               "tax_id": company_info.get('tax_id'),
+               "order_id": order.id,
+               "table_name": table_name,
+               "total": format_decimal(total_price, locale="de_DE"),
+               "pay_via": json.loads(order.pay_via).get('method', ""),
+               "VAT": format_decimal(
+                   round((total_price / tax_rate) * tax_rate, 2), locale="de_DE")}
+
+    temp_file = str(Path(app.root_path) / 'static' / 'docx' / 'receipt_temp_inhouse.docx')
+    save_as = f"receipt_{order.id}"
+
+    with open(str(Path(app.root_path) / "settings" / "printer.json"), encoding="utf8") as file:
+        data = file.read()
+
+    data = json.loads(data)
+
+    printer = data.get('receipt').get('printer')
+
+    def master_printer():
+
+        receipt_templating(context=context,
+                           temp_file=temp_file,
+                           save_as=save_as,
+                           printer=printer)
+
+    th = Thread(target=master_printer)
+
+    th.start()
 
     flash(f"订单{order.id}的发票正在打印，请耐心等待.如未打印，\
                 请确认打印机是否处于打开状态及正确配置.", category='success')
@@ -5818,7 +5906,10 @@ def edit_printer(terminal):
         data[terminal]['printer'] = form.printer.data
 
         # Writing the new settings to the json data file
-        with open(str(Path(app.root_path) / "settings" / "printer.json"), 'w', encoding="utf8") as file:
+        with open(str(Path(app.root_path) / "settings" / "printer.json"),
+                  mode='w',
+                  encoding="utf8") as file:
+
             json.dump(data, file, indent=2)
 
         return redirect(url_for('printers_manage'))
@@ -5859,3 +5950,985 @@ def switch_printer():
             json.dump(data, file, indent=2)
 
         return jsonify({'status': 200})
+
+
+# Index page for all cuisines
+@app.route('/guest/navigation/<string:table_name>/<string:seat_number>')
+def guest_navigate(table_name, seat_number):
+
+    am_start = hours.get('MORNING', '').get('START', '').split(":")
+    am_end = hours.get('MORNING', '').get('END', '').split(":")
+
+    pm_start = hours.get('EVENING', '').get('START', '').split(":")
+    pm_end = hours.get('EVENING', '').get('END', '').split(":")
+
+    morning_start = time(int(am_start[0]), int(am_start[1]))
+
+    morning_end = time(int(am_end[0]), int(am_end[1]))
+
+    evening_start = time(int(pm_start[0]), int(pm_start[1]))
+
+    evening_end = time(int(pm_end[0]), int(pm_end[1]))
+
+    # Create a visit object from model and record it in db
+    visit = Visit(count=1,
+                  timeVisited=datetime.now(pytz.timezone('Europe/Berlin')))
+
+    db.session.add(visit)
+    db.session.commit()
+
+    # Query Tables
+    table = Table.query.filter_by(name=table_name).first_or_404()
+
+    # if table existing and table is on
+    if not table or not table.is_on:
+        msg = "Diese Tisch steht noch nicht zu Verfuegung. " \
+              "Bitte melden Sie sich bei Gast Service"
+        return render_template('table404.html', msg=msg)
+
+    orders = db.session.query(Order).filter(
+        Order.type == "In",
+        Order.isPaid == False,
+        Order.isCancelled == False,
+        Order.table_name == table_name).order_by(Order.timeCreated.desc()).all()
+
+    if len(orders) > 0:
+
+        order = orders[0]
+
+        print(order)
+
+        if order.timeCreated.date() == today:
+
+            batches = json.loads(order.dishes)
+
+            for batch in batches:
+
+                last_ordered = list(batch.keys())[0]
+
+                if batch.get(last_ordered).get('order_by') == seat_number \
+                        and batch.get(last_ordered).get('subtype') == "jpbuffet":
+
+                    if int(batch.get(last_ordered).get('is_kid')) == 0:
+
+                        return redirect(url_for('jpbuffet_index',
+                                                table_name=table_name,
+                                                seat_number=seat_number,
+                                                is_kid=0,
+                                                ))
+
+                    return redirect(url_for('jpbuffet_index',
+                                                table_name=table_name,
+                                                seat_number=seat_number,
+                                                is_kid=1))
+
+                elif batch.get(last_ordered).get('order_by') == seat_number \
+                        and batch.get(last_ordered).get('subtype') == "mongo":
+
+                    if int(batch.get(last_ordered).get('is_kid')) == 0:
+
+                        return redirect(url_for('mongo_index',
+                                                table_name=table_name,
+                                                seat_number=seat_number,
+                                                is_kid=0))
+
+                    return redirect(url_for('mongo_index',
+                                            table_name=table_name,
+                                            seat_number=seat_number,
+                                            is_kid=1))
+
+    from string import ascii_uppercase
+
+    letters = list(ascii_uppercase)[:8]
+
+    weekday2letter = dict(zip(list(range(1, 7)), letters))
+
+    # Add the index alphabet for Sunday
+    weekday2letter[0] = "G"
+
+    cur_week_num = int(datetime.now(tz=pytz.timezone(timezone)).strftime("%w"))
+
+    buffet_price_kid = None
+
+    buffet_price_adult = None
+
+    # Read the printer setting data from the json file
+    with open(str(Path(app.root_path) / "settings" / "buffet_price.json"),
+              encoding="utf8") as file:
+        data = file.read()
+
+    data = json.loads(data)
+
+    price_info = data.get(weekday2letter.get(cur_week_num))
+
+    if morning_start <= datetime.now(tz=pytz.timezone(timezone)).time() <= morning_end:
+
+        buffet_price_kid = price_info.get('kid').get('noon')
+
+        buffet_price_adult = price_info.get('adult').get('noon')
+
+    elif evening_start <= datetime.now(tz=pytz.timezone(timezone)).time() <= evening_end:
+
+        buffet_price_kid = price_info.get('kid').get('after')
+
+        buffet_price_adult = price_info.get('adult').get('after')
+
+    context = dict(title="Gastnavigation",
+                   table_name=table_name,
+                   seat_number=seat_number,
+                   buffet_price_kid=format_decimal(buffet_price_kid, locale="de_DE"),
+                   buffet_price_adult=format_decimal(buffet_price_adult, locale="de_DE"),
+                   )
+
+    return render_template("guest_index.html", **context)
+
+
+@app.route('/mongo/index/<string:table_name>/<string:seat_number>/<int:is_kid>')
+def mongo_index(table_name, seat_number, is_kid):
+
+    context = dict(title="Startseite - Mongo Buffet",
+                   table_name=table_name,
+                   seat_number=seat_number,
+                   is_kid=is_kid)
+
+    return render_template("mongo_index.html", **context)
+
+
+#  Mongo Order view by table name and seat number
+@app.route("/mongobuffet/interface/<string:table_name>/<string:seat_number>/<int:is_kid>")
+def mongo_guest_order(table_name, seat_number, is_kid=0):
+
+    # Read the business hours config setting data from the json file
+    with open(str(Path(app.root_path) / "settings" / "config.json"),
+              encoding="utf8") as file:
+        config = file.read()
+
+    am_start = hours.get('MORNING', '').get('START', '').split(":")
+    am_end = hours.get('MORNING', '').get('END', '').split(":")
+
+    pm_start = hours.get('EVENING', '').get('START', '').split(":")
+    pm_end = hours.get('EVENING', '').get('END', '').split(":")
+
+    morning_start = time(int(am_start[0]), int(am_start[1]))
+
+    morning_end = time(int(am_end[0]), int(am_end[1]))
+
+    evening_start = time(int(pm_start[0]), int(pm_start[1]))
+
+    evening_end = time(int(pm_end[0]), int(pm_end[1]))
+
+    cur_time = datetime.now(tz=pytz.timezone(timezone)).time()
+
+    # if not in business hours: redirect to the navigation page
+    if not (morning_start <= cur_time <= morning_end
+            or evening_start <= cur_time <= evening_end):
+
+        flash("noch Ausserhalb Geschäftszeiten!",
+              category="error")
+
+        return redirect(url_for('guest_navigate',
+                                table_name=table_name,
+                                seat_number=seat_number))
+
+    # More cond to filter the mongo dishes
+    dishes = Food.query.filter(Food.inUse == True,
+                               Food.eat_manner == "special").all()
+
+    drinks = Food.query.filter(Food.inUse == True,
+                               Food.class_name == "Drinks").all()
+
+    food = list(set(dishes + drinks))
+
+    from string import ascii_uppercase
+
+    letters = list(ascii_uppercase)[:8]
+
+    weekday2letter = dict(zip(list(range(1, 7)), letters))
+
+    # Add the index alphabet for Sunday
+    weekday2letter[0] = "G"
+
+    cur_week_num = int(datetime.now(tz=pytz.timezone(timezone)).strftime("%w"))
+
+    buffet_price = None
+
+    # Read the printer setting data from the json file
+    with open(str(Path(app.root_path) / "settings" / "buffet_price.json"),
+              encoding="utf8") as file:
+        data = file.read()
+
+    data = json.loads(data)
+
+    price_info = data.get(weekday2letter.get(cur_week_num))
+
+    print(weekday2letter.get(cur_week_num))
+
+    if morning_start <= datetime.now(tz=pytz.timezone(timezone)).time() <= morning_end:
+
+        if is_kid:
+
+            buffet_price = price_info.get('kid').get('noon')
+
+        else:
+
+            buffet_price = price_info.get('adult').get('noon')
+
+    elif evening_start <= datetime.now(tz=pytz.timezone(timezone)).time() <= evening_end:
+
+        if is_kid:
+
+            buffet_price = price_info.get('kid').get('after')
+        else:
+
+            buffet_price = price_info.get('adult').get('after')
+
+    details = {
+        "mongo_buffet_"+seat_number:
+            {'quantity': 1,
+             'price': buffet_price,
+             'class_name': "Food",
+             'order_by': seat_number,
+             'is_kid': is_kid}
+    }
+
+    # Check if this table is already associated with an open order
+    orders = db.session.query(Order).filter(
+        Order.type == "In",
+        Order.isPaid == False,
+        Order.table_name == table_name).order_by(Order.timeCreated.desc()).all()
+
+    if len(orders) > 0:
+
+        order = orders[0]
+
+        if order.timeCreated.date() != today:
+
+            now = datetime.now(pytz.timezone(timezone))
+
+            cur_max_id = max([order.id for order in Order.query.all()])
+
+            # Create a new order for this table
+            order = Order(
+                totalPrice=buffet_price,
+                orderNumber=str(uuid4().int),
+                items=json.dumps(details),
+                timeCreated=now,
+                type="In",
+                table_name=table_name,
+                seat_number=seat_number,
+                isCancelled=False,
+                dishes=json.dumps([{datetime.timestamp(now): {"items": details,
+                                                              "order_id": cur_max_id + 1,
+                                                              "order_by": seat_number,
+                                                              "is_kid": is_kid,
+                                                              "subtype": "mongo"}}]),
+                subtype="mongo")
+
+            db.session.add(order)
+            db.session.commit()
+
+        else:
+
+            now = datetime.now(pytz.timezone(timezone))
+
+            cur_items = json.loads(order.items)
+
+            if "mongo_buffet" + seat_number not in cur_items.keys():
+
+                dishes = order.dishes
+
+                if not dishes:
+
+                    dishes = []
+
+                else:
+
+                    dishes = json.loads(order.dishes)
+
+                dishes.append({datetime.timestamp(now): {"items": details,
+                                                         "order_id": order.id,
+                                                         "order_by": seat_number,
+                                                         "is_kid": is_kid,
+                                                         "subtype":"mongo"
+                                                         }})
+
+                order.dishes = json.dumps(dishes)
+
+                cur_dishes = cur_items.keys()
+
+                for dish, items in details.items():
+
+                    if dish in cur_dishes:
+
+                        # Buffet qty can only be 1
+                        cur_items[dish]['quantity'] = 1
+
+                    else:
+
+                        cur_items[dish] = items
+
+                order.items = json.dumps(cur_items)
+
+                order.totalPrice = sum([i[1].get('quantity') * i[1].get('price')
+                                        for i in cur_items.items()])
+
+                db.session.commit()
+
+    else:
+
+        now = datetime.now(pytz.timezone(timezone))
+
+        cur_max_id = max([order.id for order in Order.query.all()])
+
+        # Create a new order for this table
+        order = Order(
+            totalPrice=buffet_price,
+            orderNumber=str(uuid4().int),
+            items=json.dumps(details),
+            timeCreated=now,
+            type="In",
+            table_name=table_name,
+            seat_number=seat_number,
+            isCancelled=False,
+            dishes=json.dumps([{datetime.timestamp(now): {"items": details,
+                                                          "order_id": cur_max_id + 1,
+                                                          "order_by": seat_number,
+                                                          "is_kid": is_kid,
+                                                          "subtype":"mongo"
+                                                          }}]),
+            subtype="mongo"
+        )
+
+        db.session.add(order)
+        db.session.commit()
+
+    context = dict(
+        title="Mongo Buffet",
+        food=food,
+        table_name=table_name,
+        seat_number=seat_number,
+        referrer=request.headers.get('Referer'))
+
+    return render_template("mongo.html", **context)
+
+
+@app.route("/mongo/guest/checkout", methods=["POST", "GET"])
+def mongo_guest_checkout():
+
+    if request.method == "POST":
+
+        # Json Data Posted via AJAX
+        json_data = request.json
+
+        print(json_data)
+
+        table_name = json_data.get('tableName').upper()
+        seat_number = json_data.get('seatNumber')
+
+        total_price = float(json_data.get('totalPrice'))
+
+        details = json_data.get('details')
+
+        price_dict = {Food.query.get_or_404(int(i.get('itemId'))).name:
+                          Food.query.get_or_404(int(i.get('itemId'))).price_gross
+                      for i in details}
+
+        details = {
+            Food.query.get_or_404(int(i.get('itemId'))).name:
+                {'quantity': int(i.get('itemQuantity')),
+                 'price': float(price_dict.get(Food.query.get_or_404(int(i.get('itemId'))).name)),
+                 'class_name': Food.query.get_or_404(int(i.get('itemId'))).class_name,
+                 'order_by': seat_number}
+            for i in details}
+
+        # Check if this table is already associated with an open order
+        orders = db.session.query(Order).filter(
+            Order.type == "In",
+            Order.isPaid == False,
+            Order.table_name == table_name).order_by(Order.timeCreated.desc()).all()
+
+        if len(orders) > 0:
+
+            order = orders[0]
+
+            if order.timeCreated.date() != today:
+
+                now = datetime.now(pytz.timezone(timezone))
+
+                cur_max_id = max([order.id for order in Order.query.all()])
+
+                # Create a new order for this table
+                order = Order(
+                    totalPrice=total_price,
+                    orderNumber=str(uuid4().int),
+                    items=json.dumps(details),
+                    timeCreated=now,
+                    type="In",
+                    table_name=table_name,
+                    seat_number=seat_number,
+                    isCancelled=False,
+                    dishes=json.dumps([{datetime.timestamp(now): {"items": details,
+                                                                  "order_id": cur_max_id + 1}}]))
+
+                db.session.add(order)
+                db.session.commit()
+
+            else:
+
+                now = datetime.now(pytz.timezone(timezone))
+
+                cur_items = json.loads(order.items)
+
+                dishes = order.dishes
+
+                if not dishes:
+
+                    dishes = []
+
+                else:
+
+                    dishes = json.loads(order.dishes)
+
+                dishes.append({datetime.timestamp(now): {"items": details,
+                                                         "order_id": order.id}})
+
+                order.dishes = json.dumps(dishes)
+
+                cur_dishes = cur_items.keys()
+
+                for dish, items in details.items():
+
+                    if dish in cur_dishes:
+
+                        cur_items[dish]['quantity'] = cur_items[dish]['quantity'] \
+                                                      + items.get('quantity')
+
+                    else:
+
+                        cur_items[dish] = items
+
+                order.items = json.dumps(cur_items)
+
+                order.totalPrice = sum([i[1].get('quantity') * i[1].get('price')
+                                        for i in cur_items.items()])
+
+                db.session.commit()
+
+        else:
+
+            now = datetime.now(pytz.timezone(timezone))
+
+            cur_max_id = max([order.id for order in Order.query.all()])
+
+            # Create a new order for this table
+            order = Order(
+                totalPrice=total_price,
+                orderNumber=str(uuid4().int),
+                items=json.dumps(details),
+                timeCreated=now,
+                type="In",
+                table_name=table_name,
+                seat_number=seat_number,
+                isCancelled=False,
+                dishes=json.dumps([{datetime.timestamp(now): {"items": details,
+                                                              "order_id": cur_max_id + 1}}])
+            )
+
+            db.session.add(order)
+            db.session.commit()
+
+        details_kitchen = {key: {'quantity': items.get('quantity'),
+                                 'total': items.get('quantity') * items.get('price')}
+                           for key, items in details.items() if items.get("class_name") == "Food"}
+
+        details_bar = {key: {'quantity': items.get('quantity'),
+                             'total': items.get('quantity') * items.get('price')}
+                       for key, items in details.items() if items.get("class_name") == "Drinks"}
+
+        context_kitchen = {"details": details_kitchen,
+                           "seat_number": seat_number,
+                           "table_name": table_name,
+                           "now": datetime.now().strftime("%Y-%m-%d %H:%M:%S")}
+
+        kitchen_temp = str(Path(app.root_path) / 'static' / 'docx' / 'kitchen_alacarte.docx')
+        save_as_kitchen = f"alacarte_meallist_kitchen_{order.id}_{str(uuid4())}"
+
+        context_bar = {"details": details_bar,
+                       "seat_number": seat_number,
+                       "table_name": table_name,
+                       "now": datetime.now().strftime("%Y-%m-%d %H:%M:%S")}
+
+        bar_temp = str(Path(app.root_path) / 'static' / 'docx' / 'bar_alacarte.docx')
+        save_as_bar = f"alacarte_meallist_bar_{order.id}_{str(uuid4())}"
+
+        # Read the printer setting data from the json file
+        with open(str(Path(app.root_path) / "settings" / "printer.json"), encoding="utf8") as file:
+            data = file.read()
+
+        data = json.loads(data)
+
+        def master_printer():
+
+            # Print to kitchen
+            kitchen_templating(context=context_kitchen,
+                               temp_file=kitchen_temp,
+                               save_as=save_as_kitchen,
+                               printer=data.get('kitchen').get('printer'))
+
+            # Print to bar
+            bar_templating(context=context_bar,
+                           temp_file=bar_temp,
+                           save_as=save_as_bar,
+                           printer=data.get('bar').get('printer'))
+
+        # Start the thread
+        th = Thread(target=master_printer)
+        th.start()
+
+        return jsonify({"status_code": 200})
+
+
+@app.route("/jp/buffet/next/order/<string:table_name>/<string:seat_number>",
+           methods=["GET", "POST"])
+def get_next_round_time(table_name, seat_number):
+
+    orders = db.session.query(Order).filter(
+        Order.type == "In",
+        Order.isPaid == False,
+        Order.isCancelled == False,
+        Order.subtype == "jpbuffet",
+        Order.table_name == table_name).order_by(Order.timeCreated.desc()).all()
+
+    if len(orders) > 0:
+
+        order = orders[0]
+
+        batches = json.loads(order.dishes)
+
+        dt_objs = []
+
+        for batch in batches:
+
+            last_ordered = list(batch.keys())[0]
+
+            dt_obj = datetime.fromtimestamp(float(last_ordered))
+
+            if batch.get(last_ordered).get('order_by') == seat_number \
+                    and batch.get(last_ordered).get('subtype') == "jpbuffet":
+                dt_objs.append(dt_obj)
+
+        if len(dt_objs) > 0:
+
+            last_ordered = max(dt_objs)
+
+            next_round_time = last_ordered + timedelta(minutes=time_buffer_mins)
+
+            return jsonify({"success": str(next_round_time)})
+
+        return jsonify({"error": "no next round time available"})
+
+    return jsonify({"error": "no data"})
+
+
+@app.route('/jp/buffet/index/<string:table_name>/<string:seat_number>/<int:is_kid>')
+def jpbuffet_index(table_name, seat_number, is_kid):
+
+    context = dict(title="Startseite - Japan Buffet ",
+                   table_name=table_name,
+                   seat_number=seat_number,
+                   is_kid=is_kid)
+
+    orders = db.session.query(Order).filter(
+        Order.type == "In",
+        Order.isPaid == False,
+        Order.isCancelled == False,
+        Order.subtype == "jpbuffet",
+        Order.table_name == table_name).order_by(Order.timeCreated.desc()).all()
+
+    if len(orders) > 0:
+
+        order = orders[0]
+
+        batches = json.loads(order.dishes)
+
+        dt_objs = []
+
+        for batch in batches:
+
+            last_ordered = list(batch.keys())[0]
+
+            dt_obj = datetime.fromtimestamp(float(last_ordered))
+
+            if batch.get(last_ordered).get('order_by') == seat_number \
+                    and batch.get(last_ordered).get('subtype') == "jpbuffet":
+                dt_objs.append(dt_obj)
+
+        if len(dt_objs) > 0:
+
+            last_ordered = max(dt_objs)
+
+            next_round_time = last_ordered + timedelta(minutes=time_buffer_mins)
+
+            context["next_round_time"] = str(next_round_time)
+
+    return render_template("jp_buffet_index.html", **context)
+
+
+# Table Order view by table name and seat number
+@app.route("/japanbuffet/interface/<string:table_name>/<string:seat_number>/<int:is_kid>")
+def jpbuffet_order(table_name, seat_number, is_kid):
+
+    am_start = hours.get('MORNING', '').get('START', '').split(":")
+    am_end = hours.get('MORNING', '').get('END', '').split(":")
+
+    pm_start = hours.get('EVENING', '').get('START', '').split(":")
+    pm_end = hours.get('EVENING', '').get('END', '').split(":")
+
+    morning_start = time(int(am_start[0]), int(am_start[1]))
+
+    morning_end = time(int(am_end[0]), int(am_end[1]))
+
+    evening_start = time(int(pm_start[0]), int(pm_start[1]))
+
+    evening_end = time(int(pm_end[0]), int(pm_end[1]))
+
+    cur_time = datetime.now(tz=pytz.timezone(timezone)).time()
+
+    # if not in business hours: redirect to the navigation page
+    if not (morning_start <= cur_time <= morning_end
+            or evening_start <= cur_time <= evening_end):
+        flash("noch Ausserhalb Geschäftszeiten!",
+              category="error")
+
+        return redirect(url_for('guest_navigate',
+                                table_name=table_name,
+                                seat_number=seat_number))
+
+    # More cond to filter the mongo dishes
+    special_dishes = Food.query.filter(Food.inUse == True, Food.eat_manner == "special").all()
+
+    jpbuffet_dishes = Food.query.filter(Food.inUse == True, Food.eat_manner == "jpbuffet").all()
+
+    dishes = special_dishes + jpbuffet_dishes
+
+    context = dict(title="Japan Buffet",
+                   table_name=table_name,
+                   seat_number=seat_number,
+                   is_kid=is_kid,
+                   dishes=dishes,
+                   referrer=request.headers.get('Referer'))
+
+    return render_template("jp_buffet.html", **context)
+
+
+@app.route("/jp/buffet/guest/checkout", methods=["POST", "GET"])
+def jpbuffet_guest_checkout():
+
+    # Read the business hours config setting data from the json file
+    with open(str(Path(app.root_path) / "settings" / "config.json"),
+              encoding="utf8") as file:
+        config = file.read()
+
+    am_start = hours.get('MORNING', '').get('START', '').split(":")
+    am_end = hours.get('MORNING', '').get('END', '').split(":")
+
+    pm_start = hours.get('EVENING', '').get('START', '').split(":")
+    pm_end = hours.get('EVENING', '').get('END', '').split(":")
+
+    morning_start = time(int(am_start[0]), int(am_start[1]))
+
+    morning_end = time(int(am_end[0]), int(am_end[1]))
+
+    evening_start = time(int(pm_start[0]), int(pm_start[1]))
+
+    evening_end = time(int(pm_end[0]), int(pm_end[1]))
+
+    from string import ascii_uppercase
+
+    letters = list(ascii_uppercase)[:8]
+
+    weekday2letter = dict(zip(list(range(1, 7)), letters))
+
+    # Add the index alphabet for Sunday
+    weekday2letter[0] = "G"
+
+    cur_week_num = int(datetime.now(tz=pytz.timezone(timezone)).strftime("%w"))
+
+    buffet_price = None
+
+    # Read the printer setting data from the json file
+    with open(str(Path(app.root_path) / "settings" / "buffet_price.json"),
+              encoding="utf8") as file:
+        data = file.read()
+
+    data = json.loads(data)
+
+    price_info = data.get(weekday2letter.get(cur_week_num))
+
+    if request.method == "POST":
+
+        # Json Data Posted via AJAX
+        json_data = request.json
+
+        table_name = json_data.get('tableName').upper()
+        seat_number = json_data.get('seatNumber')
+        is_kid = int(json_data.get('isKid'))
+
+        print(is_kid)
+
+        buffet_price = None
+
+        if morning_start <= datetime.now(tz=pytz.timezone(timezone)).time() <= morning_end:
+
+            if is_kid:
+
+                buffet_price = price_info.get('kid').get('noon')
+
+            else:
+
+                buffet_price = price_info.get('adult').get('noon')
+
+        elif evening_start <= datetime.now(tz=pytz.timezone(timezone)).time() <= evening_end:
+
+            if is_kid:
+
+                buffet_price = price_info.get('kid').get('after')
+
+            else:
+
+                buffet_price = price_info.get('adult').get('after')
+
+        print(buffet_price)
+
+        total_price = float(json_data.get('totalPrice'))
+
+        details = json_data.get('details')
+
+        price_dict = {Food.query.get_or_404(int(i.get('itemId'))).name:
+                          Food.query.get_or_404(int(i.get('itemId'))).price_gross
+                      for i in details}
+
+        details = {
+            Food.query.get_or_404(int(i.get('itemId'))).name:
+                {'quantity': int(i.get('itemQuantity')),
+                 'price': float(price_dict.get(Food.query.get_or_404(int(i.get('itemId'))).name)),
+                 'class_name': Food.query.get_or_404(int(i.get('itemId'))).class_name,
+                 'order_by': seat_number,
+                 "subtype": "jpbuffet",
+                 "is_kid": is_kid}
+            for i in details}
+
+        # Check if this table is already associated with an open order
+        orders = db.session.query(Order).filter(
+            Order.type == "In",
+            Order.isPaid == False,
+            Order.table_name == table_name).order_by(Order.timeCreated.desc()).all()
+
+        if len(orders) > 0:
+
+            order = orders[0]
+            # So that this table has no new open orders
+            if order.timeCreated.date() != today:
+
+                now = datetime.now(pytz.timezone(timezone))
+
+                cur_max_id = max([order.id for order in Order.query.all()])
+
+                # Create a new order for this table
+                order = Order(
+                    totalPrice=total_price + buffet_price,
+                    orderNumber=str(uuid4().int),
+                    items=json.dumps(details),
+                    timeCreated=now,
+                    type="In",
+                    table_name=table_name,
+                    seat_number=seat_number,
+                    isCancelled=False,
+                    dishes=json.dumps([{datetime.timestamp(now): {"items": details,
+                                                                  "order_id": cur_max_id + 1,
+                                                                  'order_by': seat_number,
+                                                                  "subtype": "jpbuffet",
+                                                                  "is_kid": is_kid}}]),
+                    subtype="jpbuffet")
+
+                db.session.add(order)
+                db.session.commit()
+
+            else:
+
+                now = datetime.now(pytz.timezone(timezone))
+
+                cur_items = json.loads(order.items)
+
+                batches = json.loads(order.dishes)
+
+                # check if the last_ordered time is buffered
+
+                dt_objs = []
+
+                for batch in batches:
+
+                    last_ordered = list(batch.keys())[0]
+
+                    dt_obj = datetime.fromtimestamp(float(last_ordered))
+
+                    if batch.get(last_ordered).get('order_by') == seat_number \
+                            and batch.get(last_ordered).get('subtype') == "jpbuffet":
+
+                        dt_objs.append(dt_obj)
+
+                if len(dt_objs) != 0:
+
+                    last_ordered = max(dt_objs)
+
+                    first_time_ordered = min(dt_objs)
+
+                    next_round_time = last_ordered + timedelta(minutes=time_buffer_mins)
+
+                    last_round_time = first_time_ordered + \
+                                      timedelta(minutes=time_buffer_mins*max_rounds)
+
+                    now = datetime.now(tz=None)
+
+                    # Over passed the max dining time 150 minutes
+                    if now > last_round_time:
+
+                        minutes = time_buffer_mins * max_rounds
+
+                        return jsonify({"error": f"Sie haben schon die maximale Mahlzeiten "
+                                                 f"von {minutes} Minuten überschritten"})
+
+                    if now <= next_round_time:
+
+                        time_delta = next_round_time.minute - now.minute
+
+                        if time_delta > 0:
+
+                            return jsonify({"error": f"Sie müssen leider "
+                                                     f"noch {time_delta} Minute bis nächste Runde warten!"})
+
+                buffet_seats = set([tuple(i.items())[0][1].get('order_by') for i in batches
+                                if tuple(i.items())[0][1].get('subtype') == "jpbuffet"])
+
+                dishes = order.dishes
+
+                if not dishes:
+
+                    dishes = []
+
+                else:
+
+                    dishes = json.loads(order.dishes)
+
+                dishes.append({datetime.timestamp(now): {"items": details,
+                                                         "order_id": order.id,
+                                                         "order_by": seat_number,
+                                                         "subtype": "jpbuffet",
+                                                         "is_kid": is_kid}})
+
+                order.dishes = json.dumps(dishes)
+
+                cur_dishes = cur_items.keys()
+
+                for dish, items in details.items():
+
+                    if dish in cur_dishes:
+
+                        cur_items[dish]['quantity'] = cur_items[dish]['quantity'] \
+                                                      + items.get('quantity')
+
+                    else:
+
+                        cur_items[dish] = items
+
+                order.items = json.dumps(cur_items)
+
+                if seat_number in buffet_seats:
+
+                    order.totalPrice = len(buffet_seats) * buffet_price + \
+                                       sum([i[1].get('quantity') * i[1].get('price') \
+                                            for i in cur_items.items()])
+                else:
+
+                    order.totalPrice = len(buffet_seats) * buffet_price + \
+                                       sum([i[1].get('quantity') * i[1].get('price') \
+                                            for i in cur_items.items()]) + buffet_price
+
+                db.session.commit()
+
+        else:
+
+            now = datetime.now(pytz.timezone(timezone))
+
+            cur_max_id = max([order.id for order in Order.query.all()])
+
+            # Create a new order for this table
+            order = Order(
+                totalPrice=total_price + buffet_price,
+                orderNumber=str(uuid4().int),
+                items=json.dumps(details),
+                timeCreated=now,
+                type="In",
+                table_name=table_name,
+                seat_number=seat_number,
+                isCancelled=False,
+                dishes=json.dumps([{datetime.timestamp(now): {"items": details,
+                                                              "order_id": cur_max_id + 1,
+                                                              "order_by": seat_number,
+                                                              "is_kid": is_kid,
+                                                              "subtype": "jpbuffet"}}]),
+                subtype="jpbuffet"
+            )
+
+            db.session.add(order)
+            db.session.commit()
+
+        details_kitchen = {key: {'quantity': items.get('quantity'),
+                                 'total': items.get('quantity') * items.get('price')}
+                           for key, items in details.items() if items.get("class_name") == "Food"}
+
+        details_bar = {key: {'quantity': items.get('quantity'),
+                             'total': items.get('quantity') * items.get('price')}
+                       for key, items in details.items() if items.get("class_name") == "Drinks"}
+
+        context_kitchen = {"details": details_kitchen,
+                           "seat_number": seat_number,
+                           "table_name": table_name,
+                           "now": datetime.now().strftime("%Y-%m-%d %H:%M:%S")}
+
+        kitchen_temp = str(Path(app.root_path) / 'static' / 'docx' / 'kitchen_alacarte.docx')
+        save_as_kitchen = f"alacarte_meallist_kitchen_{order.id}_{str(uuid4())}"
+
+        context_bar = {"details": details_bar,
+                       "seat_number": seat_number,
+                       "table_name": table_name,
+                       "now": datetime.now().strftime("%Y-%m-%d %H:%M:%S")}
+
+        bar_temp = str(Path(app.root_path) / 'static' / 'docx' / 'bar_alacarte.docx')
+        save_as_bar = f"alacarte_meallist_bar_{order.id}_{str(uuid4())}"
+
+        # Read the printer setting data from the json file
+        with open(str(Path(app.root_path) / "settings" / "printer.json"), encoding="utf8") as file:
+            data = file.read()
+
+        data = json.loads(data)
+
+        def master_printer():
+
+            # Print to kitchen
+            kitchen_templating(context=context_kitchen,
+                               temp_file=kitchen_temp,
+                               save_as=save_as_kitchen,
+                               printer=data.get('kitchen').get('printer'))
+
+            # Print to bar
+            bar_templating(context=context_bar,
+                           temp_file=bar_temp,
+                           save_as=save_as_bar,
+                           printer=data.get('bar').get('printer'))
+
+        # Start the thread
+        th = Thread(target=master_printer)
+        th.start()
+
+        return jsonify({"success": "Ihre Bestellung ist an die Küche gesendet!"})

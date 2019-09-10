@@ -5,7 +5,7 @@ from flask_wtf.file import FileField, FileAllowed, FileRequired
 from wtforms import (StringField, BooleanField, FloatField,
                      IntegerField, SubmitField,
                      TextAreaField, PasswordField, SelectField, SelectMultipleField,
-                     DecimalField, RadioField)
+                     DecimalField, RadioField, TimeField)
 
 from wtforms.validators import DataRequired, Email, EqualTo, Required, ValidationError
 
@@ -69,10 +69,13 @@ class AddDishForm(FlaskForm):
     description = TextAreaField(u"菜品描述", validators=[DataRequired()])
     price = FloatField(u"单价", validators=[DataRequired()])
     image = FileField(u"上传图片", validators=[FileAllowed(["jpg", "jpeg", "png"])])
-    eat_manner = SelectMultipleField(u"用餐方式", choices=[("Please select", u"请选择用餐方式"),
-                                                ("Buffet", u"自助餐"),
+    eat_manner = RadioField(u"用餐方式", choices=[("special", u"特别餐"),
                                                ("takeaway", u"外卖"),
-                                               ("AlaKarte", u"单点")])
+                                               ("alacarte", u"单点"),
+                                              ("jpbuffet", u"日本餐"),
+                                              ("mongobuffet", u"蒙古餐")
+                                              ])
+
     submit = SubmitField(u"确认添加")
 
 
@@ -94,10 +97,11 @@ class EditDishForm(FlaskForm):
     description = TextAreaField(u"菜品描述", validators=[DataRequired()])
     price = FloatField(u"单价", validators=[DataRequired()])
     image = FileField(u"上传图片", validators=[FileAllowed(["jpg", "jpeg", "png"])])
-    eat_manner = SelectMultipleField(u"用餐方式", choices=[("Please select", u"请选择用餐方式"),
-                                               ("Buffet", u"自助餐"),
+    eat_manner = RadioField(u"用餐方式", choices=[("special", u"特别餐"),
                                                ("takeaway", u"外卖"),
-                                               ("AlaKarte", u"单点")])
+                                               ("alacarte", u"单点"),
+                                              ("jpbuffet", u"日本餐"),
+                                              ("mongobuffet", u"蒙古餐")])
 
     submit = SubmitField(u"确认更新")
 
@@ -139,7 +143,7 @@ class AddCategoryForm(FlaskForm):
 # Store Settings Form
 class StoreSettingForm(FlaskForm):
 
-    store_name = StringField(u"餐馆名称", validators=[DataRequired()])
+    store_name = StringField(u"餐馆名称", validators=[DataRequired(message=u"请输入餐馆名称")])
     city = StringField(u"城市", validators=[DataRequired()])
     street = StringField(u"街道名称", validators=[DataRequired()])
     street_no = StringField(u"街道号码", validators=[DataRequired()])
@@ -149,6 +153,26 @@ class StoreSettingForm(FlaskForm):
     tax_rate_takeaway = FloatField(u"外卖", validators=[DataRequired()])
     tax_rate_InHouse = FloatField(u"在店", validators=[DataRequired()])
     logo = FileField(u"LOGO", validators=[FileAllowed(["jpg", "jpeg", "png"])])
+    jp_buffet_time_buffer = IntegerField(u"日本餐进餐间隔设置(分钟)")
+    order_times = IntegerField(u"日本餐进餐总轮次")
+    order_amount_per_round = IntegerField(u"日本餐点每轮餐数量")
+
+    business_hours_start_morning = SelectField(u"上午开始营业时间",
+                                               choices=[("Please select", u"请选择时间")],
+                                               validators=[DataRequired(message=u"请设置时间")])
+
+    business_hours_end_morning = SelectField(u"上午结束营业时间",
+                                             choices=[("Please select", u"请选择时间")],
+                                             validators=[DataRequired(message=u"请设置时间")])
+
+    business_hours_start_evening = SelectField(u"下午开始营业时间",
+                                               choices=[("Please select", u"请选择时间")],
+                                               validators=[DataRequired(message=u"请设置时间")])
+
+    business_hours_end_evening = SelectField(u"下午结束营业时间",
+                                             choices=[("Please select", u"请选择时间")],
+                                             validators=[DataRequired(message=u"请设置时间")])
+
     submit = SubmitField(u"确认更新")
 
 

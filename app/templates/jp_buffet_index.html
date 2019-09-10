@@ -1,0 +1,190 @@
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta http-equiv="Content-Type" content="text/html; charset=UTF-8"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1.0"/>
+  <title>{{title}}</title>
+
+  <!-- CSS  -->
+  <link href="https://fonts.googleapis.com/icon?family=Material+Icons" rel="stylesheet">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/materialize/1.0.0/css/materialize.min.css">
+</head>
+
+<style media="screen">
+      /* Custom Stylesheet */
+      /**
+      * Use this file to override Materialize files so you can update
+      * the core Materialize files in the future
+      *
+      * Made By MaterializeCSS.com
+      */
+
+      .icon-block {
+      padding: 0 15px;
+      }
+      .icon-block .material-icons {
+      font-size: inherit;
+      }
+
+
+
+      .card .card-content {
+
+        border-radius: 0 0 2px 2px;
+        padding: 15px;
+      }
+
+      .card-title {
+        margin-top:1px;
+        text-align: left;
+      }
+
+      .blue-grey .darken-1 {
+
+        background-color: #202224;
+      }
+
+
+
+      .row {
+
+          margin-left: auto;
+          margin-right: auto;
+          margin-bottom: 0;
+
+      }
+
+      .card-content .white-text{
+        text-align: left;
+      }
+
+      .card-action > a{
+        margin-left: 5px;
+        margin-top: 5px;
+      }
+
+      .section {
+          padding-top: 0rem;
+          padding-bottom: 0rem;
+      }
+
+      .row .col {
+          float: left;
+          -webkit-box-sizing: border-box;
+          box-sizing: border-box;
+          padding: 0.1rem;
+          min-height: 1px;
+      }
+
+      .row .col.s12 {
+        width: 100%;
+        margin-left: auto;
+        margin-top: 1px;
+        left: auto;
+        right: auto;
+
+    }
+
+    #nextClock{
+      display:none;
+    }
+
+</style>
+
+
+<body>
+
+  <div class="section no-pad-bot" id="index-banner">
+    <div class="container">
+
+      <div class="card blue-grey darken-1">
+                <div class="card-content white-text">
+                  <h1 class="card-title">Delicious Sushi</h1>
+                  <h1 class="card-title">美味寿司</h1>
+                </div>
+      </div>
+
+    </div>
+  </div>
+
+
+  <div class="container">
+    <div class="section">
+
+      <!--   Icon Section   -->
+      <div class="row">
+
+      <div class="col s12 s12" id="timedeltaCard">
+        <div class="card blue-grey darken-1">
+          <div class="card-content white-text">
+            <p>Nächste Runde</p>
+            <p id="timedelta"></p>
+            <p id="nextClock">{{next_round_time}}</p>
+          </div>
+        </div>
+      </div>
+
+
+    <div class="col s4 s4">
+      <div class="card blue-grey darken-1">
+        <div class="card-content white-text">
+          <p>Uhrzeiten</p>
+          <p id="datetime">00:00:00</p>
+        </div>
+      </div>
+    </div>
+
+
+    <div class="col s4 s4">
+      <div class="card blue-grey darken-1">
+        <div class="card-content white-text">
+          <p>Platz</p>
+          <p id="seatNumber">{{seat_number}}</p>
+        </div>
+      </div>
+    </div>
+
+
+    <div class="col s4 s4">
+      <div class="card blue-grey darken-1">
+        <div class="card-content white-text">
+          <p>Tisch</p>
+          <p id="tableName">{{table_name}}</p>
+        </div>
+      </div>
+    </div>
+
+
+    <div class="col s12 m7">
+      <div class="card">
+        <div class="card-image">
+          <img src="https://images.pexels.com/photos/670705/pexels-photo-670705.jpeg?auto=compress&cs=tinysrgb&dpr=2&w=500">
+        </div>
+        <div class="card-content">
+          <p></p>
+        </div>
+        <div class="card-action">
+
+          <a href={{ url_for('jpbuffet_order', table_name=table_name, seat_number=seat_number, is_kid=is_kid) }} class="waves-effect waves-light btn">Bestellen</a>
+          <a href="#" class="waves-effect waves-light btn">Getraenke</a>
+          <a href="#" class="waves-effect waves-light btn">Service</a>
+          <a href="#" class="waves-effect waves-light btn">Zahlen</a>
+
+        </div>
+      </div>
+    </div>
+
+  </div>
+
+    </div>
+    <br><br>
+  </div>
+
+
+  <!-- Compiled and minified JavaScript -->
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/materialize/1.0.0/js/materialize.min.js"></script>
+  <script src={{ url_for('static', filename="js/jp_buffet_index.js") }} charset="utf-8"></script>
+
+  </body>
+</html>

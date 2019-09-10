@@ -12,7 +12,7 @@
   "receipt": {
     "printer": "Star TSP100 Cutter (TSP143) eco",
     "cn_key": "\u7968\u636e",
-    "is_on": false
+    "is_on": true
   },
   "terminal": {
     "printer": "Star TSP100 Cutter (TSP143)",

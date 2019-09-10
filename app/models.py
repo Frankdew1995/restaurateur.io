@@ -83,7 +83,7 @@ class Order(db.Model):
     isPaid = db.Column(db.Boolean, default=False)
     isReady = db.Column(db.Boolean, default=False)
     isPickedUp = db.Column(db.Boolean, default=False)
-    items = db.Column(db.String(300))
+    items = db.Column(db.String(1500))
     pay_via = db.Column(db.String(100))
     type = db.Column(db.String(100))
     container = db.Column(db.String(300))
@@ -97,6 +97,7 @@ class Order(db.Model):
     dishes = db.Column(db.String(1500))
     discount = db.Column(db.Float)
     discount_rate = db.Column(db.Float)
+    subtype = db.Column(db.String(500))
 
 
 class Visit(db.Model):

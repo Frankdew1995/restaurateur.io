@@ -29,3 +29,19 @@ context = dict(title="当天营业额",
                    company_name=company_info.get('company_name'),
                    referrer=request.headers.get('Referer')
                    )
+
+
+choices=[("Please select", u"请选择用餐方式"),
+        ("Buffet", u"自助餐"),
+       ("takeaway", u"外卖"),
+       ("AlaKarte", u"单点")]
+
+
+
+{{ url_for('jpbuffet_index', table_name=table_name, seat_number=seat_number, is_kid=is_kid) }}
+
+
+vat = format_decimal(round((order.totalPrice / tax_rate_out)*tax_rate_out, 2),
+                                 locale="de_DE")
+
+format_decimal(round(order.totalPrice, 2),locale="de_DE")

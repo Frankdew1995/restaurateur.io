@@ -79,6 +79,33 @@
 
       </div>
 
+
+      {% if subtype %}
+      <div class="table-responsive">
+        <table class="table table-sm table-dark" style="width:50%">
+          <thead>
+            <tr>
+              <th scope="col">用餐类型</th>
+              <th>{{cuisines.get(subtype)}}</th>
+            </tr>
+          </thead>
+        </table>
+
+      </div>
+
+      <div class="table-responsive">
+        <table class="table table-sm table-dark" style="width:50%">
+          <thead>
+            <tr>
+              <th scope="col">明细</th>
+              <th>儿童: {{ number_of_kids }} 成人: {{number_of_adults}}</th>
+            </tr>
+          </thead>
+        </table>
+
+      </div>
+      {% endif %}
+
     <!-- start of form -->
       <div>
 
@@ -129,7 +156,7 @@
             {% for dish, details in dishes.items() %}
             <tr>
               <th scope="row">{{details.get('class_name')}}</th>
-              <td>{{dish}}</td>
+              <td>{{ "自助餐" if "mongo_buffet" in dish else dish }}</td>
               <td>{{details.get('quantity')}}</td>
               <td>{{ details.get('price') }}</td>
               <td>{{ details.get('price') * details.get('quantity') }}</td>

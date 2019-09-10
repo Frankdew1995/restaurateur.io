@@ -11,7 +11,7 @@
   },
   {
     "Class": "Food",
-    "Subcategory": "Japan cuisine",
+    "Subcategory": "Japan Buffet",
     "Unit": "Teller"
   },
   {
@@ -20,8 +20,13 @@
     "Unit": "Bottle"
   },
   {
-    "Class": "Please select",
+    "Class": "Food",
     "Subcategory": "Grillen",
-    "Unit": "pfanne"
+    "Unit": "Pfanne"
+  },
+  {
+    "Class": "Food",
+    "Subcategory": "Mongo Buffet",
+    "Unit": "Pfanne"
   }
 ]

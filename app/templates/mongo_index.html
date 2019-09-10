@@ -1,0 +1,200 @@
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta http-equiv="Content-Type" content="text/html; charset=UTF-8"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1.0"/>
+  <title>{{title}}</title>
+
+  <!-- CSS  -->
+  <link href="https://fonts.googleapis.com/icon?family=Material+Icons" rel="stylesheet">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/materialize/1.0.0/css/materialize.min.css">
+</head>
+
+<style media="screen">
+      /* Custom Stylesheet */
+      /**
+      * Use this file to override Materialize files so you can update
+      * the core Materialize files in the future
+      *
+      * Made By MaterializeCSS.com
+      */
+      body {
+        background-image: url({{ url_for('static',filename="img/mongo_background.png") }})
+
+      }
+
+      .icon-block {
+      padding: 0 15px;
+      }
+      .icon-block .material-icons {
+      font-size: inherit;
+      }
+
+
+
+      .card .card-content {
+
+        border-radius: 0 0 2px 2px;
+        padding: 15px;
+      }
+
+      .card-title {
+        margin-top:1px;
+        text-align: left;
+      }
+
+      .blue-grey .darken-1 {
+
+        background-color: #202224;
+      }
+
+
+
+      .row {
+
+          margin-left: auto;
+          margin-right: auto;
+          margin-bottom: 0;
+          margin-top:80px;
+
+      }
+
+      .card-content .white-text{
+        text-align: left;
+      }
+
+      .card-action > a{
+        margin-left: 5px;
+        margin-top: 5px;
+      }
+
+      .section {
+          padding-top: 0rem;
+          padding-bottom: 0rem;
+      }
+
+      .row .col {
+          float: left;
+          -webkit-box-sizing: border-box;
+          box-sizing: border-box;
+          padding: 0.1rem;
+          min-height: 1px;
+      }
+
+      .row .col .s12 .m7{
+        width: 100%;
+        margin-left: auto;
+        margin-top: 1px;
+        left: auto;
+        right: auto;
+
+    }
+
+    #nextClock{
+      display:none;
+    }
+
+</style>
+
+
+<body>
+
+
+
+
+  <div class="container">
+    <div class="section">
+
+      <!--   Icon Section   -->
+      <div class="row">
+
+        {% with messages = get_flashed_messages() %}
+
+          {% if messages %}
+
+            {% for message in messages %}
+
+            <div class="alert alert-success" role="alert">
+                {{ message }}
+            </div>
+
+            {% endfor %}
+
+          {% endif %}
+
+        {% endwith %}
+
+        <div class="col s12 m7">
+          <div class="card">
+            <div class="card-image">
+              <img src={{ url_for('static', filename="img/mongo_banner.png") }}>
+            </div>
+
+          </div>
+        </div>
+
+      <div class="col s6 s6" id="timedeltaCard">
+        <div class="card">
+          <div class="card-image">
+
+            <a href={{ url_for('mongo_guest_order', table_name=table_name, seat_number=seat_number, is_kid=is_kid) }}>
+              <img src={{ url_for('static', filename="img/mongo_order.png") }}>
+            </a>
+
+          </div>
+
+        </div>
+      </div>
+
+
+    <div class="col s6 s6">
+      <div class="card">
+        <div class="card-image">
+          <img src={{ url_for('static', filename="img/mongo_drink.png") }}>
+        </div>
+
+      </div>
+    </div>
+
+
+    <div class="col s6 s6">
+      <div class="card">
+
+        <div class="card-image">
+
+          <a href={{ url_for('guest_call_service', table_name=table_name, seat_number=seat_number) }}>
+            <img src={{ url_for('static', filename="img/mongo_service.png") }}>
+          </a>
+        </div>
+
+      </div>
+    </div>
+
+
+    <div class="col s6 s6">
+      <div class="card">
+        <div class="card-image">
+          <a href={{ url_for('guest_call_pay', table_name=table_name, seat_number=seat_number) }}>
+            <img src={{ url_for('static', filename="img/mongo_pay.png") }}>
+          </a>
+        </div>
+
+      </div>
+    </div>
+
+
+
+  </div>
+
+    </div>
+    <br><br>
+  </div>
+
+
+  <!-- Compiled and minified JavaScript -->
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/materialize/1.0.0/js/materialize.min.js"></script>
+  <script src={{ url_for('static', filename="js/jp_buffet_index.js") }} charset="utf-8"></script>
+
+  </body>
+</html>

@@ -2369,6 +2369,41 @@ def switch_table():
         return jsonify({'status': 200})
 
 
+@app.route("/tables/add/<string:table_name>/<string:section>/<int:number>")
+def add_table_via_url(table_name, section, number):
+
+    # Checking Table duplicates
+    if Table.query.filter_by(name=table_name).first_or_404():
+        flash(f"{table_name}已经存在，请重新输入桌子名称")
+
+        return redirect(url_for('admin_add_table'))
+
+    qrcodes = [generate_qrcode(table=table_name,
+                               base_url=base_url,
+                               suffix_url=suffix_url,
+                               seat=str(i + 1)) for i in range(number)]
+
+    table = Table(
+        name=table_name,
+        number=number,
+        section=section,
+        timeCreated=datetime.now(tz=pytz.timezone(timezone)),
+        container=json.dumps({'isCalled': False,
+                              'payCalled': False,
+                              'qrcodes': qrcodes}),
+
+        seats="\n".join([f"{table_name}-{i+1}" for
+                         i in range(number)]))
+
+    db.session.add(table)
+
+    db.session.commit()
+
+    flash(f"已经成功创建桌子：{table_name}")
+
+    return redirect(url_for("view_tables"))
+
+
 @app.route('/admin/tables/add', methods=["GET", "POST"])
 @login_required
 def admin_add_table():
@@ -2400,31 +2435,27 @@ def admin_add_table():
 
             return redirect(url_for('admin_add_table'))
 
-        def async_job():
+        qrcodes = [generate_qrcode(table=table_name,
+                                   base_url=base_url,
+                                   suffix_url=suffix_url,
+                                   seat=str(i + 1)) for i in range(number)]
 
-            qrcodes = [generate_qrcode(table=table_name,
-                                       base_url=base_url,
-                                       suffix_url=suffix_url,
-                                       seat=str(i + 1)) for i in range(number)]
+        table = Table(
+            name=table_name,
+            number=number,
+            section=section,
+            timeCreated=datetime.now(tz=pytz.timezone(timezone)),
+            container=json.dumps({'isCalled': False,
+                                  'payCalled': False,
+                                  'qrcodes': qrcodes}),
 
-            table = Table(
-                name=table_name,
-                number=number,
-                section=section,
-                timeCreated=datetime.now(tz=pytz.timezone(timezone)),
-                container=json.dumps({'isCalled': False,
-                                      'payCalled': False,
-                                      'qrcodes': qrcodes}),
+            seats="\n".join([f"{table_name}-{i+1}" for
+                             i in range(number)]))
 
-                seats="\n".join([f"{table_name}-{i+1}" for
-                                 i in range(number)]))
+        db.session.add(table)
 
-            db.session.add(table)
+        db.session.commit()
 
-            db.session.commit()
-
-        th = Thread(target=async_job)
-        th.start()
         flash(f"已经成功创建桌子：{table_name}")
 
         return redirect(url_for("view_tables"))
@@ -6096,12 +6127,7 @@ def mongo_index(table_name, seat_number, is_kid):
 
 #  Mongo Order view by table name and seat number
 @app.route("/mongobuffet/interface/<string:table_name>/<string:seat_number>/<int:is_kid>")
-def mongo_guest_order(table_name, seat_number, is_kid=0):
-
-    # Read the business hours config setting data from the json file
-    with open(str(Path(app.root_path) / "settings" / "config.json"),
-              encoding="utf8") as file:
-        config = file.read()
+def mongo_guest_order(table_name, seat_number, is_kid):
 
     am_start = hours.get('MORNING', '').get('START', '').split(":")
     am_end = hours.get('MORNING', '').get('END', '').split(":")
@@ -6307,7 +6333,8 @@ def mongo_guest_order(table_name, seat_number, is_kid=0):
         food=food,
         table_name=table_name,
         seat_number=seat_number,
-        referrer=request.headers.get('Referer'))
+        referrer=request.headers.get('Referer'),
+        is_kid=is_kid)
 
     return render_template("mongo.html", **context)
 
@@ -6317,10 +6344,10 @@ def mongo_guest_checkout():
 
     if request.method == "POST":
 
+        print("Ok")
+
         # Json Data Posted via AJAX
         json_data = request.json
-
-        print(json_data)
 
         table_name = json_data.get('tableName').upper()
         seat_number = json_data.get('seatNumber')
@@ -6624,11 +6651,6 @@ def jpbuffet_order(table_name, seat_number, is_kid):
 @app.route("/jp/buffet/guest/checkout", methods=["POST", "GET"])
 def jpbuffet_guest_checkout():
 
-    # Read the business hours config setting data from the json file
-    with open(str(Path(app.root_path) / "settings" / "config.json"),
-              encoding="utf8") as file:
-        config = file.read()
-
     am_start = hours.get('MORNING', '').get('START', '').split(":")
     am_end = hours.get('MORNING', '').get('END', '').split(":")
 
@@ -6777,7 +6799,7 @@ def jpbuffet_guest_checkout():
 
                         dt_objs.append(dt_obj)
 
-                if len(dt_objs) != 0:
+                if len(dt_objs) > 0:
 
                     last_ordered = max(dt_objs)
 

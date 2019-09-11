@@ -122,7 +122,7 @@
 
      			<footer class="cd-cart__footer">
 
-            <a href={{ url_for('alacarte_navigate', table_name=table_name, seat_number=seat_number) }} class="cd-cart__checkout" id="checkout">
+            <a href={{ url_for('mongo_index', table_name=table_name, seat_number=seat_number, is_kid=is_kid) }} class="cd-cart__checkout" id="checkout">
                <em>Bestellen -€ <span id='priceTotal'></span>
                </em>
              </a>

@@ -22,7 +22,9 @@ from .utilities import (json_reader, store_picture,
                         generate_qrcode, activity_logger,
                         qrcode2excel, call2print, receipt_templating,
                         bar_templating, kitchen_templating,
-                        terminal_templating, x_z_receipt_templating)
+                        terminal_templating, x_z_receipt_templating,
+                        table_adder, formatter, is_business_hours,
+                        daily_revenue_templating)
 
 from pathlib import Path
 import json
@@ -49,6 +51,8 @@ company_info = {
 
         }
 
+info = json_reader(str(Path.cwd() / 'app' / 'settings' / 'config.json'))
+
 hours = info.get('BUSINESS_HOURS')
 
 time_buffer_mins = int(info.get('BUFFET_TIME_BUFFER'))
@@ -63,7 +67,7 @@ tax_rate_in = float(company_info.get('tax_rate_in', 0.0))
 
 tax_rate_out = float(company_info.get('tax_rate_out', 0.0))
 
-base_url = "http://4cb0771c.ngrok.io"
+base_url = "http://e578aec3.ngrok.io"
 suffix_url = "guest/navigation"
 
 timezone = 'Europe/Berlin'
@@ -308,6 +312,19 @@ def return_analytics():
 @login_required
 def index():
 
+    # Software Licensing Time - 2 years
+    admin_user = User.query.filter_by(permissions=100).first_or_404()
+
+    deadline = admin_user.timeCreated + timedelta(days=365 * 2)
+
+    if datetime.now(tz=None) >= deadline:
+
+        logout_user()
+
+        flash("软件使用权限到期，请及时联系我们续费以便后续使用.谢谢合作！")
+
+        return redirect(url_for('login'))
+
     if not json.loads(current_user.container).get('inUse'):
 
         return render_template('suspension_error.html')
@@ -327,6 +344,7 @@ def index():
                       if v.timeVisited.date() == yesterday])
 
     daily_visit_up_rate = None
+
     # Handling zero division error
     if last_visits == 0:
 
@@ -696,8 +714,7 @@ def checkout_takeaway_admin(order_id):
             bar_temp = str(Path(app.root_path) / 'static' / 'docx' / 'bar.docx')
             save_as_bar = f"meallist_bar_{order.id}"
 
-            vat = format_decimal(round((order.totalPrice / tax_rate_out)*tax_rate_out, 2),
-                                 locale="de_DE")
+            vat = formatter(round((order.totalPrice / tax_rate_out)*tax_rate_out, 2))
 
             context = {"details": details,
                          "company_name": company_info.get('company_name', ''),
@@ -705,7 +722,7 @@ def checkout_takeaway_admin(order_id):
                          "now": datetime.now().strftime("%Y-%m-%d %H:%M:%S"),
                          "tax_id": company_info.get('tax_id'),
                          "wait_number": order.id,
-                         "total": format_decimal(round(order.totalPrice, 2),locale="de_DE"),
+                         "total": formatter(round(order.totalPrice, 2)),
                          "pay_via": json.loads(order.pay_via).get('method', ""),
                          "VAT": vat}
 
@@ -743,6 +760,7 @@ def checkout_takeaway_admin(order_id):
             # Start the thread
             th = Thread(target=master_printer)
             th.start()
+
             try:
                 # Writing logs to the csv file
                 activity_logger(order_id=order.id,
@@ -762,12 +780,16 @@ def checkout_takeaway_admin(order_id):
 
             return redirect(url_for('takeaway_orders_manage'))
 
-        return render_template('takeaway_checkout_admin.html',
-                               order=order,
-                               order_items=order_items,
-                               prices=prices,
-                               form=form,
-                               datetime_format=datetime_format)
+        context = dict(order=order,
+                       order_items=order_items,
+                       prices=prices,
+                       form=form,
+                       datetime_format=datetime_format,
+                       formatter=formatter,
+                       title=u"订单结账",
+                       company_name=company_info.get('company_name'))
+
+        return render_template('takeaway_checkout_admin.html', **context)
 
     else:
 
@@ -817,7 +839,8 @@ def takeaway_orders_admin():
                    company_name=company_info.get('company_name'),
                    open_orders=open_orders,
                    referrer=request.headers.get('Referer'),
-                   datetime_format=datetime_format)
+                   datetime_format=datetime_format,
+                   formatter=formatter)
 
     return render_template('takeaway_orders_admin.html', **context)
 
@@ -843,7 +866,8 @@ def takeaway_order_edit(order_id):
                  title=title,
                  company_name=company_info.get('company_name'),
                  referrer=request.headers.get('Referer'),
-                 datetime_format=datetime_format)
+                 datetime_format=datetime_format,
+                 formatter=formatter)
 
     return render_template('takeaway_order_edit.html', **context)
 
@@ -910,20 +934,25 @@ def update_takeaway_order():
 
             flash(f"已经修改订单:{order_id}", category="success")
 
-        # Writing logs to the csv file
-        activity_logger(order_id=order.id,
-                        operation_type=u'订单修改',
-                        page_name=u'外卖界面 > 订单管理 >订单修改',
-                        descr=f'''
-                        修改订单号:{order.id}\n
-                        修改前明细:{logging.get('before')}\n
-                        修改后明细:{logging.get('after')}\n
-                        修改前账单金额: {logging.get('price_before')}\n
-                        修改后账单金额: {logging.get('price_after')}\n
-                        订单类型:外卖\n
-                        {logging.get('remark')}\n''',
-                        log_time=str(datetime.now(tz=pytz.timezone('Europe/Berlin'))),
-                        status=u'成功')
+        try:
+
+            # Writing logs to the csv file
+            activity_logger(order_id=order.id,
+                            operation_type=u'订单修改',
+                            page_name=u'外卖界面 > 订单管理 >订单修改',
+                            descr=f'''
+                            修改订单号:{order.id}\n
+                            修改前明细:{logging.get('before')}\n
+                            修改后明细:{logging.get('after')}\n
+                            修改前账单金额: {logging.get('price_before')}\n
+                            修改后账单金额: {logging.get('price_after')}\n
+                            订单类型:外卖\n
+                            {logging.get('remark')}\n''',
+                            log_time=str(datetime.now(tz=pytz.timezone('Europe/Berlin'))),
+                            status=u'成功')
+        except:
+
+            pass
 
         return "Ok"
 
@@ -940,7 +969,8 @@ def all_out_orders():
     context = dict(title=u'外卖订单',
                    orders=orders,
                    referrer=referrer,
-                   company_name=company_info.get('company_name'))
+                   company_name=company_info.get('company_name'),
+                   formatter=formatter)
 
     return render_template('all_out_orders.html', **context)
 
@@ -966,7 +996,8 @@ def admin_view_alacarte_open_orders():
                    items=items,
                    datetime_format=datetime_format,
                    referrer=request.headers.get('Referer'),
-                   title=u"餐桌情况(未结账)")
+                   title=u"餐桌情况(未结账)",
+                   formatter=formatter)
 
     return render_template("admin_view_alalcarte_open_orders.html", **context)
 
@@ -987,7 +1018,8 @@ def admin_alacarte_order_edit(order_id):
                    str_referrer=str(referrer),
                    title=u"订单修改/查看",
                    datetime_format=datetime_format,
-                   company_name=company_info.get('company_name'))
+                   company_name=company_info.get('company_name'),
+                   formatter=formatter)
 
     return render_template('admin_alacarte_order_edit.html', **context)
 
@@ -1034,21 +1066,27 @@ def admin_update_alacarte_order():
 
         db.session.commit()
 
-        # Writing logs to the csv file
-        activity_logger(order_id=order.id,
-                        operation_type=u'订单修改',
-                        page_name=u'后台界面 > 餐桌情况(未结账) >订单修改',
-                        descr=f'''
-                        修改订单号:{order.id}\n
-                        桌子编号：{json.loads(order.container).get('table_name')}-{json.loads(order.container).get('seat_number')}\n
-                        修改前明细:{logging.get('before')}\n
-                        修改后明细:{logging.get('after')}\n
-                        修改前账单金额: {logging.get('price_before')}\n
-                        修改后账单金额: {logging.get('price_after')}\n
-                        订单类型:AlaCarte\n
-                        {logging.get('remark')}\n''',
-                        log_time=str(datetime.now(tz=pytz.timezone('Europe/Berlin'))),
-                        status=u'成功')
+        try:
+
+            # Writing logs to the csv file
+            activity_logger(order_id=order.id,
+                            operation_type=u'订单修改',
+                            page_name=u'后台界面 > 餐桌情况(未结账) >订单修改',
+                            descr=f'''
+                            修改订单号:{order.id}\n
+                            桌子编号：{json.loads(order.container).get('table_name')}-{json.loads(order.container).get('seat_number')}\n
+                            修改前明细:{logging.get('before')}\n
+                            修改后明细:{logging.get('after')}\n
+                            修改前账单金额: {logging.get('price_before')}\n
+                            修改后账单金额: {logging.get('price_after')}\n
+                            订单类型:AlaCarte\n
+                            {logging.get('remark')}\n''',
+                            log_time=str(datetime.now(tz=pytz.timezone('Europe/Berlin'))),
+                            status=u'成功')
+
+        except:
+
+            pass
 
         return redirect(url_for('admin_view_alacarte_open_orders'))
 
@@ -1075,18 +1113,24 @@ def admin_cancel_alacarte_order(order_id):
 
             db.session.commit()
 
-            # Writing logs to the csv file
-            activity_logger(order_id=order.id,
-                            operation_type=u'订单取消',
-                            page_name=u'后台界面 > 餐桌情况(未结账)',
-                            descr=f'''
-                            取消订单号:{order.id}\n
-                            桌子编号：{json.loads(order.container).get('table_name')}-{json.loads(order.container).get('seat_number')}\n
-                            账单金额: {order.totalPrice}\n
-                            订单类型: AlaCarte\n
-                            {logging.get('remark')}\n''',
-                            log_time=str(datetime.now(tz=pytz.timezone('Europe/Berlin'))),
-                            status=u'成功')
+            try:
+
+                # Writing logs to the csv file
+                activity_logger(order_id=order.id,
+                                operation_type=u'订单取消',
+                                page_name=u'后台界面 > 餐桌情况(未结账)',
+                                descr=f'''
+                                取消订单号:{order.id}\n
+                                桌子编号：{json.loads(order.container).get('table_name')}-{json.loads(order.container).get('seat_number')}\n
+                                账单金额: {order.totalPrice}\n
+                                订单类型: AlaCarte\n
+                                {logging.get('remark')}\n''',
+                                log_time=str(datetime.now(tz=pytz.timezone('Europe/Berlin'))),
+                                status=u'成功')
+
+            except:
+
+                pass
 
             return redirect(url_for('admin_view_alacarte_open_orders'))
 
@@ -1113,7 +1157,8 @@ def admin_view_paid_alacarte_orders():
                    title=u"已完成订单",
                    referrer=request.headers.get('Referer'),
                    company_name=company_info.get('company_name'),
-                   datetime_format=datetime_format)
+                   datetime_format=datetime_format,
+                   formatter=formatter)
 
     return render_template("admin_view_paid_alacarte_orders.html", **context)
 
@@ -1142,11 +1187,15 @@ def takeaway_order_view(order_id):
 
     referrer = request.headers.get('Referer')
 
-    return render_template('takeaway_view_order.html',
-                           order=order,
-                           ordered_items=ordered_items,
-                           prices=prices,
-                           referrer=referrer)
+    context = dict(order=order,
+                   ordered_items=ordered_items,
+                   prices=prices,
+                   referrer=referrer,
+                   formatter=formatter,
+                   title=u"查看外卖订单",
+                   company_name=company_info.get('company_name'))
+
+    return render_template('takeaway_view_order.html', **context)
 
 
 @app.route('/takeaway/revenue/current')
@@ -1173,9 +1222,10 @@ def takeaway_cur_revenue():
                 'Cash': cur_revenue_cash}
 
     context = dict(revenues=revenues,
-                 referrer=request.headers.get('Referer'),
-                 company_name=company_info.get('company_name'),
-                 title=u"当天营业额")
+                   referrer=request.headers.get('Referer'),
+                   company_name=company_info.get('company_name'),
+                   title=u"当天营业额",
+                   formatter=formatter)
 
     return render_template('current_out_revenue.html', **context)
 
@@ -1830,8 +1880,10 @@ def set_store():
 
                                "EVENING": {"START": form.business_hours_start_evening.data,
                                            "END": form.business_hours_end_evening.data
-                                           }
-                            }
+                                           }},
+
+            "ORDER_LIMIT": form.order_limit_per_round.data,
+            "BUFFET_MODE": form.buffet_mode.data
         }]
 
         with open(str(Path(app.root_path) / 'settings' / 'config.json'), 'w') as f:
@@ -1843,6 +1895,7 @@ def set_store():
         return redirect(url_for("set_store"))
 
     data = json_reader(file=str(Path(app.root_path) / 'settings' / 'config.json'))
+
     form.store_name.data = data.get("STORE_NAME")
     form.street_no.data = data.get("STREET NO.")
     form.street.data = data.get("STREET")
@@ -1854,6 +1907,8 @@ def set_store():
     form.tax_rate_takeaway.data = data.get("TAX_RATE").get("takeaway")
     form.jp_buffet_time_buffer.data = data.get('BUFFET_TIME_BUFFER')
     form.order_times.data = data.get('ORDER_TIMES')
+    form.order_limit_per_round.data = data.get('ORDER_LIMIT','')
+    form.buffet_mode.data = data.get('BUFFET_MODE')
 
     try:
         form.business_hours_start_morning.data = data.get('BUSINESS_HOURS').get('MORNING').get('START')
@@ -2078,7 +2133,7 @@ def update_password(user_id):
 
 
 # Table view function
-@app.route("/tables/view")
+@app.route("/adminpanel/tables/view")
 @login_required
 def view_tables():
 
@@ -2177,17 +2232,22 @@ def admin_transfer_table(table_name):
 
             db.session.commit()
 
-            # Writing log to the csv file
-            activity_logger(order_id=order.id,
-                            operation_type=u'转台',
-                            page_name='后台 > 桌子管理 > 已点餐桌子 > 转台',
-                            descr=f'''\n
-                            订单号:{order.id}\n
-                            原桌子：{logging.get('table_before')}\n
-                            新桌子:{logging.get('table_cur')}\n'
-                            ''',
-                            status=u'成功',
-                            log_time=str(datetime.now(tz=pytz.timezone(timezone))))
+            try:
+
+                # Writing log to the csv file
+                activity_logger(order_id=order.id,
+                                operation_type=u'转台',
+                                page_name='后台 > 桌子管理 > 已点餐桌子 > 转台',
+                                descr=f'''\n
+                                订单号:{order.id}\n
+                                原桌子：{logging.get('table_before')}\n
+                                新桌子:{logging.get('table_cur')}\n'
+                                ''',
+                                status=u'成功',
+                                log_time=str(datetime.now(tz=pytz.timezone(timezone))))
+            except:
+
+                pass
 
             flash(f"桌子{table_name}已经转至{target_table}!", category='success')
 
@@ -2280,21 +2340,63 @@ def admin_view_table(table_name):
 
                 db.session.commit()
 
-                # Writing logs to the csv file
-                activity_logger(order_id=order.id,
-                                operation_type=u'结账',
-                                page_name=u'跑堂界面 > 桌子详情',
-                                descr=f'''结账订单号:{order.id}\n
-                                        桌子编号：{order.table_name}-{order.seat_number}
-                                        支付方式:{logging.get('Pay')}\n
-                                        结账金额: {order.totalPrice}\n
-                                        订单类型: AlaCarte\n''',
-                                log_time=str(datetime.now(tz=pytz.timezone(timezone))),
-                                status=u'成功')
+                try:
+
+                    # Writing logs to the csv file
+                    activity_logger(order_id=order.id,
+                                    operation_type=u'结账',
+                                    page_name=u'跑堂界面 > 桌子详情',
+                                    descr=f'''结账订单号:{order.id}\n
+                                            桌子编号：{order.table_name}-{order.seat_number}
+                                            支付方式:{logging.get('Pay')}\n
+                                            结账金额: {order.totalPrice}\n
+                                            订单类型: AlaCarte\n''',
+                                    log_time=str(datetime.now(tz=pytz.timezone(timezone))),
+                                    status=u'成功')
+                except:
+
+                    pass
+
+                dishes = json.loads(order.items)
+
+                total_price = order.totalPrice
+
+                context = {"details": dishes,
+                           "company_name": company_info.get('company_name', ''),
+                           "address": company_info.get('address'),
+                           "now": format_datetime(datetime.now(), locale="de_DE"),
+                           "tax_id": company_info.get('tax_id'),
+                           "order_id": order.id,
+                           "table_name": table_name,
+                           "total": formatter(total_price),
+                           "pay_via": json.loads(order.pay_via).get('method', ""),
+                           "VAT": formatter(
+                               round((total_price / tax_rate_out) * tax_rate_out, 2))}
+
+                temp_file = str(Path(app.root_path) / 'static' / 'docx' / 'receipt_temp_inhouse.docx')
+                save_as = f"receipt_{order.id}"
+
+                with open(str(Path(app.root_path) / "settings" / "printer.json"), encoding="utf8") as file:
+
+                    data = file.read()
+
+                data = json.loads(data)
+
+                printer = data.get('receipt').get('printer')
+
+                def master_printer():
+
+                    receipt_templating(context=context,
+                                       temp_file=temp_file,
+                                       save_as=save_as,
+                                       printer=printer)
+
+                th = Thread(target=master_printer)
+
+                th.start()
 
                 return redirect(url_for('admin_active_tables'))
 
-            # Else just render page as get method
             # Calculate the total price for this table
             total_price = order.totalPrice
 
@@ -2334,7 +2436,8 @@ def admin_view_table(table_name):
                            cuisines=cuisines,
                            subtype=subtype,
                            number_of_kids=number_of_kids,
-                           number_of_adults=number_of_adults)
+                           number_of_adults=number_of_adults,
+                           formatter=formatter)
 
             return render_template('admin_view_table_summary.html', **context)
 
@@ -2369,42 +2472,29 @@ def switch_table():
         return jsonify({'status': 200})
 
 
-@app.route("/tables/add/<string:table_name>/<string:section>/<int:number>")
-def add_table_via_url(table_name, section, number):
+@app.route("/js/tables/add", methods=["POST"])
+def js_add_table():
+
+    data = request.json
+
+    table_name = data.get('tableName')
+    section = data.get("section")
+    number = int(data.get('persons'))
+
+    th = Thread(target=table_adder, args=(table_name, section,
+                                          number, base_url, suffix_url, timezone,))
 
     # Checking Table duplicates
     if Table.query.filter_by(name=table_name).first_or_404():
-        flash(f"{table_name}已经存在，请重新输入桌子名称")
 
-        return redirect(url_for('admin_add_table'))
+        return jsonify({"error": f"{table_name}已经存在，请重新输入桌子名称"})
 
-    qrcodes = [generate_qrcode(table=table_name,
-                               base_url=base_url,
-                               suffix_url=suffix_url,
-                               seat=str(i + 1)) for i in range(number)]
+    th.start()
 
-    table = Table(
-        name=table_name,
-        number=number,
-        section=section,
-        timeCreated=datetime.now(tz=pytz.timezone(timezone)),
-        container=json.dumps({'isCalled': False,
-                              'payCalled': False,
-                              'qrcodes': qrcodes}),
-
-        seats="\n".join([f"{table_name}-{i+1}" for
-                         i in range(number)]))
-
-    db.session.add(table)
-
-    db.session.commit()
-
-    flash(f"已经成功创建桌子：{table_name}")
-
-    return redirect(url_for("view_tables"))
+    return jsonify({"success": f"已经成功创建桌子：{table_name}"})
 
 
-@app.route('/admin/tables/add', methods=["GET", "POST"])
+@app.route('/adminpanel/tables/add', methods=["GET", "POST"])
 @login_required
 def admin_add_table():
 
@@ -2420,53 +2510,13 @@ def admin_add_table():
 
     form.section.choices.extend([(i, i) for i in letters])
 
-    if request.method == "POST":
-
-        table_name = form.name.data
-
-        number = form.persons.data
-
-        section = form.section.data
-
-        # Checking Table duplicates
-        if Table.query.filter_by(name=table_name).first_or_404():
-
-            flash(f"{table_name}已经存在，请重新输入桌子名称")
-
-            return redirect(url_for('admin_add_table'))
-
-        qrcodes = [generate_qrcode(table=table_name,
-                                   base_url=base_url,
-                                   suffix_url=suffix_url,
-                                   seat=str(i + 1)) for i in range(number)]
-
-        table = Table(
-            name=table_name,
-            number=number,
-            section=section,
-            timeCreated=datetime.now(tz=pytz.timezone(timezone)),
-            container=json.dumps({'isCalled': False,
-                                  'payCalled': False,
-                                  'qrcodes': qrcodes}),
-
-            seats="\n".join([f"{table_name}-{i+1}" for
-                             i in range(number)]))
-
-        db.session.add(table)
-
-        db.session.commit()
-
-        flash(f"已经成功创建桌子：{table_name}")
-
-        return redirect(url_for("view_tables"))
-
     context = dict(referrer=referrer,
                    title=u"添加桌子",
                    company_name=company_info.get('company_name'),
                    format=datetime_format,
                    form=form)
 
-    return render_template('add_table.html', **context)
+    return render_template('add_table_via_js.html', **context)
 
 
 # Table view function
@@ -2572,7 +2622,8 @@ def buffet_price_settings():
 
     context = dict(data=data,
                    title=u"自助餐价格设置",
-                   company_name=company_info.get('company_name'))
+                   company_name=company_info.get('company_name'),
+                   formatter=formatter)
 
     return render_template("buffet_price_setting.html", **context)
 
@@ -2711,7 +2762,7 @@ def order_alacarte(table_name, seat_number):
                  title=u"À la carte",
                  table_name=table_name,
                  seat_number=seat_number,
-                 format_decimal=format_decimal)
+                 formatter=formatter)
 
     if table and table.is_on:
 
@@ -2897,10 +2948,16 @@ def alacarte_guest_checkout():
         return jsonify({"status_code": 200})
 
 
-@app.route('/service/call/<string:table_name>/<string:seat_number>', methods=['GET', 'POST'])
-def guest_call_service(table_name, seat_number):
+@app.route('/service/call', methods=['POST'])
+def guest_call_service():
 
-    referrer = request.headers.get('Referer')
+    data = request.json
+
+    table_name = data.get('tableName')
+
+    seat_number = data.get('seatNumber')
+
+    is_paying = False
 
     table = db.session.query(Table).filter_by(name=table_name.upper()).first_or_404()
 
@@ -2914,23 +2971,22 @@ def guest_call_service(table_name, seat_number):
 
     from threading import Thread
 
-    th = Thread(target=call2print, args=(table_name, ))
+    th = Thread(target=call2print, args=(table_name, seat_number, is_paying, ))
     th.start()
 
-    flash('Ein Herr Ober kommt bald!!')
-
-    if "mongo/index" in str(referrer):
-
-        return redirect(url_for("mongo_index",
-                                table_name=table_name,
-                                seat_number=seat_number,
-                                is_kid=0))
+    return jsonify({"success": "In Ordnung, ein Mitarbeiter kommt bald"})
 
 
-@app.route('/pay/call/<string:table_name>/<string:seat_number>', methods=['GET', 'POST'])
-def guest_call_pay(table_name, seat_number):
+@app.route('/pay/call', methods=['POST'])
+def guest_call_pay():
 
-    referrer = request.headers.get('Referer')
+    data = request.json
+
+    table_name = data.get('tableName')
+
+    seat_number = data.get('seatNumber')
+
+    is_paying = True
 
     table = db.session.query(Table).filter_by(name=table_name.upper()).first_or_404()
 
@@ -2942,9 +2998,13 @@ def guest_call_pay(table_name, seat_number):
 
     db.session.commit()
 
-    flash('In Ordnung, ein Mitarbeiter kommt bald mit Kasse.')
+    from threading import Thread
 
-    return redirect(url_for(referrer))
+    th = Thread(target=call2print, args=(table_name, seat_number, is_paying,))
+
+    th.start()
+
+    return jsonify({"success": "In Ordnung, ein Mitarbeiter kommt bald mit der Kasse"})
 
 
 # Waiter Admin Section
@@ -3134,18 +3194,21 @@ def view_table(table_name):
                 order.pay_via = json.dumps(pay_via)
 
                 db.session.commit()
+                try:
+                    # Writing logs to the csv file
+                    activity_logger(order_id=order.id,
+                                    operation_type=u'结账',
+                                    page_name=u'跑堂界面 > 桌子详情',
+                                    descr=f'''结账订单号:{order.id}\n
+                                            桌子编号：{order.table_name}-{order.seat_number}
+                                            支付方式:{logging.get('Pay')}\n
+                                            结账金额: {order.totalPrice}\n
+                                            订单类型:AlaCarte\n''',
+                                    log_time=str(datetime.now(pytz.timezone('Europe/Berlin'))),
+                                    status=u'成功')
+                except:
 
-                # Writing logs to the csv file
-                activity_logger(order_id=order.id,
-                                operation_type=u'结账',
-                                page_name=u'跑堂界面 > 桌子详情',
-                                descr=f'''结账订单号:{order.id}\n
-                                        桌子编号：{order.table_name}-{order.seat_number}
-                                        支付方式:{logging.get('Pay')}\n
-                                        结账金额: {order.totalPrice}\n
-                                        订单类型:AlaCarte\n''',
-                                log_time=str(datetime.now(pytz.timezone('Europe/Berlin'))),
-                                status=u'成功')
+                    pass
 
                 context = {"details": dishes,
                            "company_name": company_info.get('company_name', ''),
@@ -3154,10 +3217,10 @@ def view_table(table_name):
                            "tax_id": company_info.get('tax_id'),
                            "order_id": order.id,
                            "table_name": table_name,
-                           "total": format_decimal(total_price, locale="de_DE"),
+                           "total": formatter(total_price),
                            "pay_via": json.loads(order.pay_via).get('method', ""),
-                           "VAT": format_decimal(
-                               round((total_price / tax_rate_out) * tax_rate_out, 2), locale="de_DE")}
+                           "VAT": formatter(
+                               round((total_price / tax_rate_out) * tax_rate_out, 2))}
 
                 temp_file = str(Path(app.root_path) / 'static' / 'docx' / 'receipt_temp_inhouse.docx')
                 save_as = f"receipt_{order.id}"
@@ -3195,12 +3258,10 @@ def view_table(table_name):
             batches = json.loads(order.dishes)
 
             number_of_kids = len(set([tuple(i.items())[0][1].get('order_by')
-                                      for i in batches
-                                      if tuple(i.items())[0][1].get('is_kid') == 1]))
+                              for i in batches if tuple(i.items())[0][1].get('is_kid') == 1]))
 
             number_of_adults = len(set([tuple(i.items())[0][1].get('order_by')
-                                      for i in batches
-                                      if not tuple(i.items())[0][1].get('is_kid') == 0]))
+                                for i in batches if tuple(i.items())[0][1].get('is_kid') == 0]))
 
             # Exclude the super user/ boss account
             section2user = {section: user for user in users if user.permissions != 100
@@ -3219,7 +3280,8 @@ def view_table(table_name):
                            subtype=subtype,
                            cuisines=cuisines,
                            number_of_adults=number_of_adults,
-                           number_of_kids=number_of_kids)
+                           number_of_kids=number_of_kids,
+                           formatter=formatter)
 
             # Else just render page as get method
             return render_template('view_table_summary.html', **context)
@@ -3250,7 +3312,7 @@ def alacarte_orders_manage():
                    company_name=company_info.get('company_name'),
                    referrer=request.headers.get('Referer'),
                    datetime_format=datetime_format,
-                   )
+                   formatter=formatter)
 
     return render_template("alacarte_orders_admin.html", **context)
 
@@ -3279,6 +3341,7 @@ def alacarte_order_edit(order_id):
                    company_name=company_info.get('company_name'),
                    referrer=request.headers.get('Referer'),
                    datetime_format=datetime_format,
+                   formatter=formatter
                    )
 
     return render_template('alacarte_order_edit.html', **context)
@@ -3327,21 +3390,26 @@ def update_alacarte_order():
 
         db.session.commit()
 
-        # Writing logs to the csv file
-        activity_logger(order_id=order.id,
-                        operation_type=u'订单修改',
-                        page_name=u'跑堂界面 > 订单管理 >订单修改',
-                        descr=f'''
-                        修改订单号:{order.id}\n
-                        桌子编号：{json.loads(order.container).get('table_name')}-{json.loads(order.container).get('seat_number')}\n
-                        修改前明细:{logging.get('before')}\n
-                        修改后明细:{logging.get('after')}\n
-                        修改前账单金额: {logging.get('price_before')}\n
-                        修改后账单金额: {logging.get('price_after')}\n
-                        订单类型:AlaCarte\n
-                        {logging.get('remark')}\n''',
-                        log_time=str(datetime.now(pytz.timezone('Europe/Berlin'))),
-                        status=u'成功')
+        try:
+
+            # Writing logs to the csv file
+            activity_logger(order_id=order.id,
+                            operation_type=u'订单修改',
+                            page_name=u'跑堂界面 > 订单管理 >订单修改',
+                            descr=f'''
+                            修改订单号:{order.id}\n
+                            桌子编号：{json.loads(order.container).get('table_name')}-{json.loads(order.container).get('seat_number')}\n
+                            修改前明细:{logging.get('before')}\n
+                            修改后明细:{logging.get('after')}\n
+                            修改前账单金额: {logging.get('price_before')}\n
+                            修改后账单金额: {logging.get('price_after')}\n
+                            订单类型:AlaCarte\n
+                            {logging.get('remark')}\n''',
+                            log_time=str(datetime.now(pytz.timezone('Europe/Berlin'))),
+                            status=u'成功')
+        except:
+
+            pass
 
         return redirect(url_for('alacarte_orders_manage'))
 
@@ -3368,18 +3436,23 @@ def cancel_alacarte_order(order_id):
 
             db.session.commit()
 
-            # Writing logs to the csv file
-            activity_logger(order_id=order.id,
-                            operation_type=u'订单取消',
-                            page_name=u'跑堂界面 > 订单管理 > 取消',
-                            descr=f'''
-                            取消订单号:{order.id}\n
-                            桌子编号：{json.loads(order.container).get('table_name')}-{json.loads(order.container).get('seat_number')}\n
-                            账单金额: {order.totalPrice}\n
-                            订单类型:AlaCarte\n
-                            {logging.get('remark')}\n''',
-                            log_time=str(datetime.now(tz=pytz.timezone('Europe/Berlin'))),
-                            status=u'成功')
+            try:
+
+                # Writing logs to the csv file
+                activity_logger(order_id=order.id,
+                                operation_type=u'订单取消',
+                                page_name=u'跑堂界面 > 订单管理 > 取消',
+                                descr=f'''
+                                取消订单号:{order.id}\n
+                                桌子编号：{json.loads(order.container).get('table_name')}-{json.loads(order.container).get('seat_number')}\n
+                                账单金额: {order.totalPrice}\n
+                                订单类型:AlaCarte\n
+                                {logging.get('remark')}\n''',
+                                log_time=str(datetime.now(tz=pytz.timezone('Europe/Berlin'))),
+                                status=u'成功')
+            except:
+
+                pass
 
             return redirect(url_for('alacarte_orders_admin'))
 
@@ -3486,7 +3559,8 @@ def revenue_by_section(section):
                    company_name=company_info.get('company_name'),
                    referrer=request.headers.get('Referer'),
                    section=section,
-                   revenue=revenue)
+                   revenue=revenue,
+                   formatter=formatter)
 
     return render_template('revenue_by_section.html', **context)
 
@@ -3548,11 +3622,10 @@ def transfer_table(table_name):
     # Filtering only orders which happened the same day.(TZ: Berlin) + order is not cancelled
     open_orders = [order for order in orders if order.timeCreated.date()
                    == today
-                   and not json.loads(order.container).get('isCancelled')]
+                   and not order.isCancelled]
 
     # Currently Open Tables
-    open_tables = list(set([json.loads(order.container).get("table_name")
-                            for order in open_orders]))
+    open_tables = list(set([order.table_name for order in open_orders]))
 
     available_tables = [table for table in all_tables if table.name not in open_tables]
 
@@ -3563,35 +3636,35 @@ def transfer_table(table_name):
     if form.validate_on_submit():
 
         cur_table_orders = [order for order in open_orders \
-                            if json.loads(order.container).get('table_name')==table_name]
+                            if order.table_name==table_name]
 
         target_table = form.target_table.data
 
         for order in cur_table_orders:
 
             logging = {}
-            logging['table_before'] = json.loads(order.container).get('table_name')
+            logging['table_before'] = order.table_name
             logging['table_cur'] = target_table
 
-            container = json.loads(order.container)
-
-            container['table_name'] = target_table
-
-            order.container = json.dumps(container)
+            order.table_name = target_table
 
             db.session.commit()
+            try:
 
-            # Writing log to the csv file
-            activity_logger(order_id=order.id,
-                            operation_type=u'转台',
-                            page_name='跑堂界面 > 已点餐桌子 > 转台',
-                            descr=f'''\n
-                            订单号:{order.id}\n
-                            原桌子：{logging.get('table_before')}\n
-                            新桌子:{logging.get('table_cur')}\n'
-                            ''',
-                            status=u'成功',
-                            log_time=str(datetime.now(tz=pytz.timezone('Europe/Berlin'))))
+                # Writing log to the csv file
+                activity_logger(order_id=order.id,
+                                operation_type=u'转台',
+                                page_name='跑堂界面 > 已点餐桌子 > 转台',
+                                descr=f'''\n
+                                订单号:{order.id}\n
+                                原桌子：{logging.get('table_before')}\n
+                                新桌子:{logging.get('table_cur')}\n'
+                                ''',
+                                status=u'成功',
+                                log_time=str(datetime.now(tz=pytz.timezone('Europe/Berlin'))))
+            except:
+
+                pass
 
             flash(f"桌子{table_name}已经转至{target_table}!", category='success')
 
@@ -3807,25 +3880,24 @@ def view_z_receipt(timestamp):
                    z_number=len(data)+1,
                    now=format_datetime(now, locale="de_DE"),
                    now_timestamp=datetime.timestamp(now),
-                   gross_revenue1=format_decimal(gross_revenue1, locale="de_DE"),
-                   net_revenue1=format_decimal(net_revenue1, locale="de_DE"),
-                   vat1=format_decimal(vat1, locale="de_DE"),
-                   gross_revenue2=format_decimal(gross_revenue2, locale="de_DE"),
-                   net_revenue2=format_decimal(net_revenue2, locale="de_DE"),
-                   vat2=format_decimal(vat2, locale="de_DE"),
-                   taxable_gross=format_decimal(taxable_gross, locale="de_DE"),
-                   taxable_net=format_decimal(taxable_net, locale="de_DE"),
-                   total_vat=format_decimal(total_vat, locale="de_DE"),
-                   total_taxable_gross=format_decimal(total_taxable_gross, locale="de_DE"),
-                   percentage_discounts=format_decimal(percentage_discounts, locale="de_DE"),
-                   total_discounts=format_decimal(total_discounts, locale="de_DE"),
-                   gross_cash_revenue=format_decimal(gross_cash_revenue, locale="de_DE"),
-                   gross_card_revenue=format_decimal(gross_card_revenue, locale="de_DE"),
-                   dummy_cur_revenue=format_decimal(dummy_cur_revenue, locale="de_DE"),
-                   revenue_from_cur_paid_tables=format_decimal(revenue_from_cur_paid_tables,
-                                                               locale="de_DE"),
-                   revenue_from_cur_unpaid_tables=format_decimal(revenue_from_cur_unpaid_tables,
-                                                                 locale="de_DE"))
+                   gross_revenue1=formatter(gross_revenue1),
+                   net_revenue1=net_revenue1,
+                   vat1=formatter(vat1),
+                   gross_revenue2=formatter(gross_revenue2),
+                   net_revenue2=formatter(net_revenue2),
+                   vat2=formatter(vat2),
+                   taxable_gross=formatter(taxable_gross),
+                   taxable_net=formatter(taxable_net),
+                   total_vat=formatter(total_vat),
+                   total_taxable_gross=formatter(total_taxable_gross),
+                   percentage_discounts=formatter(percentage_discounts),
+                   total_discounts=formatter(total_discounts),
+                   gross_cash_revenue=formatter(gross_cash_revenue),
+                   gross_card_revenue=formatter(gross_card_revenue),
+                   dummy_cur_revenue=formatter(dummy_cur_revenue),
+                   revenue_from_cur_paid_tables=formatter(revenue_from_cur_paid_tables),
+                   revenue_from_cur_unpaid_tables=formatter(revenue_from_cur_unpaid_tables),
+                   formatter=formatter)
 
     return render_template("view_z_receipt.html", **context)
 
@@ -3919,25 +3991,23 @@ def view_printed_z_receipt(from_timestamp,
                    company_name=company_info.get('company_name'),
                    z_number=z_number,
                    now=format_datetime(til, locale="de_DE"),
-                   gross_revenue1=format_decimal(gross_revenue1, locale="de_DE"),
-                   net_revenue1=format_decimal(net_revenue1, locale="de_DE"),
-                   vat1=format_decimal(vat1, locale="de_DE"),
-                   gross_revenue2=format_decimal(gross_revenue2, locale="de_DE"),
-                   net_revenue2=format_decimal(net_revenue2, locale="de_DE"),
-                   vat2=format_decimal(vat2, locale="de_DE"),
-                   taxable_gross=format_decimal(taxable_gross, locale="de_DE"),
-                   taxable_net=format_decimal(taxable_net, locale="de_DE"),
-                   total_vat=format_decimal(total_vat, locale="de_DE"),
-                   total_taxable_gross=format_decimal(total_taxable_gross, locale="de_DE"),
-                   percentage_discounts=format_decimal(percentage_discounts, locale="de_DE"),
-                   total_discounts=format_decimal(total_discounts, locale="de_DE"),
-                   gross_cash_revenue=format_decimal(gross_cash_revenue, locale="de_DE"),
-                   gross_card_revenue=format_decimal(gross_card_revenue, locale="de_DE"),
-                   dummy_cur_revenue=format_decimal(dummy_cur_revenue, locale="de_DE"),
-                   revenue_from_cur_paid_tables=format_decimal(revenue_from_cur_paid_tables,
-                                                               locale="de_DE"),
-                   revenue_from_cur_unpaid_tables=format_decimal(revenue_from_cur_unpaid_tables,
-                                                                 locale="de_DE"),
+                   gross_revenue1=formatter(gross_revenue1),
+                   net_revenue1=formatter(net_revenue1),
+                   vat1=formatter(vat1),
+                   gross_revenue2=formatter(gross_revenue2),
+                   net_revenue2=formatter(net_revenue2),
+                   vat2=formatter(vat2),
+                   taxable_gross=formatter(taxable_gross),
+                   taxable_net=formatter(taxable_net),
+                   total_vat=formatter(total_vat),
+                   total_taxable_gross=formatter(total_taxable_gross),
+                   percentage_discounts=formatter(percentage_discounts),
+                   total_discounts=formatter(total_discounts),
+                   gross_cash_revenue=formatter(gross_cash_revenue),
+                   gross_card_revenue=formatter(gross_card_revenue),
+                   dummy_cur_revenue=formatter(dummy_cur_revenue),
+                   revenue_from_cur_paid_tables=formatter(revenue_from_cur_paid_tables),
+                   revenue_from_cur_unpaid_tables=formatter(revenue_from_cur_unpaid_tables),
                    from_timestamp=from_timestamp,
                    til_timestamp=til_timestamp
                    )
@@ -4050,25 +4120,23 @@ def print_z_receipt(date_time):
     context = dict(
                    z_number=len(data) + 1,
                    now=format_datetime(now, locale="de_DE"),
-                   gross_revenue1=format_decimal(gross_revenue1, locale="de_DE"),
-                   net_revenue1=format_decimal(net_revenue1, locale="de_DE"),
-                   vat1=format_decimal(vat1, locale="de_DE"),
-                   gross_revenue2=format_decimal(gross_revenue2, locale="de_DE"),
-                   net_revenue2=format_decimal(net_revenue2, locale="de_DE"),
-                   vat2=format_decimal(vat2, locale="de_DE"),
-                   taxable_gross=format_decimal(taxable_gross, locale="de_DE"),
-                   taxable_net=format_decimal(taxable_net, locale="de_DE"),
-                   total_vat=format_decimal(total_vat, locale="de_DE"),
-                   total_taxable_gross=format_decimal(total_taxable_gross, locale="de_DE"),
-                   percentage_discounts=format_decimal(percentage_discounts, locale="de_DE"),
-                   total_discounts=format_decimal(total_discounts, locale="de_DE"),
-                   gross_cash_revenue=format_decimal(gross_cash_revenue, locale="de_DE"),
-                   gross_card_revenue=format_decimal(gross_card_revenue, locale="de_DE"),
-                   dummy_cur_revenue=format_decimal(dummy_cur_revenue, locale="de_DE"),
-                   revenue_from_cur_paid_tables=format_decimal(revenue_from_cur_paid_tables,
-                                                               locale="de_DE"),
-                   revenue_from_cur_unpaid_tables=format_decimal(revenue_from_cur_unpaid_tables,
-                                                                 locale="de_DE"))
+                   gross_revenue1=formatter(gross_revenue1),
+                   net_revenue1=formatter(net_revenue1),
+                   vat1=formatter(vat1),
+                   gross_revenue2=formatter(gross_revenue2),
+                   net_revenue2=formatter(net_revenue2),
+                   vat2=formatter(vat2),
+                   taxable_gross=formatter(taxable_gross),
+                   taxable_net=formatter(taxable_net),
+                   total_vat=formatter(total_vat),
+                   total_taxable_gross=formatter(total_taxable_gross),
+                   percentage_discounts=formatter(percentage_discounts),
+                   total_discounts=formatter(total_discounts),
+                   gross_cash_revenue=formatter(gross_cash_revenue),
+                   gross_card_revenue=formatter(gross_card_revenue),
+                   dummy_cur_revenue=formatter(dummy_cur_revenue),
+                   revenue_from_cur_paid_tables=formatter(revenue_from_cur_paid_tables),
+                   revenue_from_cur_unpaid_tables=formatter(revenue_from_cur_unpaid_tables))
 
     temp_file = str(Path(app.root_path) / 'static' / 'docx' / 'z_receipt_temp.docx')
 
@@ -4242,25 +4310,23 @@ def print_printed_z_receipt(from_timestamp, til_timestamp, z_number):
     context = dict(
                    z_number=z_number,
                    now=format_datetime(til, locale="de_DE"),
-                   gross_revenue1=format_decimal(gross_revenue1, locale="de_DE"),
-                   net_revenue1=format_decimal(net_revenue1, locale="de_DE"),
-                   vat1=format_decimal(vat1, locale="de_DE"),
-                   gross_revenue2=format_decimal(gross_revenue2, locale="de_DE"),
-                   net_revenue2=format_decimal(net_revenue2, locale="de_DE"),
-                   vat2=format_decimal(vat2, locale="de_DE"),
-                   taxable_gross=format_decimal(taxable_gross, locale="de_DE"),
-                   taxable_net=format_decimal(taxable_net, locale="de_DE"),
-                   total_vat=format_decimal(total_vat, locale="de_DE"),
-                   total_taxable_gross=format_decimal(total_taxable_gross, locale="de_DE"),
-                   percentage_discounts=format_decimal(percentage_discounts, locale="de_DE"),
-                   total_discounts=format_decimal(total_discounts, locale="de_DE"),
-                   gross_cash_revenue=format_decimal(gross_cash_revenue, locale="de_DE"),
-                   gross_card_revenue=format_decimal(gross_card_revenue, locale="de_DE"),
-                   dummy_cur_revenue=format_decimal(dummy_cur_revenue, locale="de_DE"),
-                   revenue_from_cur_paid_tables=format_decimal(revenue_from_cur_paid_tables,
-                                                               locale="de_DE"),
-                   revenue_from_cur_unpaid_tables=format_decimal(revenue_from_cur_unpaid_tables,
-                                                                 locale="de_DE"))
+                   gross_revenue1=formatter(gross_revenue1),
+                   net_revenue1=formatter(net_revenue1),
+                   vat1=formatter(vat1),
+                   gross_revenue2=formatter(gross_revenue2),
+                   net_revenue2=formatter(net_revenue2),
+                   vat2=formatter(vat2),
+                   taxable_gross=formatter(taxable_gross),
+                   taxable_net=formatter(taxable_net),
+                   total_vat=formatter(total_vat),
+                   total_taxable_gross=formatter(total_taxable_gross),
+                   percentage_discounts=formatter(percentage_discounts),
+                   total_discounts=formatter(total_discounts),
+                   gross_cash_revenue=formatter(gross_cash_revenue),
+                   gross_card_revenue=formatter(gross_card_revenue),
+                   dummy_cur_revenue=formatter(dummy_cur_revenue),
+                   revenue_from_cur_paid_tables=formatter(revenue_from_cur_paid_tables),
+                   revenue_from_cur_unpaid_tables=formatter(revenue_from_cur_unpaid_tables))
 
     temp_file = str(Path(app.root_path) / 'static' / 'docx' / 'z_receipt_temp.docx')
 
@@ -4406,25 +4472,23 @@ def view_x_receipt(timestamp):
                    x_number=len(data)+1,
                    now=format_datetime(now, locale="de_DE"),
                    now_timestamp=datetime.timestamp(now),
-                   gross_revenue1=format_decimal(gross_revenue1, locale="de_DE"),
-                   net_revenue1=format_decimal(net_revenue1, locale="de_DE"),
-                   vat1=format_decimal(vat1, locale="de_DE"),
-                   gross_revenue2=format_decimal(gross_revenue2, locale="de_DE"),
-                   net_revenue2=format_decimal(net_revenue2, locale="de_DE"),
-                   vat2=format_decimal(vat2, locale="de_DE"),
-                   taxable_gross=format_decimal(taxable_gross, locale="de_DE"),
-                   taxable_net=format_decimal(taxable_net, locale="de_DE"),
-                   total_vat=format_decimal(total_vat, locale="de_DE"),
-                   total_taxable_gross=format_decimal(total_taxable_gross, locale="de_DE"),
-                   percentage_discounts=format_decimal(percentage_discounts, locale="de_DE"),
-                   total_discounts=format_decimal(total_discounts, locale="de_DE"),
-                   gross_cash_revenue=format_decimal(gross_cash_revenue, locale="de_DE"),
-                   gross_card_revenue=format_decimal(gross_card_revenue, locale="de_DE"),
-                   dummy_cur_revenue=format_decimal(dummy_cur_revenue, locale="de_DE"),
-                   revenue_from_cur_paid_tables=format_decimal(revenue_from_cur_paid_tables,
-                                                               locale="de_DE"),
-                   revenue_from_cur_unpaid_tables=format_decimal(revenue_from_cur_unpaid_tables,
-                                                                 locale="de_DE"))
+                   gross_revenue1=formatter(gross_revenue1),
+                   net_revenue1=formatter(net_revenue1),
+                   vat1=formatter(vat1),
+                   gross_revenue2=formatter(gross_revenue2),
+                   net_revenue2=formatter(net_revenue2),
+                   vat2=formatter(vat2),
+                   taxable_gross=formatter(taxable_gross),
+                   taxable_net=formatter(taxable_net),
+                   total_vat=formatter(total_vat),
+                   total_taxable_gross=formatter(total_taxable_gross),
+                   percentage_discounts=formatter(percentage_discounts),
+                   total_discounts=formatter(total_discounts),
+                   gross_cash_revenue=formatter(gross_cash_revenue),
+                   gross_card_revenue=formatter(gross_card_revenue),
+                   dummy_cur_revenue=formatter(dummy_cur_revenue),
+                   revenue_from_cur_paid_tables=formatter(revenue_from_cur_paid_tables),
+                   revenue_from_cur_unpaid_tables=formatter(revenue_from_cur_unpaid_tables))
 
     return render_template("view_x_receipt.html", **context)
 
@@ -4521,25 +4585,23 @@ def print_x_receipt(date_time):
     context = dict(
                    z_number=len(data) + 1,
                    now=format_datetime(now, locale="de_DE"),
-                   gross_revenue1=format_decimal(gross_revenue1, locale="de_DE"),
-                   net_revenue1=format_decimal(net_revenue1, locale="de_DE"),
-                   vat1=format_decimal(vat1, locale="de_DE"),
-                   gross_revenue2=format_decimal(gross_revenue2, locale="de_DE"),
-                   net_revenue2=format_decimal(net_revenue2, locale="de_DE"),
-                   vat2=format_decimal(vat2, locale="de_DE"),
-                   taxable_gross=format_decimal(taxable_gross, locale="de_DE"),
-                   taxable_net=format_decimal(taxable_net, locale="de_DE"),
-                   total_vat=format_decimal(total_vat, locale="de_DE"),
-                   total_taxable_gross=format_decimal(total_taxable_gross, locale="de_DE"),
-                   percentage_discounts=format_decimal(percentage_discounts, locale="de_DE"),
-                   total_discounts=format_decimal(total_discounts, locale="de_DE"),
-                   gross_cash_revenue=format_decimal(gross_cash_revenue, locale="de_DE"),
-                   gross_card_revenue=format_decimal(gross_card_revenue, locale="de_DE"),
-                   dummy_cur_revenue=format_decimal(dummy_cur_revenue, locale="de_DE"),
-                   revenue_from_cur_paid_tables=format_decimal(revenue_from_cur_paid_tables,
-                                                               locale="de_DE"),
-                   revenue_from_cur_unpaid_tables=format_decimal(revenue_from_cur_unpaid_tables,
-                                                                 locale="de_DE"))
+                   gross_revenue1=formatter(gross_revenue1),
+                   net_revenue1=formatter(net_revenue1),
+                   vat1=formatter(vat1),
+                   gross_revenue2=formatter(gross_revenue2),
+                   net_revenue2=formatter(net_revenue2),
+                   vat2=formatter(vat2),
+                   taxable_gross=formatter(taxable_gross),
+                   taxable_net=formatter(taxable_net),
+                   total_vat=formatter(total_vat),
+                   total_taxable_gross=formatter(total_taxable_gross),
+                   percentage_discounts=formatter(percentage_discounts),
+                   total_discounts=formatter(total_discounts),
+                   gross_cash_revenue=formatter(gross_cash_revenue),
+                   gross_card_revenue=formatter(gross_card_revenue),
+                   dummy_cur_revenue=formatter(dummy_cur_revenue),
+                   revenue_from_cur_paid_tables=formatter(revenue_from_cur_paid_tables),
+                   revenue_from_cur_unpaid_tables=formatter(revenue_from_cur_unpaid_tables))
 
     temp_file = str(Path(app.root_path) / 'static' / 'docx' / 'x_receipt_temp.docx')
 
@@ -4589,6 +4651,8 @@ def print_x_receipt(date_time):
 @login_required
 def revenue_by_days():
 
+    today = datetime.now(tz=pytz.timezone(timezone)).date()
+
     referrer = request.headers.get('Referer')
 
     paid_alacarte_orders = Order.query.filter(
@@ -4610,11 +4674,11 @@ def revenue_by_days():
 
     form = DatePickForm()
 
-    alacarte= {"Total": 0,
-               "Total_Card": 0,
-               "Total_Cash": 0}
+    alacarte= {"Total": formatter(0),
+               "Total_Card": formatter(0),
+               "Total_Cash": formatter(0)}
 
-    if form.validate_on_submit():
+    if form.validate_on_submit() or request.method == "POST":
 
         start = form.start_date.data
         end = form.end_date.data
@@ -4637,9 +4701,9 @@ def revenue_by_days():
                               if start <= order.timeCreated.date() <= end
                               and json.loads(order.pay_via).get('method') == "Card"]])
 
-        alacarte = {'Total': alacarte_total,
-                    'Total_Cash': ala_cash_total,
-                    'Total_Card': ala_card_total}
+        alacarte = {'Total': formatter(alacarte_total),
+                    'Total_Cash': formatter(ala_cash_total),
+                    'Total_Card': formatter(ala_card_total)}
 
         # Filtered paid alacarte orders
         filtered_paid_alacarte_orders = [order for order in paid_alacarte_orders
@@ -4652,16 +4716,16 @@ def revenue_by_days():
         from collections import OrderedDict
 
         revenue_by_sections = {section:
-                                {"Cash": sum([order.totalPrice for order in [order for order in filtered_paid_alacarte_orders
-                                              if Table.query.filter_by(name=order.table_name).first_or_404().section == section
-                                              and json.loads(order.pay_via).get('method') == "Cash"]]),
+                                {"Cash": formatter(sum([order.totalPrice for order in [order for order in filtered_paid_alacarte_orders
+                                          if Table.query.filter_by(name=order.table_name).first_or_404().section == section
+                                          and json.loads(order.pay_via).get('method') == "Cash"]])),
 
-                                  "Card": sum([order.totalPrice for order in [order for order in filtered_paid_alacarte_orders
-                                            if Table.query.filter_by(name=order.table_name).first_or_404().section == section
-                                            and json.loads(order.pay_via).get('method') == "Card"]]),
+                                  "Card": formatter(sum([order.totalPrice for order in [order for order in filtered_paid_alacarte_orders
+                                        if Table.query.filter_by(name=order.table_name).first_or_404().section == section
+                                        and json.loads(order.pay_via).get('method') == "Card"]])),
 
-                                  "Total": sum([order.totalPrice for order in [order for order in filtered_paid_alacarte_orders
-                                              if Table.query.filter_by(name=order.table_name).first_or_404().section == section]])
+                                  "Total": formatter(sum([order.totalPrice for order in [order for order in filtered_paid_alacarte_orders
+                                          if Table.query.filter_by(name=order.table_name).first_or_404().section == section]]))
 
                                       } for section in filtered_used_sections}
 
@@ -4683,9 +4747,15 @@ def revenue_by_days():
                               if start <= order.timeCreated.date() <= end
                               and json.loads(order.pay_via).get('method') == "Card"]])
 
-        out = {'Total': out_total,
-                'Total_Cash': out_cash_total,
-                'Total_Card': out_card_total}
+        out = {'Total': formatter(out_total),
+                'Total_Cash': formatter(out_cash_total),
+                'Total_Card': formatter(out_card_total)}
+
+        final_card_total = out_card_total + ala_card_total
+
+        final_cash_total = out_cash_total + ala_cash_total
+
+        final_total = final_card_total + final_cash_total
 
         context = dict(referrer=referrer,
                        alacarte=alacarte,
@@ -4693,22 +4763,39 @@ def revenue_by_days():
                        form=form,
                        company_name=company_info.get('company_name'),
                        revenue_by_sections=revenue_by_sections,
-                       title=u"日结")
+                       title=u"日结",
+                       formatter=formatter,
+                       final_card_total=formatter(final_card_total),
+                       final_cash_total=formatter(final_cash_total),
+                       final_total=formatter(final_total),
+                       start=format_datetime(start, locale="de_DE"),
+                       end=format_datetime(end, locale="de_DE"))
+
+        # Print the daily receipt
+        if form.print.data:
+
+            save_as = f"daily_revenue_report_{str(uuid4())}"
+
+            th = Thread(target=daily_revenue_templating, args=(context, save_as, ))
+
+            th.start()
+
+            flash(f"日结报告正在打印，若未正常打印，请检查打印机是否正确配置或者处于打开状态")
 
         return render_template('revenue_by_days.html', **context)
 
     from collections import OrderedDict
 
-    revenue_by_sections = {section: {"Cash": sum([order.totalPrice for order in [order for order in cur_paid_alacarte_orders
+    revenue_by_sections = {section: {"Cash": formatter(sum([order.totalPrice for order in [order for order in cur_paid_alacarte_orders
                                              if Table.query.filter_by(name=order.table_name).first_or_404().section
-                                             == section and json.loads(order.pay_via).get('method') == "Cash"]]),
+                                             == section and json.loads(order.pay_via).get('method') == "Cash"]])),
 
-                                  "Card": sum([order.totalPrice for order in [order for order in cur_paid_alacarte_orders
+                                  "Card": formatter(sum([order.totalPrice for order in [order for order in cur_paid_alacarte_orders
                                              if Table.query.filter_by(name=order.table_name).first_or_404().section
-                                             == section and json.loads(order.pay_via).get('method') == "Card"]]),
+                                             == section and json.loads(order.pay_via).get('method') == "Card"]])),
 
-                                  "Total": sum([order.totalPrice for order in [order for order in cur_paid_alacarte_orders
-                                              if Table.query.filter_by(name=order.table_name).first_or_404().section == section]])
+                                  "Total": formatter(sum([order.totalPrice for order in [order for order in cur_paid_alacarte_orders
+                                              if Table.query.filter_by(name=order.table_name).first_or_404().section == section]]))
 
                                   } for section in cur_used_sections}
 
@@ -4737,9 +4824,37 @@ def revenue_by_days():
              tz=pytz.timezone(timezone)).date()
               and json.loads(order.pay_via).get('method') == "Card"]])
 
-    out = {'Total': out_total,
-           'Total_Cash': out_cash_total,
-           'Total_Card': out_card_total}
+    out = {'Total': formatter(out_total),
+           'Total_Cash': formatter(out_cash_total),
+           'Total_Card': formatter(out_card_total)}
+
+    # Accumulating for in/alacarte orders
+    alacarte_total = sum(
+        [order.totalPrice for order in
+         [order for order in paid_alacarte_orders
+          if order.timeCreated.date() == today]])
+
+    ala_cash_total = sum(
+        [order.totalPrice for order in
+         [order for order in paid_alacarte_orders
+          if order.timeCreated.date() == today
+          and json.loads(order.pay_via).get('method') == "Cash"]])
+
+    ala_card_total = sum(
+        [order.totalPrice for order in
+         [order for order in paid_alacarte_orders
+          if order.timeCreated.date() == today
+          and json.loads(order.pay_via).get('method') == "Card"]])
+
+    alacarte = {'Total': formatter(alacarte_total),
+                'Total_Cash': formatter(ala_cash_total),
+                'Total_Card': formatter(ala_card_total)}
+
+    final_card_total = out_card_total + ala_card_total
+
+    final_cash_total = out_cash_total + ala_cash_total
+
+    final_total = final_card_total + final_cash_total
 
     # Wrap all info in a dict for templating mapping.
     context = dict(referrer=referrer,
@@ -4748,7 +4863,13 @@ def revenue_by_days():
                    company_name=company_info.get('company_name'),
                    revenue_by_sections=revenue_by_sections,
                    alacarte=alacarte,
-                   title=u"日结")
+                   title=u"日结",
+                   formatter=formatter,
+                   final_card_total=formatter(final_card_total),
+                   final_cash_total=formatter(final_cash_total),
+                   final_total=formatter(final_total),
+                   start=today,
+                   end=today)
 
     return render_template('revenue_by_days.html', **context)
 
@@ -4771,16 +4892,16 @@ def revenue_by_week():
 
         (start + timedelta(days=n)).strftime("%A"):
 
-                 {"Total": sum([order.totalPrice for order in paid_orders if\
-                            order.timeCreated.date() == start + timedelta(days=n)]),
+                 {"Total": formatter(sum([order.totalPrice for order in paid_orders if\
+                            order.timeCreated.date() == start + timedelta(days=n)])),
 
-                  "Total_Cash": sum([order.totalPrice for order in paid_orders if\
+                  "Total_Cash": formatter(sum([order.totalPrice for order in paid_orders if\
                                 order.timeCreated.date() == start + timedelta(days=n)\
-                                and json.loads(order.pay_via).get('method')=="Cash"]),
+                                and json.loads(order.pay_via).get('method')=="Cash"])),
 
-                  "Total_Card": sum([order.totalPrice for order in paid_orders if\
+                  "Total_Card": formatter(sum([order.totalPrice for order in paid_orders if\
                                  order.timeCreated.date() == start + timedelta(days=n)\
-                                 and json.loads(order.pay_via).get('method') == "Card"]),
+                                 and json.loads(order.pay_via).get('method') == "Card"])),
                   } for n in range(7)}
 
     week2en = {u"星期一": "Monday",
@@ -4824,16 +4945,16 @@ def revenue_by_month():
 
         (start + timedelta(days=n)).strftime("%d"):
 
-                 {"Total": sum([order.totalPrice for order in paid_orders if\
-                            order.timeCreated.date() == start + timedelta(days=n)]),
+                 {"Total": formatter(sum([order.totalPrice for order in paid_orders if\
+                            order.timeCreated.date() == start + timedelta(days=n)])),
 
-                  "Total_Cash": sum([order.totalPrice for order in paid_orders if\
+                  "Total_Cash": formatter(sum([order.totalPrice for order in paid_orders if\
                                 order.timeCreated.date() == start + timedelta(days=n)\
-                                and json.loads(order.pay_via).get('method')=="Cash"]),
+                                and json.loads(order.pay_via).get('method')=="Cash"])),
 
-                  "Total_Card": sum([order.totalPrice for order in paid_orders if\
+                  "Total_Card": formatter(sum([order.totalPrice for order in paid_orders if\
                                  order.timeCreated.date() == start + timedelta(days=n)\
-                                 and json.loads(order.pay_via).get('method') == "Card"]),
+                                 and json.loads(order.pay_via).get('method') == "Card"])),
                   } for n in range(cur_mon_range)}
 
     context = dict(referrer=referrer,
@@ -4856,16 +4977,16 @@ def revenue_by_year():
 
         str(month):
 
-            {"Total": sum([order.totalPrice for order in paid_orders if
-                           str(int(order.timeCreated.date().strftime("%m"))) == str(month)]),
+            {"Total": formatter(sum([order.totalPrice for order in paid_orders if
+                   str(int(order.timeCreated.date().strftime("%m"))) == str(month)])),
 
-             "Total_Cash": sum([order.totalPrice for order in paid_orders if
-                                str(int(order.timeCreated.date().strftime("%m"))) == str(month)
-                                and json.loads(order.pay_via).get('method') == "Cash"]),
+             "Total_Cash": formatter(sum([order.totalPrice for order in paid_orders if
+                            str(int(order.timeCreated.date().strftime("%m"))) == str(month)
+                            and json.loads(order.pay_via).get('method') == "Cash"])),
 
-             "Total_Card": sum([order.totalPrice for order in paid_orders if
-                                str(int(order.timeCreated.date().strftime("%m"))) == str(month)
-                                and json.loads(order.pay_via).get('method') == "Card"]),
+             "Total_Card": formatter(sum([order.totalPrice for order in paid_orders if
+                            str(int(order.timeCreated.date().strftime("%m"))) == str(month)
+                            and json.loads(order.pay_via).get('method') == "Card"])),
              } for month in range(1, 13)}
 
     context = dict(referrer=referrer,
@@ -5076,18 +5197,22 @@ def boss_transfer_table(table_name):
 
             db.session.commit()
 
-            # Writing log to the csv file
-            activity_logger(order_id=order.id,
-                            operation_type=u'转台',
-                            page_name='老板界面 > 已点餐桌子 > 转台',
-                            descr=f'''\n
-                            订单号:{order.id}\n
-                            原桌子：{logging.get('table_before')}\n
-                            新桌子:{logging.get('table_cur')}\n'
-                            操作人:{current_user.username}\n
-                            ''',
-                            status=u'成功',
-                            log_time=str(datetime.now(tz=pytz.timezone('Europe/Berlin'))))
+            try:
+                # Writing log to the csv file
+                activity_logger(order_id=order.id,
+                                operation_type=u'转台',
+                                page_name='老板界面 > 已点餐桌子 > 转台',
+                                descr=f'''\n
+                                订单号:{order.id}\n
+                                原桌子：{logging.get('table_before')}\n
+                                新桌子:{logging.get('table_cur')}\n'
+                                操作人:{current_user.username}\n
+                                ''',
+                                status=u'成功',
+                                log_time=str(datetime.now(tz=pytz.timezone('Europe/Berlin'))))
+            except:
+
+                pass
 
             flash(f"桌子{table_name}已经转至{target_table}!", category='success')
 
@@ -5175,17 +5300,23 @@ def boss_view_table(table_name):
 
             db.session.commit()
 
-            # Writing logs to the csv file
-            activity_logger(order_id=order.id,
-                            operation_type=u'结账',
-                            page_name=u'老板界面 > 桌子详情',
-                            descr=f'''结账订单号:{order.id}\n
-                                    桌子编号：{json.loads(order.container).get('table_name')}-{json.loads(order.container).get('seat_number')}
-                                    支付方式:{logging.get('Pay')}\n
-                                    结账金额: {order.totalPrice}\n
-                                    订单类型:AlaCarte\n''',
-                            log_time=str(datetime.now(tz=pytz.timezone('Europe/Berlin'))),
-                            status=u'成功')
+            try:
+
+                # Writing logs to the csv file
+                activity_logger(order_id=order.id,
+                                operation_type=u'结账',
+                                page_name=u'老板界面 > 桌子详情',
+                                descr=f'''结账订单号:{order.id}\n
+                                        桌子编号：{json.loads(order.container).get('table_name')}-{json.loads(order.container).get('seat_number')}
+                                        支付方式:{logging.get('Pay')}\n
+                                        结账金额: {order.totalPrice}\n
+                                        订单类型:AlaCarte\n''',
+                                log_time=str(datetime.now(tz=pytz.timezone('Europe/Berlin'))),
+                                status=u'成功')
+
+            except:
+
+                pass
 
             return redirect(url_for('boss_active_tables'))
 
@@ -5601,8 +5732,12 @@ def view_meallists():
     cur_orders = [order for order in orders if
                   order.timeCreated.date() == today]
 
-    type_dict = {order.id: order.type for order in cur_orders}
-    table_dict= {order.id: order.table_name for order in cur_orders}
+    cuisines = {"In": "InHouse",
+                "Out": u"外卖"}
+
+    type_dict = {order.id: cuisines.get(order.type) for order in cur_orders}
+
+    table_dict = {order.id: order.table_name for order in cur_orders}
 
     context = dict(meals=meals,
                    type_dict=type_dict,
@@ -5780,7 +5915,8 @@ def view_meallist(timestamp):
                    title=u"查看菜品",
                    datetime_format=datetime_format,
                    timestamp=timestamp,
-                   company_name=company_info.get('company_name'))
+                   company_name=company_info.get('company_name'),
+                   formatter=formatter)
 
     return render_template('view_meallist.html', **context)
 
@@ -5833,10 +5969,10 @@ def print_receipt(order_id):
                "tax_id": company_info.get('tax_id'),
                "order_id": order.id,
                "table_name": table_name,
-               "total": format_decimal(total_price, locale="de_DE"),
+               "total": formatter(total_price),
                "pay_via": json.loads(order.pay_via).get('method', ""),
-               "VAT": format_decimal(
-                   round((total_price / tax_rate) * tax_rate, 2), locale="de_DE")}
+               "VAT": formatter(
+                   round((total_price / tax_rate) * tax_rate, 2))}
 
     temp_file = str(Path(app.root_path) / 'static' / 'docx' / 'receipt_temp_inhouse.docx')
     save_as = f"receipt_{order.id}"
@@ -5891,8 +6027,9 @@ def view_receipt(order_id):
                    title=u"查看发票",
                    datetime_format=datetime_format,
                    company_name=company_info.get('company_name'),
-                   total=format_decimal(total, locale="de_DE"),
-                   vat=format_decimal(round(vat, 2), locale="de_DE"))
+                   total=formatter(total),
+                   vat=formatter(round(vat, 2)),
+                   formatter=formatter)
 
     return render_template("view_receipt.html", **context)
 
@@ -5986,6 +6123,22 @@ def switch_printer():
 # Index page for all cuisines
 @app.route('/guest/navigation/<string:table_name>/<string:seat_number>')
 def guest_navigate(table_name, seat_number):
+
+    info = json_reader(str(Path.cwd() / 'app' / 'settings' / 'config.json'))
+
+    hours = info.get('BUSINESS_HOURS')
+
+    buffet = info.get('BUFFET_MODE').strip()
+
+    is_jp_buffet = None
+
+    if buffet == "jpbuffet":
+
+        is_jp_buffet = True
+
+    elif buffet == "mongo":
+
+        is_jp_buffet = False
 
     am_start = hours.get('MORNING', '').get('START', '').split(":")
     am_end = hours.get('MORNING', '').get('END', '').split(":")
@@ -6104,12 +6257,23 @@ def guest_navigate(table_name, seat_number):
 
         buffet_price_adult = price_info.get('adult').get('after')
 
+    if not is_business_hours():
+
+        context = dict(title="Gastnavigation",
+                       table_name=table_name,
+                       seat_number=seat_number,
+                       is_business_hours=is_business_hours(),
+                       is_jp_buffet=is_jp_buffet)
+
+        return render_template("guest_index.html", **context)
+
     context = dict(title="Gastnavigation",
                    table_name=table_name,
                    seat_number=seat_number,
-                   buffet_price_kid=format_decimal(buffet_price_kid, locale="de_DE"),
-                   buffet_price_adult=format_decimal(buffet_price_adult, locale="de_DE"),
-                   )
+                   buffet_price_kid=formatter(buffet_price_kid),
+                   buffet_price_adult=formatter(buffet_price_adult),
+                   is_business_hours=is_business_hours(),
+                   is_jp_buffet=is_jp_buffet)
 
     return render_template("guest_index.html", **context)
 
@@ -6128,6 +6292,10 @@ def mongo_index(table_name, seat_number, is_kid):
 #  Mongo Order view by table name and seat number
 @app.route("/mongobuffet/interface/<string:table_name>/<string:seat_number>/<int:is_kid>")
 def mongo_guest_order(table_name, seat_number, is_kid):
+
+    info = json_reader(str(Path.cwd() / 'app' / 'settings' / 'config.json'))
+
+    hours = info.get('BUSINESS_HOURS')
 
     am_start = hours.get('MORNING', '').get('START', '').split(":")
     am_end = hours.get('MORNING', '').get('END', '').split(":")
@@ -6334,7 +6502,8 @@ def mongo_guest_order(table_name, seat_number, is_kid):
         table_name=table_name,
         seat_number=seat_number,
         referrer=request.headers.get('Referer'),
-        is_kid=is_kid)
+        is_kid=is_kid,
+        formatter=formatter)
 
     return render_template("mongo.html", **context)
 
@@ -6588,6 +6757,7 @@ def jpbuffet_index(table_name, seat_number, is_kid):
 
             if batch.get(last_ordered).get('order_by') == seat_number \
                     and batch.get(last_ordered).get('subtype') == "jpbuffet":
+
                 dt_objs.append(dt_obj)
 
         if len(dt_objs) > 0:
@@ -6598,12 +6768,22 @@ def jpbuffet_index(table_name, seat_number, is_kid):
 
             context["next_round_time"] = str(next_round_time)
 
+            time_delta = next_round_time.minute - datetime.now().minute
+
+            context['timedelta'] = time_delta
+
     return render_template("jp_buffet_index.html", **context)
 
 
 # Table Order view by table name and seat number
 @app.route("/japanbuffet/interface/<string:table_name>/<string:seat_number>/<int:is_kid>")
 def jpbuffet_order(table_name, seat_number, is_kid):
+
+    info = json_reader(str(Path.cwd() / 'app' / 'settings' / 'config.json'))
+
+    hours = info.get('BUSINESS_HOURS')
+
+    order_limit = int(info.get('ORDER_LIMIT'))
 
     am_start = hours.get('MORNING', '').get('START', '').split(":")
     am_end = hours.get('MORNING', '').get('END', '').split(":")
@@ -6631,25 +6811,162 @@ def jpbuffet_order(table_name, seat_number, is_kid):
                                 table_name=table_name,
                                 seat_number=seat_number))
 
-    # More cond to filter the mongo dishes
-    special_dishes = Food.query.filter(Food.inUse == True, Food.eat_manner == "special").all()
+    # special_dishes = Food.query.filter(Food.inUse == True,
+    #                                    Food.eat_manner == "special",
+    #                                    Food.class_name == "Food").all()
 
-    jpbuffet_dishes = Food.query.filter(Food.inUse == True, Food.eat_manner == "jpbuffet").all()
+    jpbuffet_dishes = Food.query.filter(Food.inUse == True,
+                                        Food.eat_manner == "jpbuffet",
+                                        Food.class_name == "Food").all()
 
-    dishes = special_dishes + jpbuffet_dishes
+    dishes = jpbuffet_dishes
+
+    categories = set([dish.category for dish in dishes])
 
     context = dict(title="Japan Buffet",
                    table_name=table_name,
                    seat_number=seat_number,
                    is_kid=is_kid,
                    dishes=dishes,
-                   referrer=request.headers.get('Referer'))
+                   referrer=request.headers.get('Referer'),
+                   formatter=formatter,
+                   order_limit=order_limit,
+                   categories=categories)
 
     return render_template("jp_buffet.html", **context)
 
 
+# jpbuffet order by category
+@app.route("/japanbuffet/<string:cate>/interface/<string:table_name>/<string:seat_number>/<int:is_kid>")
+def jpbuffet_order_by_category(table_name, seat_number, is_kid, cate):
+
+    info = json_reader(str(Path.cwd() / 'app' / 'settings' / 'config.json'))
+
+    hours = info.get('BUSINESS_HOURS')
+
+    order_limit = int(info.get('ORDER_LIMIT'))
+
+    am_start = hours.get('MORNING', '').get('START', '').split(":")
+    am_end = hours.get('MORNING', '').get('END', '').split(":")
+
+    pm_start = hours.get('EVENING', '').get('START', '').split(":")
+    pm_end = hours.get('EVENING', '').get('END', '').split(":")
+
+    morning_start = time(int(am_start[0]), int(am_start[1]))
+
+    morning_end = time(int(am_end[0]), int(am_end[1]))
+
+    evening_start = time(int(pm_start[0]), int(pm_start[1]))
+
+    evening_end = time(int(pm_end[0]), int(pm_end[1]))
+
+    cur_time = datetime.now(tz=pytz.timezone(timezone)).time()
+
+    # if not in business hours: redirect to the navigation page
+    if not (morning_start <= cur_time <= morning_end
+            or evening_start <= cur_time <= evening_end):
+        flash("noch Ausserhalb Geschäftszeiten!",
+              category="error")
+
+        return redirect(url_for('guest_navigate',
+                                table_name=table_name,
+                                seat_number=seat_number))
+
+    # special_dishes = Food.query.filter(Food.inUse == True,
+    #                                    Food.eat_manner == "special",
+    #                                    Food.class_name == "Food").all()
+
+    jpbuffet_dishes = Food.query.filter(Food.inUse == True,
+                                        Food.eat_manner == "jpbuffet",
+                                        Food.class_name == "Food",
+                                        Food.category == cate).all()
+
+    dishes = jpbuffet_dishes
+
+    categories = set([dish.category for dish in Food.query.all()
+                      if dish.eat_manner == "jpbuffet"])
+
+    context = dict(title="Japan Buffet",
+                   table_name=table_name,
+                   seat_number=seat_number,
+                   is_kid=is_kid,
+                   dishes=dishes,
+                   referrer=request.headers.get('Referer'),
+                   formatter=formatter,
+                   order_limit=order_limit,
+                   categories=categories)
+
+    return render_template("jp_buffet.html", **context)
+
+
+# jpbuffet order by category
+@app.route("/japanbuffet/special/interface/<string:table_name>/<string:seat_number>/<int:is_kid>")
+def jpbuffet_order_special(table_name, seat_number, is_kid):
+
+    info = json_reader(str(Path.cwd() / 'app' / 'settings' / 'config.json'))
+
+    hours = info.get('BUSINESS_HOURS')
+
+    order_limit = int(info.get('ORDER_LIMIT'))
+
+    am_start = hours.get('MORNING', '').get('START', '').split(":")
+    am_end = hours.get('MORNING', '').get('END', '').split(":")
+
+    pm_start = hours.get('EVENING', '').get('START', '').split(":")
+    pm_end = hours.get('EVENING', '').get('END', '').split(":")
+
+    morning_start = time(int(am_start[0]), int(am_start[1]))
+
+    morning_end = time(int(am_end[0]), int(am_end[1]))
+
+    evening_start = time(int(pm_start[0]), int(pm_start[1]))
+
+    evening_end = time(int(pm_end[0]), int(pm_end[1]))
+
+    cur_time = datetime.now(tz=pytz.timezone(timezone)).time()
+
+    # if not in business hours: redirect to the navigation page
+    if not (morning_start <= cur_time <= morning_end
+            or evening_start <= cur_time <= evening_end):
+        flash("noch Ausserhalb Geschäftszeiten!",
+              category="error")
+
+        return redirect(url_for('guest_navigate',
+                                table_name=table_name,
+                                seat_number=seat_number))
+
+    special_dishes = Food.query.filter(Food.inUse == True,
+                                       Food.eat_manner == "special",
+                                       Food.class_name == "Food").all()
+
+    dishes = special_dishes
+
+    categories = set([dish.category for dish in Food.query.all()
+                      if dish.eat_manner == "jpbuffet"])
+
+    context = dict(title="Japan Buffet",
+                   table_name=table_name,
+                   seat_number=seat_number,
+                   is_kid=is_kid,
+                   dishes=dishes,
+                   referrer=request.headers.get('Referer'),
+                   formatter=formatter,
+                   order_limit=order_limit,
+                   categories=categories)
+
+    return render_template("jp_buffet_special.html", **context)
+
+
 @app.route("/jp/buffet/guest/checkout", methods=["POST", "GET"])
 def jpbuffet_guest_checkout():
+
+    info = json_reader(str(Path.cwd() / 'app' / 'settings' / 'config.json'))
+
+    hours = info.get('BUSINESS_HOURS')
+
+    time_buffer_mins = int(info.get('BUFFET_TIME_BUFFER'))
+
+    max_rounds = int(info.get('ORDER_TIMES'))
 
     am_start = hours.get('MORNING', '').get('START', '').split(":")
     am_end = hours.get('MORNING', '').get('END', '').split(":")
@@ -6770,7 +7087,8 @@ def jpbuffet_guest_checkout():
                                                                   "order_id": cur_max_id + 1,
                                                                   'order_by': seat_number,
                                                                   "subtype": "jpbuffet",
-                                                                  "is_kid": is_kid}}]),
+                                                                  "is_kid": is_kid,
+                                                                  "is_drink_or_special": False}}]),
                     subtype="jpbuffet")
 
                 db.session.add(order)
@@ -6824,10 +7142,10 @@ def jpbuffet_guest_checkout():
 
                         time_delta = next_round_time.minute - now.minute
 
-                        if time_delta > 0:
+                        # if time_delta > 0:
 
-                            return jsonify({"error": f"Sie müssen leider "
-                                                     f"noch {time_delta} Minute bis nächste Runde warten!"})
+                        return jsonify({"error": f"Sie müssen leider "
+                                                 f"noch {time_delta} Minute bis nächste Runde warten!"})
 
                 buffet_seats = set([tuple(i.items())[0][1].get('order_by') for i in batches
                                 if tuple(i.items())[0][1].get('subtype') == "jpbuffet"])
@@ -6846,7 +7164,8 @@ def jpbuffet_guest_checkout():
                                                          "order_id": order.id,
                                                          "order_by": seat_number,
                                                          "subtype": "jpbuffet",
-                                                         "is_kid": is_kid}})
+                                                         "is_kid": is_kid,
+                                                         "is_drink_or_special": False}})
 
                 order.dishes = json.dumps(dishes)
 
@@ -6898,7 +7217,8 @@ def jpbuffet_guest_checkout():
                                                               "order_id": cur_max_id + 1,
                                                               "order_by": seat_number,
                                                               "is_kid": is_kid,
-                                                              "subtype": "jpbuffet"}}]),
+                                                              "subtype": "jpbuffet",
+                                                              "is_drink_or_special": False}}]),
                 subtype="jpbuffet"
             )
 
@@ -6954,3 +7274,537 @@ def jpbuffet_guest_checkout():
         th.start()
 
         return jsonify({"success": "Ihre Bestellung ist an die Küche gesendet!"})
+
+
+# Guest order drinks
+@app.route("/guest/order/drinks/<string:table_name>/<string:seat_number>/<int:is_kid>")
+def guest_order_drinks(table_name, seat_number, is_kid):
+
+    all_drinks = Food.query.filter(Food.inUse == True,
+                                   Food.class_name == "Drinks").all()
+
+    jpbuffet_drinks = Food.query.filter(Food.inUse == True,
+                                        Food.eat_manner == "jpbuffet",
+                                        Food.class_name == "Drinks").all()
+
+    dishes = all_drinks + jpbuffet_drinks
+
+    context = dict(title="Japan Buffet",
+                   table_name=table_name,
+                   seat_number=seat_number,
+                   is_kid=is_kid,
+                   dishes=dishes,
+                   referrer=request.headers.get('Referer'),
+                   formatter=formatter)
+
+    return render_template("guest_drinks.html", **context)
+
+
+@app.route('/guest/drinks/checkout', methods=["POST"])
+def guest_drinks_checkout():
+
+    info = json_reader(str(Path.cwd() / 'app' / 'settings' / 'config.json'))
+
+    hours = info.get('BUSINESS_HOURS')
+
+    am_start = hours.get('MORNING', '').get('START', '').split(":")
+    am_end = hours.get('MORNING', '').get('END', '').split(":")
+
+    pm_start = hours.get('EVENING', '').get('START', '').split(":")
+    pm_end = hours.get('EVENING', '').get('END', '').split(":")
+
+    morning_start = time(int(am_start[0]), int(am_start[1]))
+
+    morning_end = time(int(am_end[0]), int(am_end[1]))
+
+    evening_start = time(int(pm_start[0]), int(pm_start[1]))
+
+    evening_end = time(int(pm_end[0]), int(pm_end[1]))
+
+    from string import ascii_uppercase
+
+    letters = list(ascii_uppercase)[:8]
+
+    weekday2letter = dict(zip(list(range(1, 7)), letters))
+
+    # Add the index alphabet for Sunday
+    weekday2letter[0] = "G"
+
+    cur_week_num = int(datetime.now(tz=pytz.timezone(timezone)).strftime("%w"))
+
+    buffet_price = None
+
+    # Read the printer setting data from the json file
+    with open(str(Path(app.root_path) / "settings" / "buffet_price.json"),
+              encoding="utf8") as file:
+        data = file.read()
+
+    data = json.loads(data)
+
+    price_info = data.get(weekday2letter.get(cur_week_num))
+
+    if request.method == "POST":
+
+        # Json Data Posted via AJAX
+        json_data = request.json
+
+        table_name = json_data.get('tableName').upper()
+        seat_number = json_data.get('seatNumber')
+        is_kid = int(json_data.get('isKid'))
+
+        print(is_kid)
+
+        buffet_price = None
+
+        if morning_start <= datetime.now(tz=pytz.timezone(timezone)).time() <= morning_end:
+
+            if is_kid:
+
+                buffet_price = price_info.get('kid').get('noon')
+
+            else:
+
+                buffet_price = price_info.get('adult').get('noon')
+
+        elif evening_start <= datetime.now(tz=pytz.timezone(timezone)).time() <= evening_end:
+
+            if is_kid:
+
+                buffet_price = price_info.get('kid').get('after')
+
+            else:
+
+                buffet_price = price_info.get('adult').get('after')
+
+        print(buffet_price)
+
+        total_price = float(json_data.get('totalPrice'))
+
+        details = json_data.get('details')
+
+        price_dict = {Food.query.get_or_404(int(i.get('itemId'))).name:
+                          Food.query.get_or_404(int(i.get('itemId'))).price_gross
+                      for i in details}
+
+        details = {
+            Food.query.get_or_404(int(i.get('itemId'))).name:
+                {'quantity': int(i.get('itemQuantity')),
+                 'price': float(price_dict.get(Food.query.get_or_404(int(i.get('itemId'))).name)),
+                 'class_name': Food.query.get_or_404(int(i.get('itemId'))).class_name,
+                 'order_by': seat_number,
+                 "subtype": "jpbuffet",
+                 "is_kid": is_kid}
+            for i in details}
+
+        # Check if this table is already associated with an open order
+        orders = db.session.query(Order).filter(
+            Order.type == "In",
+            Order.isPaid == False,
+            Order.table_name == table_name).order_by(Order.timeCreated.desc()).all()
+
+        if len(orders) > 0:
+
+            order = orders[0]
+            # So that this table has no new open orders
+            if order.timeCreated.date() != today:
+
+                now = datetime.now(pytz.timezone(timezone))
+
+                cur_max_id = max([order.id for order in Order.query.all()])
+
+                # Create a new order for this table
+                order = Order(
+                    totalPrice=total_price + buffet_price,
+                    orderNumber=str(uuid4().int),
+                    items=json.dumps(details),
+                    timeCreated=now,
+                    type="In",
+                    table_name=table_name,
+                    seat_number=seat_number,
+                    isCancelled=False,
+                    dishes=json.dumps([{datetime.timestamp(now): {"items": details,
+                                                                  "order_id": cur_max_id + 1,
+                                                                  'order_by': seat_number,
+                                                                  "subtype": None,
+                                                                  "is_kid": is_kid,
+                                                                  "is_drink_or_special": True}}]),
+                    subtype="jpbuffet")
+
+                db.session.add(order)
+                db.session.commit()
+
+            else:
+
+                now = datetime.now(pytz.timezone(timezone))
+
+                cur_items = json.loads(order.items)
+
+                batches = json.loads(order.dishes)
+
+                buffet_seats = set([tuple(i.items())[0][1].get('order_by') for i in batches
+                                    if tuple(i.items())[0][1].get('subtype') == "jpbuffet"])
+
+                dishes = order.dishes
+
+                if not dishes:
+
+                    dishes = []
+
+                else:
+
+                    dishes = json.loads(order.dishes)
+
+                dishes.append({datetime.timestamp(now): {"items": details,
+                                                         "order_id": order.id,
+                                                         "order_by": seat_number,
+                                                         "subtype": None,
+                                                         "is_kid": is_kid,
+                                                         "is_drink_or_special": True}})
+
+                order.dishes = json.dumps(dishes)
+
+                cur_dishes = cur_items.keys()
+
+                for dish, items in details.items():
+
+                    if dish in cur_dishes:
+
+                        cur_items[dish]['quantity'] = cur_items[dish]['quantity'] \
+                                                      + items.get('quantity')
+
+                    else:
+
+                        cur_items[dish] = items
+
+                order.items = json.dumps(cur_items)
+
+                if seat_number in buffet_seats:
+
+                    order.totalPrice = len(buffet_seats) * buffet_price + \
+                                       sum([i[1].get('quantity') * i[1].get('price') \
+                                            for i in cur_items.items()])
+                else:
+
+                    order.totalPrice = len(buffet_seats) * buffet_price + \
+                                       sum([i[1].get('quantity') * i[1].get('price') \
+                                            for i in cur_items.items()]) + buffet_price
+
+                db.session.commit()
+
+        else:
+
+            now = datetime.now(pytz.timezone(timezone))
+
+            cur_max_id = max([order.id for order in Order.query.all()])
+
+            # Create a new order for this table
+            order = Order(
+                totalPrice=total_price + buffet_price,
+                orderNumber=str(uuid4().int),
+                items=json.dumps(details),
+                timeCreated=now,
+                type="In",
+                table_name=table_name,
+                seat_number=seat_number,
+                isCancelled=False,
+                dishes=json.dumps([{datetime.timestamp(now): {"items": details,
+                                                              "order_id": cur_max_id + 1,
+                                                              "order_by": seat_number,
+                                                              "is_kid": is_kid,
+                                                              "subtype": None,
+                                                              "is_drink_or_special": True}}]),
+                subtype="jpbuffet"
+            )
+
+            db.session.add(order)
+            db.session.commit()
+
+        details_bar = {key: {'quantity': items.get('quantity'),
+                             'total': items.get('quantity') * items.get('price')}
+                       for key, items in details.items()
+                       if items.get("class_name") == "Drinks"}
+
+        context_bar = {"details": details_bar,
+                       "seat_number": seat_number,
+                       "table_name": table_name,
+                       "now": format_datetime(datetime.now(), locale="de_DE")}
+
+        bar_temp = str(Path(app.root_path) / 'static' / 'docx' / 'bar_alacarte.docx')
+        save_as_bar = f"jpbuffet_meallist_bar_{order.id}_{str(uuid4())}"
+
+        # Read the printer setting data from the json file
+        with open(str(Path(app.root_path) / "settings" / "printer.json"), encoding="utf8") as file:
+            data = file.read()
+
+        data = json.loads(data)
+
+        def master_printer():
+
+            # Print to bar
+            bar_templating(context=context_bar,
+                           temp_file=bar_temp,
+                           save_as=save_as_bar,
+                           printer=data.get('bar').get('printer'))
+
+        # Start the thread
+        th = Thread(target=master_printer)
+        th.start()
+
+        return jsonify({"success": "Ihre Bestellung ist an die Bar gesendet!"})
+
+
+@app.route("/japanbuffet/special/checkout", methods=["POST"])
+def jpbuffet_special_checkout():
+
+    info = json_reader(str(Path.cwd() / 'app' / 'settings' / 'config.json'))
+
+    hours = info.get('BUSINESS_HOURS')
+
+    am_start = hours.get('MORNING', '').get('START', '').split(":")
+    am_end = hours.get('MORNING', '').get('END', '').split(":")
+
+    pm_start = hours.get('EVENING', '').get('START', '').split(":")
+    pm_end = hours.get('EVENING', '').get('END', '').split(":")
+
+    morning_start = time(int(am_start[0]), int(am_start[1]))
+
+    morning_end = time(int(am_end[0]), int(am_end[1]))
+
+    evening_start = time(int(pm_start[0]), int(pm_start[1]))
+
+    evening_end = time(int(pm_end[0]), int(pm_end[1]))
+
+    from string import ascii_uppercase
+
+    letters = list(ascii_uppercase)[:8]
+
+    weekday2letter = dict(zip(list(range(1, 7)), letters))
+
+    # Add the index alphabet for Sunday
+    weekday2letter[0] = "G"
+
+    cur_week_num = int(datetime.now(tz=pytz.timezone(timezone)).strftime("%w"))
+
+    buffet_price = None
+
+    # Read the printer setting data from the json file
+    with open(str(Path(app.root_path) / "settings" / "buffet_price.json"),
+              encoding="utf8") as file:
+        data = file.read()
+
+    data = json.loads(data)
+
+    price_info = data.get(weekday2letter.get(cur_week_num))
+
+    if request.method == "POST":
+
+        # Json Data Posted via AJAX
+        json_data = request.json
+
+        table_name = json_data.get('tableName').upper()
+        seat_number = json_data.get('seatNumber')
+        is_kid = int(json_data.get('isKid'))
+
+        print(is_kid)
+
+        buffet_price = None
+
+        if morning_start <= datetime.now(tz=pytz.timezone(timezone)).time() <= morning_end:
+
+            if is_kid:
+
+                buffet_price = price_info.get('kid').get('noon')
+
+            else:
+
+                buffet_price = price_info.get('adult').get('noon')
+
+        elif evening_start <= datetime.now(tz=pytz.timezone(timezone)).time() <= evening_end:
+
+            if is_kid:
+
+                buffet_price = price_info.get('kid').get('after')
+
+            else:
+
+                buffet_price = price_info.get('adult').get('after')
+
+        print(buffet_price)
+
+        total_price = float(json_data.get('totalPrice'))
+
+        details = json_data.get('details')
+
+        price_dict = {Food.query.get_or_404(int(i.get('itemId'))).name:
+                          Food.query.get_or_404(int(i.get('itemId'))).price_gross
+                      for i in details}
+
+        details = {
+            Food.query.get_or_404(int(i.get('itemId'))).name:
+                {'quantity': int(i.get('itemQuantity')),
+                 'price': float(price_dict.get(Food.query.get_or_404(int(i.get('itemId'))).name)),
+                 'class_name': Food.query.get_or_404(int(i.get('itemId'))).class_name,
+                 'order_by': seat_number,
+                 "subtype": "jpbuffet",
+                 "is_kid": is_kid}
+            for i in details}
+
+        # Check if this table is already associated with an open order
+        orders = db.session.query(Order).filter(
+            Order.type == "In",
+            Order.isPaid == False,
+            Order.table_name == table_name).order_by(Order.timeCreated.desc()).all()
+
+        if len(orders) > 0:
+
+            order = orders[0]
+            # So that this table has no new open orders
+            if order.timeCreated.date() != today:
+
+                now = datetime.now(pytz.timezone(timezone))
+
+                cur_max_id = max([order.id for order in Order.query.all()])
+
+                # Create a new order for this table
+                order = Order(
+                    totalPrice=total_price + buffet_price,
+                    orderNumber=str(uuid4().int),
+                    items=json.dumps(details),
+                    timeCreated=now,
+                    type="In",
+                    table_name=table_name,
+                    seat_number=seat_number,
+                    isCancelled=False,
+                    dishes=json.dumps([{datetime.timestamp(now): {"items": details,
+                                                                  "order_id": cur_max_id + 1,
+                                                                  'order_by': seat_number,
+                                                                  "subtype": None,
+                                                                  "is_kid": is_kid,
+                                                                  "is_drink_or_special": True}}]),
+                    subtype="jpbuffet")
+
+                db.session.add(order)
+                db.session.commit()
+
+            else:
+
+                now = datetime.now(pytz.timezone(timezone))
+
+                cur_items = json.loads(order.items)
+
+                batches = json.loads(order.dishes)
+
+                buffet_seats = set([tuple(i.items())[0][1].get('order_by') for i in batches
+                                    if tuple(i.items())[0][1].get('subtype') == "jpbuffet"])
+
+                dishes = order.dishes
+
+                if not dishes:
+
+                    dishes = []
+
+                else:
+
+                    dishes = json.loads(order.dishes)
+
+                dishes.append({datetime.timestamp(now): {"items": details,
+                                                         "order_id": order.id,
+                                                         "order_by": seat_number,
+                                                         "subtype": None,
+                                                         "is_kid": is_kid,
+                                                         "is_drink_or_special": True}})
+
+                order.dishes = json.dumps(dishes)
+
+                cur_dishes = cur_items.keys()
+
+                for dish, items in details.items():
+
+                    if dish in cur_dishes:
+
+                        cur_items[dish]['quantity'] = cur_items[dish]['quantity'] \
+                                                      + items.get('quantity')
+
+                    else:
+
+                        cur_items[dish] = items
+
+                order.items = json.dumps(cur_items)
+
+                if seat_number in buffet_seats:
+
+                    order.totalPrice = len(buffet_seats) * buffet_price + \
+                                       sum([i[1].get('quantity') * i[1].get('price') \
+                                            for i in cur_items.items()])
+                else:
+
+                    order.totalPrice = len(buffet_seats) * buffet_price + \
+                                       sum([i[1].get('quantity') * i[1].get('price') \
+                                            for i in cur_items.items()]) + buffet_price
+
+                db.session.commit()
+
+        else:
+
+            now = datetime.now(pytz.timezone(timezone))
+
+            cur_max_id = max([order.id for order in Order.query.all()])
+
+            # Create a new order for this table
+            order = Order(
+                totalPrice=total_price + buffet_price,
+                orderNumber=str(uuid4().int),
+                items=json.dumps(details),
+                timeCreated=now,
+                type="In",
+                table_name=table_name,
+                seat_number=seat_number,
+                isCancelled=False,
+                dishes=json.dumps([{datetime.timestamp(now): {"items": details,
+                                                              "order_id": cur_max_id + 1,
+                                                              "order_by": seat_number,
+                                                              "is_kid": is_kid,
+                                                              "subtype": None,
+                                                              "is_drink_or_special": True}}]),
+                subtype="jpbuffet"
+            )
+
+            db.session.add(order)
+            db.session.commit()
+
+        details_kitchen = {key: {'quantity': items.get('quantity'),
+                             'total': items.get('quantity') * items.get('price')}
+                       for key, items in details.items()
+                       if items.get("class_name") == "Food"}
+
+        context_kitchen = {"details": details_kitchen,
+                       "seat_number": seat_number,
+                       "table_name": table_name,
+                       "now": format_datetime(datetime.now(), locale="de_DE")}
+
+        kitchen_temp = str(Path(app.root_path) / 'static' / 'docx' / 'kitchen_alacarte.docx')
+
+        save_as_kitchen = f"jpbuffet_meallist_kitchen_{order.id}_{str(uuid4())}"
+
+        # Read the printer setting data from the json file
+        with open(str(Path(app.root_path) / "settings" / "printer.json"), encoding="utf8") as file:
+            data = file.read()
+
+        data = json.loads(data)
+
+        def master_printer():
+
+            # Print to bar
+            kitchen_templating(context=context_kitchen,
+                               temp_file=kitchen_temp,
+                               save_as=save_as_kitchen,
+                               printer=data.get('kitchen').get('printer'))
+
+        # Start the thread
+        th = Thread(target=master_printer)
+        th.start()
+
+        return jsonify({"success": "Ihre Bestellung ist an die Kueche gesendet!"})
+
+
+

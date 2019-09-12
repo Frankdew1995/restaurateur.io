@@ -71,7 +71,7 @@
     <div class="product-details">
       <div class="product-title">{{ item }}</div>
     </div>
-    <div class="product-price">{{ details.get('price') }}</div>
+    <div class="product-price">{{ formatter(details.get('price')) }}</div>
     {% if not order.isPaid and not order.isCancelled %}
     <div class="product-quantity">
       <input type="number" value={{ details.get('quantity')  }} min="1">
@@ -86,7 +86,7 @@
       <input type="number" value={{ details.get('quantity')  }} min="1" readonly="readonly">
     </div>
     {% endif %}
-    <div class="product-line-price">{{ details.get('price') * details.get('quantity') }}</div>
+    <div class="product-line-price">{{ formatter(details.get('price') * details.get('quantity')) }}</div>
   </div>
   {% endfor %}
 
@@ -98,7 +98,6 @@
     </span>
   </p>
   <p>桌子号: {{ order.table_name }}</p>
-  <p>座位号: {{ order.seat_number }}</p>
   <p>生成时间: {{ order.timeCreated.strftime(datetime_format) }}</p>
 
   <p>状态:

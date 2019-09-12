@@ -85,7 +85,7 @@
           <tr>
             <th scope="row">{{details.get('order_id')}}</th>
 
-            <th>{{"外卖" if type_dict.get(details.get('order_id'))=="Out" else "单点" }}</th>
+            <th>{{ type_dict.get(details.get('order_id')) }}</th>
 
             <td>{{ table_dict.get(details.get('order_id'))
               if table_dict.get(details.get('order_id')) else "" }}
@@ -109,7 +109,7 @@
               </span>
               <span>
                 <button type="button" class="btn btn-info" style="border-color:#26a69a; background-color:#26a69a;">
-                  <a href="#" style="color: rgb(247, 249, 252)">
+                  <a href={{ url_for('print_meallist', timestamp=time) }} style="color: rgb(247, 249, 252)">
                     打印
                   </a>
                 </button>

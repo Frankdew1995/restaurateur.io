@@ -4,6 +4,8 @@
 <head>
   <meta http-equiv="Content-Type" content="text/html; charset=UTF-8"/>
   <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1.0"/>
+  <!--  refresh per minute -->
+  <meta http-equiv="refresh" content="60">
   <title>{{title}}</title>
 
   <!-- CSS  -->
@@ -115,15 +117,21 @@
       <!--   Icon Section   -->
       <div class="row">
 
+      {% if next_round_time %}
       <div class="col s12 s12" id="timedeltaCard">
         <div class="card blue-grey darken-1">
           <div class="card-content white-text">
-            <p>Nächste Runde</p>
-            <p id="timedelta"></p>
+            {% if timedelta >=0 %}
+            <p>Nächste Runde In</p>
+            <p id="timedelta">{{ timedelta }} Minute</p>
             <p id="nextClock">{{next_round_time}}</p>
+            {% else %}
+            <p>Die nächste Runde steht für Sie bereit</p>
+            {% endif %}
           </div>
         </div>
       </div>
+      {% endif %}
 
 
     <div class="col s4 s4">
@@ -151,6 +159,7 @@
         <div class="card-content white-text">
           <p>Tisch</p>
           <p id="tableName">{{table_name}}</p>
+          <p id="isKid" style="display:none">{{ is_kid }}</p>
         </div>
       </div>
     </div>
@@ -168,8 +177,8 @@
 
           <a href={{ url_for('jpbuffet_order', table_name=table_name, seat_number=seat_number, is_kid=is_kid) }} class="waves-effect waves-light btn">Bestellen</a>
           <a href="#" class="waves-effect waves-light btn">Getraenke</a>
-          <a href="#" class="waves-effect waves-light btn">Service</a>
-          <a href="#" class="waves-effect waves-light btn">Zahlen</a>
+          <a href="#" class="waves-effect waves-light btn" id="service">Service</a>
+          <a href="#" class="waves-effect waves-light btn" id="pay">Zahlen</a>
 
         </div>
       </div>
@@ -185,6 +194,8 @@
   <!-- Compiled and minified JavaScript -->
   <script src="https://cdnjs.cloudflare.com/ajax/libs/materialize/1.0.0/js/materialize.min.js"></script>
   <script src={{ url_for('static', filename="js/jp_buffet_index.js") }} charset="utf-8"></script>
+  <script src={{ url_for('static', filename="js/service_call.js") }} charset="utf-8"></script>
+
 
   </body>
 </html>

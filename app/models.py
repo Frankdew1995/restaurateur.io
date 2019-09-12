@@ -60,6 +60,7 @@ class User(UserMixin, db.Model):
     password_hash = db.Column(db.String(128))
     permissions = db.Column(db.Integer)
     container = db.Column(db.String(300))
+    timeCreated = db.Column(db.DateTime, default=datetime.utcnow)
 
     def __repr__(self):
 

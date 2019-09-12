@@ -173,6 +173,13 @@ class StoreSettingForm(FlaskForm):
                                              choices=[("Please select", u"请选择时间")],
                                              validators=[DataRequired(message=u"请设置时间")])
 
+    order_limit_per_round = IntegerField(u"每轮最大点餐数")
+
+    buffet_mode = SelectField(u"自助餐类型",
+                              choices=[(None, u"无"),
+                                       ("mongo", u"蒙古餐 - Mongo Buffet"),
+                                       ("jpbuffet", u"日本餐 - Japan Buffet")])
+
     submit = SubmitField(u"确认更新")
 
 
@@ -259,6 +266,8 @@ class DatePickForm(FlaskForm):
     end_date = DateField(u'截止日期', validators=[DataRequired()])
 
     submit = SubmitField(u'搜索')
+
+    print = SubmitField(u"打印")
 
 
 # Registration Form

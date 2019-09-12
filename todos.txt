@@ -37,6 +37,14 @@ Done:
 30. Japan Buffet time limit implementation per round.
 31. If  a seat is associated with an order, the guest \
 shall be redirected to the corresponding page;
+30. Mongo buffet order drinks and special dishes isn't working
+32. waiter admin kids and adults calculation isn't correct.
+31. admin check out misses the printing func
+28. German Localization for datetime and local decimals
+29. Round 2 for all decimal values
+27. JP BUFFET meallist print
+28. Mongo Buffet meallist print
+
 
 To Dos:
 
@@ -45,11 +53,17 @@ To Dos:
 17. Product detail view page (width 100%)
 19. License Key to redirect to register page
 26. User Avatar >> Default
-28. German Localization for datetime and local decimals
-29. Round 2 for all decimal values
-30. Mongo buffet order drinks and special dishes isn't working
-31. admin check out misses the printing func
-32. waiter admin kids and adults calculation isn't correct.
+
+29. daily revenue_report printing
+
+30 special dishes differentiate by buffet types?
+
+
+
+
+
+
+
 
 
 

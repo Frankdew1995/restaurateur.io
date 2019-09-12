@@ -4,18 +4,21 @@ from uuid import uuid4
 import os
 import json
 
-from app import app
+from app import app, redirect, url_for, render_template, flash, db, jsonify
 
 from pathlib import Path
 
 import pyqrcode
 
-from datetime import datetime
+from datetime import datetime, time, timedelta
 import pytz
 
 from app.models import Table, User
 
 import subprocess
+
+from babel.dates import format_date, format_datetime, format_time
+from babel.numbers import format_decimal, format_percent
 
 
 # Save Image and return image path
@@ -462,18 +465,31 @@ def terminal_templating(context,
         return "ok"
 
 
-def call2print(table_name):
+def call2print(table_name, seat_number, is_paying):
 
     # Jinja Templating in word doc
     from docxtpl import DocxTemplate
 
-    temp_file = str(Path(app.root_path) / 'static' / 'docx' / 'info.docx')
+    temp_file = None
+
+    if is_paying:
+
+        temp_file = str(Path(app.root_path) / 'static' / 'docx' / 'pay.docx')
+
+    else:
+
+        temp_file = str(Path(app.root_path) / 'static' / 'docx' / 'info.docx')
 
     abs_save_path = str(Path(app.root_path) / 'static' / 'out' / f'info_{table_name}.docx')
 
+    now = datetime.now(tz=pytz.timezone("Europe/Berlin"))
+
     doc = DocxTemplate(temp_file)
+
     context = dict(table_name=table_name,
-                   now=str(datetime.now(tz=pytz.timezone("Europe/Berlin"))))
+                   seat_number=seat_number,
+                   now=format_datetime(now, locale="de_DE"))
+
     doc.render(context)
     doc.save(abs_save_path)
 
@@ -569,3 +585,146 @@ def x_z_receipt_templating(context,
         return "ok"
 
 
+def table_adder(table_name, section, number,
+                base_url, suffix_url, timezone):
+
+    qrcodes = [generate_qrcode(table=table_name,
+                               base_url=base_url,
+                               suffix_url=suffix_url,
+                               seat=str(i + 1)) for i in range(number)]
+
+    table = Table(
+        name=table_name,
+        number=number,
+        section=section,
+        timeCreated=datetime.now(tz=pytz.timezone(timezone)),
+        container=json.dumps({'isCalled': False,
+                              'payCalled': False,
+                              'qrcodes': qrcodes}),
+
+        seats="\n".join([f"{table_name}-{i+1}" for
+                         i in range(number)]))
+
+    db.session.add(table)
+
+    db.session.commit()
+
+
+def formatter(number):
+
+    if number == 0:
+
+        number = '{:.2f}'.format(round(number, 2))
+
+        number = number.replace(".", ",")
+
+        return number
+
+    number = format_decimal(round(float(number), 2), locale="de_DE")
+
+    if len(number.split(",")) == 1:
+
+        number = number + ",00"
+
+        return number
+
+    if len(number.split(",")[1]) == 1:
+
+        number = number + "0"
+
+        return number
+
+    return number
+
+
+def is_business_hours():
+
+    timezone = "Europe/Berlin"
+
+    info = json_reader(str(Path(app.root_path) / 'settings' / 'config.json'))
+
+    hours = info.get('BUSINESS_HOURS')
+
+    am_start = hours.get('MORNING', '').get('START', '').split(":")
+    am_end = hours.get('MORNING', '').get('END', '').split(":")
+
+    pm_start = hours.get('EVENING', '').get('START', '').split(":")
+    pm_end = hours.get('EVENING', '').get('END', '').split(":")
+
+    morning_start = time(int(am_start[0]), int(am_start[1]))
+
+    morning_end = time(int(am_end[0]), int(am_end[1]))
+
+    evening_start = time(int(pm_start[0]), int(pm_start[1]))
+
+    evening_end = time(int(pm_end[0]), int(pm_end[1]))
+
+    cur_time = datetime.now(tz=pytz.timezone(timezone)).time()
+
+    # if not in business hours: redirect to the navigation page
+    if not (morning_start <= cur_time <= morning_end
+            or evening_start <= cur_time <= evening_end):
+
+        return False
+
+    return True
+
+
+def daily_revenue_templating(context,
+                             save_as):
+
+    '''
+    :param context: a dictionary key-value pair
+    :param temp_file: template file path for receipt printing(Takeout and InHouse)
+    :param save_as: the file name without file extension
+    :param printer: the printer name for printing the receipt
+    :return: "ok. if successfully printed
+    '''
+
+    # Read the printer setting data from the json file
+    with open(str(Path(app.root_path) / "settings" / "printer.json"), encoding="utf8") as file:
+        data = file.read()
+
+    data = json.loads(data)
+
+    # Printer name
+    printer = data.get('receipt').get('printer')
+
+    temp_file = str(Path(app.root_path) / 'static' / 'docx' / 'daily_revenue_temp.docx')
+
+    # if the printer is on
+    if data.get('receipt').get('is_on'):
+
+        from docxtpl import DocxTemplate
+
+        doc = DocxTemplate(temp_file)
+
+        doc.render(context)
+
+        abs_save_path = str(Path(app.root_path) / 'static' / 'out' / 'receipts' / f'{save_as}.docx')
+
+        out_save_path = str(Path(app.root_path) / 'static' / 'out' / 'receipts' / f'{save_as}.pdf')
+
+        doc.save(abs_save_path)
+
+        docx2pdf(doc_in=abs_save_path,
+                 pdf_out=out_save_path)
+
+        # Print the PDF info from the thermal printer
+        printer_path = str(Path(app.root_path) / 'utils' / 'printer' / 'PDFtoPrinter')
+
+        import subprocess
+        # call the command to print the pdf file
+        wait_start = time.time()
+        while True:
+            if not Path(out_save_path).exists():
+                time.sleep(0.5)
+                wait_end = time.time()
+
+                if wait_end - wait_start > 15:
+                    break
+            else:
+                subprocess.Popen(f'{printer_path} {out_save_path} "{printer}"', shell=True)
+                break
+
+        return "ok"

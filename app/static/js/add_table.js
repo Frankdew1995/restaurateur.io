@@ -22,7 +22,7 @@ checkBtn.addEventListener("click", function(){
 
   var request = new XMLHttpRequest();
 
-  request.open('GET', `/tables/add/${tableName}/${persons}/${section}`, true);
+  request.open('POST', `/js/tables/add`, true);
 
   request.onload = function() {
   if (this.status >= 200 && this.status < 400) {
@@ -40,7 +40,7 @@ checkBtn.addEventListener("click", function(){
         alert(resp.success);
 
         // redirct handling + javascript template literals
-        window.location = `/tables/view`;
+        window.location = `/adminpanel/tables/view`;
       }
 
     } else {
@@ -49,7 +49,7 @@ checkBtn.addEventListener("click", function(){
     }
   };
 
-  // request.setRequestHeader('Content-Type', 'application/json; charset=UTF-8');
-  // request.send(data);
+  request.setRequestHeader('Content-Type', 'application/json; charset=UTF-8');
+  request.send(data);
 
 });

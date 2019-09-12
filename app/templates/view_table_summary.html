@@ -156,17 +156,17 @@
             {% for dish, details in dishes.items() %}
             <tr>
               <th scope="row">{{details.get('class_name')}}</th>
-              <td>{{ "自助餐" if "mongo_buffet" in dish else dish }}</td>
+              <td>{{ "蒙古自助餐" if "mongo_buffet" in dish else dish }}</td>
               <td>{{details.get('quantity')}}</td>
-              <td>{{ details.get('price') }}</td>
-              <td>{{ details.get('price') * details.get('quantity') }}</td>
+              <td>{{ formatter(details.get('price')) }}</td>
+              <td>{{ formatter(details.get('price') * details.get('quantity')) }}</td>
 
             </tr>
             {% endfor %}
           </tbody>
         </table>
 
-        {{ form.grandtotal(value=total_price, class="btn btn-danger", readonly="readonly") }}
+        {{ form.grandtotal(value=formatter(total_price), class="btn btn-danger", readonly="readonly") }}
 
 
         <hr>

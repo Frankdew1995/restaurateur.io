@@ -28,5 +28,10 @@
     "Class": "Food",
     "Subcategory": "Mongo Buffet",
     "Unit": "Pfanne"
+  },
+  {
+    "Class": "Food",
+    "Subcategory": "Fish",
+    "Unit": ""
   }
 ]

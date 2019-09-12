@@ -50,6 +50,23 @@
 {% block content %}
 
 
+{% with messages = get_flashed_messages() %}
+
+  {% if messages %}
+
+    {% for message in messages %}
+
+    <div class="alert alert-success" role="alert">
+        {{ message }}
+    </div>
+
+    {% endfor %}
+
+  {% endif %}
+
+{% endwith %}
+
+
 <form action='' method="POST" enctype="multipart/form-data">
 
 
@@ -78,6 +95,12 @@
         <p>
 
             {{ form.submit(class='btn btn-secondary', style="border-color:#26a69a; background-color:#26a69a;")}}
+
+        </p>
+
+        <p>
+
+            {{ form.print(class='btn btn-info', style="border-color:#26a69a; background-color:#26a69a;")}}
 
         </p>
 
@@ -250,7 +273,7 @@
             </span>
             <span>
 
-              {{ alacarte.get('Total_Card') + out.get('Total_Card') }}
+              {{ final_card_total }}
 
             </span>
           </li>
@@ -259,7 +282,7 @@
               现金€:
             </span>
             <span>
-              {{ alacarte.get('Total_Cash') + out.get('Total_Cash') }}
+              {{ final_cash_total }}
             </span>
           </li>
           <li class="list-group-item">
@@ -268,7 +291,7 @@
             </span>
             <span>
 
-              {{alacarte.get('Total') + out.get('Total')}}
+              {{ final_total }}
 
             </span>
           </li>

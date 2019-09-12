@@ -45,3 +45,5 @@ vat = format_decimal(round((order.totalPrice / tax_rate_out)*tax_rate_out, 2),
                                  locale="de_DE")
 
 format_decimal(round(order.totalPrice, 2),locale="de_DE")
+
+

@@ -50,7 +50,7 @@
             卡帐€:
           </span>
           <span>
-            {{revenues.get('Card')}} €
+            {{formatter(revenues.get('Card'))}} €
           </span>
         </li>
         <li class="list-group-item">
@@ -58,7 +58,7 @@
             现金:
           </span>
           <span>
-            {{revenues.get('Cash')}} €
+            {{formatter(revenues.get('Cash'))}} €
           </span>
         </li>
         <li class="list-group-item">
@@ -66,7 +66,7 @@
             总计€:
           </span>
           <span>
-              {{revenues.get('All')}} €
+              {{formatter(revenues.get('All'))}} €
           </span>
         </li>
     </ul>

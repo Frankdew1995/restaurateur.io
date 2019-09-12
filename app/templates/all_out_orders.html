@@ -68,7 +68,7 @@
         <tr id={{ order.id }}>
           <th scope="row">{{ order.id }}</th>
           <td>{{ order.timeCreated }}</td>
-          <td>{{ order.totalPrice }}</td>
+          <td>{{ formatter(order.totalPrice) }}</td>
           <td style="text-align:right">
             <span>
               <button type="button" class="btn btn-info" style="border-color:#26a69a; background-color:#26a69a;">

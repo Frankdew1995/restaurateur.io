@@ -61,13 +61,13 @@
     <div class="product-details">
       <div class="product-title">{{ item }}</div>
     </div>
-    <div class="product-price">{{ details.get('price') }}</div>
+    <div class="product-price">{{ formatter(details.get('price')) }}</div>
 
     <div class="product-quantity">
       <input type="number" value={{ details.get('quantity')  }} min="1" readonly="readonly">
     </div>
 
-    <div class="product-line-price">{{ details.get('price') * details.get('quantity') }}</div>
+    <div class="product-line-price">{{ formatter(details.get('price') * details.get('quantity')) }}</div>
   </div>
   {% endfor %}
 
@@ -101,7 +101,7 @@
     </a>
   </button>
 
-  
+
 
 </div>
 

@@ -9,7 +9,7 @@
 
 {% block title %}
 
-<h1 class="h3 mb-2 text-gray-800">订单结账</h1>
+<h1 class="h3 mb-2 text-gray-800">{{title}}</h1>
 <hr>
 
 {% endblock %}
@@ -152,14 +152,14 @@
               <th scope="row">{{details.get('class_name')}}</th>
               <td>{{dish}}</td>
               <td>{{details.get('quantity')}}</td>
-              <td>{{ details.get('price') }}</td>
-              <td>{{ details.get('price') * details.get('quantity') }}</td>
+              <td>{{ formatter(details.get('price')) }}</td>
+              <td>{{ formatter(details.get('price') * details.get('quantity')) }}</td>
             </tr>
             {% endfor %}
           </tbody>
         </table>
 
-        {{ form.grandtotal(value=order.totalPrice, class="btn btn-danger", readonly="readonly") }}
+        {{ form.grandtotal(value=formatter(order.totalPrice), class="btn btn-danger", readonly="readonly") }}
 
 
         <hr>

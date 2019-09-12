@@ -53,15 +53,31 @@
       <div class="collapse navbar-collapse" id="myNav">
         <ul class="navbar-nav mx-auto text-capitalize">
 
+          {% for cate in categories %}
+            <li class="nav-item active">
+                <a class="nav-link" href={{ url_for('jpbuffet_order_by_category',
+                                  table_name=table_name,
+                                  seat_number=seat_number,
+                                  is_kid=is_kid,
+                                  cate=cate) }}>{{ cate }}
+                </a>
+            </li>
+          {% endfor %}
 
-          <li class="nav-item active">
-            <a class="nav-link" href="#">home</a>
-          </li>
+
           <li class="nav-item">
-            <a class="nav-link " href="#">about</a>
+            <a class="nav-link" href={{ url_for('jpbuffet_order_special',
+                                table_name=table_name,
+                                seat_number=seat_number,
+                                is_kid=is_kid ) }}>Besonderes</a>
           </li>
+
           <li class="nav-item">
-            <a class="nav-link" href="#">store</a>
+            <a class="nav-link" href={{ url_for('guest_order_drinks',
+                table_name=table_name,
+                seat_number=seat_number,
+                is_kid=is_kid) }}>Getränke
+            </a>
           </li>
         </ul>
 
@@ -75,24 +91,35 @@
 
 
       <li>
-         <a href={{ referrer }}>
+         <a href={{ url_for("jpbuffet_index", table_name=table_name,
+           seat_number=seat_number, is_kid=is_kid) }}>
            <i class="fas fa-home"></i>
          </a>
       </li>
 
 
+
        <li>
-          <a href="#" id="cart-info">
-            <i class="fas fa-phone"></i>
-          </a>
+
+         <a href={{ referrer }} id="cart-info">
+           <i class="fas fa-backward"></i>
+         </a>
+
+
        </li>
 
 
        <li>
-          <a href="#" id="cart-info">
-            <i class="fas fa-hand-holding-usd"></i>
-          </a>
+
+         <a href="#tableName" id="cart-info">
+           <i class="fas fa-arrow-up"></i>
+         </a>
+
+
        </li>
+
+
+
 
 
      </ul>
@@ -161,6 +188,8 @@
       </span>
     </p>
 
+    <span id="orderLimit" style="display:none">{{ order_limit }}</span>
+
 
   </div>
 
@@ -180,7 +209,7 @@
             <div class="card-body" id={{dish.id}}>
               <div class="card-text d-flex justify-content-between text-capitalize">
                 <h5 id="store-item-name">{{ dish.name }}</h5>
-                <h5 class="store-item-value">€ <strong id="store-item-price" class="font-weight-bold">{{ dish.price_gross  }}</strong></h5>
+                <h5 class="store-item-value">€ <strong id="store-item-price" class="font-weight-bold">{{ formatter(dish.price_gross)  }}</strong></h5>
               </div>
 
               <div class="input-group">

@@ -67,7 +67,7 @@ tax_rate_in = float(company_info.get('tax_rate_in', 0.0))
 
 tax_rate_out = float(company_info.get('tax_rate_out', 0.0))
 
-base_url = "http://e578aec3.ngrok.io"
+base_url = "http://94713ec1.ngrok.io"
 suffix_url = "guest/navigation"
 
 timezone = 'Europe/Berlin'
@@ -434,9 +434,9 @@ def index():
                    daily_visit_up_rate=daily_visit_up_rate,
                    cur_guests=cur_guests,
                    daily_guests_up_rate=daily_guests_up_rate,
-                   cur_revenue=cur_revenue,
+                   cur_revenue=formatter(cur_revenue),
                    daily_revenue_up_rate=daily_revenue_up_rate,
-                   cur_mon_revenue=cur_mon_revenue,
+                   cur_mon_revenue=formatter(cur_mon_revenue),
                    monthly_revenue_up_rate=monthly_revenue_up_rate,
                    order_counts=order_counts,
                    company_name=company_info.get('company_name'))
@@ -1105,11 +1105,7 @@ def admin_cancel_alacarte_order(order_id):
 
         if order:
 
-            container = json.loads(order.container)
-
-            container['isCancelled'] = True
-
-            order.container = json.dumps(container)
+            order.isCancelled = True
 
             db.session.commit()
 
@@ -1121,7 +1117,7 @@ def admin_cancel_alacarte_order(order_id):
                                 page_name=u'后台界面 > 餐桌情况(未结账)',
                                 descr=f'''
                                 取消订单号:{order.id}\n
-                                桌子编号：{json.loads(order.container).get('table_name')}-{json.loads(order.container).get('seat_number')}\n
+                                桌子编号：{order.table_name}\n
                                 账单金额: {order.totalPrice}\n
                                 订单类型: AlaCarte\n
                                 {logging.get('remark')}\n''',
@@ -2485,9 +2481,9 @@ def js_add_table():
                                           number, base_url, suffix_url, timezone,))
 
     # Checking Table duplicates
-    if Table.query.filter_by(name=table_name).first_or_404():
-
-        return jsonify({"error": f"{table_name}已经存在，请重新输入桌子名称"})
+    # if Table.query.filter_by(name=table_name).first_or_404():
+    #
+    #     return jsonify({"error": f"{table_name}已经存在，请重新输入桌子名称"})
 
     th.start()
 
@@ -3267,7 +3263,16 @@ def view_table(table_name):
             section2user = {section: user for user in users if user.permissions != 100
                             and section in json.loads(user.container).get('section')}
 
-            waiter_name = section2user.get(section).alias
+            waiter_name = None
+
+            if section2user == None:
+
+                waiter_name = "Unbekannt"
+            else:
+                try:
+                    waiter_name = section2user.get(section).alias
+                except:
+                    waiter_name = "Unbekannt"
 
             context = dict(title="桌子详情",
                            dishes=dishes,

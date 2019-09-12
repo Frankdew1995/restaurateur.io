@@ -10,7 +10,7 @@ from pathlib import Path
 
 import pyqrcode
 
-from datetime import datetime, time, timedelta
+from datetime import datetime, timedelta
 import pytz
 
 from app.models import Table, User
@@ -288,7 +288,7 @@ def receipt_templating(context,
                 time.sleep(0.5)
                 wait_end = time.time()
 
-                if wait_end - wait_start > 15:
+                if wait_end - wait_start > 30:
                     break
             else:
                 subprocess.Popen(f'{printer_path} {out_save_path} "{printer}"', shell=True)
@@ -344,7 +344,7 @@ def kitchen_templating(context,
                 time.sleep(0.5)
                 wait_end = time.time()
 
-                if wait_end - wait_start > 15:
+                if wait_end - wait_start > 30:
                     break
             else:
                 subprocess.Popen(f'{printer_path} {out_save_path} "{printer}"', shell=True)
@@ -400,7 +400,7 @@ def bar_templating(context,
                 time.sleep(0.5)
                 wait_end = time.time()
 
-                if wait_end - wait_start > 15:
+                if wait_end - wait_start > 30:
                     break
             else:
                 subprocess.Popen(f'{printer_path} {out_save_path} "{printer}"', shell=True)
@@ -456,7 +456,7 @@ def terminal_templating(context,
                 time.sleep(0.5)
                 wait_end = time.time()
 
-                if wait_end - wait_start > 15:
+                if wait_end - wait_start > 30:
                     break
             else:
                 subprocess.Popen(f'{printer_path} {out_save_path} "{printer}"', shell=True)
@@ -509,7 +509,19 @@ def call2print(table_name, seat_number, is_paying):
 
     import subprocess
     # call the command to print the pdf file
-    subprocess.Popen(f'{printer_path} {out_save_path} "{printer_name}"', shell=True)
+    wait_start = time.time()
+    while True:
+        if not Path(out_save_path).exists():
+            time.sleep(0.5)
+            wait_end = time.time()
+
+            if wait_end - wait_start > 30:
+                break
+        else:
+            subprocess.Popen(f'{printer_path} {out_save_path} "{printer_name}"', shell=True)
+            break
+
+    return "ok"
 
 
 def void_pickle_dumper(r_type):
@@ -576,7 +588,7 @@ def x_z_receipt_templating(context,
                 time.sleep(0.5)
                 wait_end = time.time()
 
-                if wait_end - wait_start > 15:
+                if wait_end - wait_start > 30:
                     break
             else:
                 subprocess.Popen(f'{printer_path} {out_save_path} "{printer}"', shell=True)
@@ -641,6 +653,8 @@ def is_business_hours():
 
     timezone = "Europe/Berlin"
 
+    from datetime import time as t
+
     info = json_reader(str(Path(app.root_path) / 'settings' / 'config.json'))
 
     hours = info.get('BUSINESS_HOURS')
@@ -651,13 +665,13 @@ def is_business_hours():
     pm_start = hours.get('EVENING', '').get('START', '').split(":")
     pm_end = hours.get('EVENING', '').get('END', '').split(":")
 
-    morning_start = time(int(am_start[0]), int(am_start[1]))
+    morning_start = t(int(am_start[0]), int(am_start[1]))
 
-    morning_end = time(int(am_end[0]), int(am_end[1]))
+    morning_end = t(int(am_end[0]), int(am_end[1]))
 
-    evening_start = time(int(pm_start[0]), int(pm_start[1]))
+    evening_start = t(int(pm_start[0]), int(pm_start[1]))
 
-    evening_end = time(int(pm_end[0]), int(pm_end[1]))
+    evening_end = t(int(pm_end[0]), int(pm_end[1]))
 
     cur_time = datetime.now(tz=pytz.timezone(timezone)).time()
 
@@ -721,7 +735,7 @@ def daily_revenue_templating(context,
                 time.sleep(0.5)
                 wait_end = time.time()
 
-                if wait_end - wait_start > 15:
+                if wait_end - wait_start > 30:
                     break
             else:
                 subprocess.Popen(f'{printer_path} {out_save_path} "{printer}"', shell=True)

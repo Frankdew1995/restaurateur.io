@@ -57,6 +57,7 @@ To Dos:
 29. daily revenue_report printing
 
 30 special dishes differentiate by buffet types?
+31 all invoices add the discount and discount rate
 
 
 

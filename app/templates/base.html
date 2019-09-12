@@ -183,6 +183,20 @@
         </div>
       </li>
 
+      <li class="nav-item">
+        <a class="nav-link collapsed" href="#" data-toggle="collapse" data-target="#collapseNavigation" aria-expanded="true" aria-controls="collapseUtilities">
+          <i class="far fa-compass"></i>
+          <span>页面导航</span>
+        </a>
+        <div id="collapseNavigation" class="collapse" aria-labelledby="headingUtilities" data-parent="#accordionSidebar">
+          <div class="bg-white py-2 collapse-inner rounded">
+            <a class="collapse-item" href={{ url_for('waiter_admin') }} target="_blank">跑堂界面</a>
+            <a class="collapse-item" href={{ url_for('takeaway_orders_manage') }} target="_blank">外卖界面</a>
+            <a class="collapse-item" href={{ url_for('food_frontview') }} target="_blank">外卖点餐界面</a>
+          </div>
+        </div>
+      </li>
+
 
       <!-- Nav Item - Store Settings -->
       <li class="nav-item">

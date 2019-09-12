@@ -24,15 +24,6 @@
       <button class="navbar-toggler" type="button" data-toggle="collapse" data-target="#myNav">
         <span class="toggler-icon"><i class="fas fa-bars"></i></span>
       </button>
-      {% with messages = get_flashed_messages() %}
-      {% if messages %}
-      {% for message in messages %}
-      <div class="alert alert-success" role="alert">
-        <p>{{ message }}<p>
-      </div>
-      {% endfor %}
-      {% endif %}
-      {% endwith %}
 
       <div class="collapse navbar-collapse" id="myNav">
         <ul class="navbar-nav mx-auto text-capitalize">
@@ -66,62 +57,32 @@
     </nav>
     <!-- end of nav -->
     <!-- banner  -->
-    <div class="container-fluid">
-      <div class="row max-height justify-content-center align-items-center">
-        <div class="col-10 mx-auto banner text-center">
-          <h1 class="text-capitalize">welcome to <strong class="banner-title ">grandma's</strong></h1>
-          <a href="#store" class="btn banner-link text-uppercase my-2">explore</a>
 
-        </div>
-        <div id="cart" class="cart">
-          <!-- cart item -->
-          <!--end of  cart item -->
+    <div id="cart" class="cart">
+      <!-- cart item -->
+      <!--end of  cart item -->
 
-          <!-- cart total -->
-          <div class="cart-total-container d-flex justify-content-around text-capitalize mt-5">
-            <h5>total</h5>
-            <h5> € <strong id="cart-total" class="font-weight-bold">0.00</strong> </h5>
-          </div>
-          <!--end cart total -->
-
-          <!-- cart buttons -->
-          <div class="cart-buttons-container mt-3 d-flex justify-content-between">
-            <a href="#" id="clear-cart" class="btn btn-outline-secondary btn-black text-uppercase">clear cart</a>
-            <a href={{url_for('takeaway_checkout')}} id="checkout" class="btn btn-outline-secondary text-uppercase btn-pink">checkout</a>
-          </div>
-          <!--end of  cart buttons -->
-          <!--  -->
-        </div>
+      <!-- cart total -->
+      <div class="cart-total-container d-flex justify-content-around text-capitalize mt-5">
+        <h5>total</h5>
+        <h5> € <strong id="cart-total" class="font-weight-bold">0.00</strong> </h5>
       </div>
+      <!--end cart total -->
+
+      <!-- cart buttons -->
+      <div class="cart-buttons-container mt-3 d-flex justify-content-between">
+        <a href="#" id="clear-cart" class="btn btn-outline-secondary btn-black text-uppercase">clear cart</a>
+        <a href="#" id="checkout" class="btn btn-outline-secondary text-uppercase btn-pink">checkout</a>
+      </div>
+      <!--end of  cart buttons -->
+      <!--  -->
     </div>
-
-
-
 
     <!--end of  banner  -->
   </header>
   <!-- header -->
   <!-- about us -->
-  <section class="about py-5" id="about">
-    <div class="container">
 
-      <div class="row">
-        <div class="col-10 mx-auto col-md-6 my-5">
-          <h1 class="text-capitalize">about <strong class="banner-title ">us</strong></h1>
-          <p class="my-4 text-muted w-75">Lorem ipsum dolor sit amet consectetur adipisicing elit. Velit, aliquam voluptas
-            beatae vitae expedita consectetur nesciunt quia deserunt asperiores facere fuga dicta fugiat corrupti et omnis
-            porro at dolorum! Ad!</p>
-          <a href="#" class="btn btn-outline-secondary btn-black text-uppercase ">explore</a>
-
-        </div>
-        <div class="col-10 mx-auto col-md-6 align-self-center my-5">
-          <div class="about-img__container">
-            <img src="img/sweets-1.jpeg" class="img-fluid" alt="">
-          </div>
-        </div>
-      </div>
-    </div>
-  </section>
 
   <!-- end of about us -->
 

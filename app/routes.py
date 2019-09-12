@@ -450,86 +450,83 @@ def food_frontview():
 
     dishes = Food.query.filter(Food.inUse == True).all()
 
-    categories = list(set([dish.category for dish in dishes]))
+    categories = set([dish.category for dish in dishes])
 
-    return render_template('foodfrontview.html',
-                           dishes=dishes,
-                           categories=categories,
-                           title='Xstar Bar',
-                           tel="+ 49 555555")
+    context =dict(dishes=dishes,
+                  categories=categories,
+                  title='Xstar Takeout Food',
+                  tel="+ 49 555555")
+
+    return render_template('foodfrontview.html', **context)
 
 
-@app.route("/takeout/checkout", methods=["POST", "GET"])
+@app.route("/takeout/checkout", methods=["POST"])
 def takeaway_checkout():
 
-    if request.method == "POST":
+    # Json Data Posted via AJAX
+    json_data = request.get_json("details")
 
-        # Json Data Posted via AJAX
-        json_data = request.get_json("details")
+    details = json_data.get('details')
 
-        details = json_data.get('details')
+    price_dict = {i.get('itemName'): i.get('itemPrice') for i in details}
 
-        price_dict = {i.get('itemName'): i.get('itemPrice') for i in details}
+    food = [i.get('itemName') for i in details]
 
-        food = [i.get('itemName') for i in details]
+    unique_food = list(set(food))
 
-        unique_food = list(set(food))
+    details = {dish: {'quantity': food.count(dish),
+                      'price': float(price_dict.get(dish))} for dish in unique_food}
 
-        details = {dish: {'quantity': food.count(dish),
-                          'price': float(price_dict.get(dish))} for dish in unique_food}
+    order = Order(
+        totalPrice=json_data.get('totalPrice'),
+        orderNumber=str(uuid4().int),
+        items=json.dumps(details),
+        timeCreated=datetime.now(tz=pytz.timezone(timezone)),
+        type="Out")
 
-        order = Order(
-            totalPrice=json_data.get('totalPrice'),
-            orderNumber=str(uuid4().int),
-            items=json.dumps(details),
-            timeCreated=datetime.now(tz=pytz.timezone("Europe/Berlin")),
-            type="Out")
+    db.session.add(order)
+    db.session.commit()
 
-        db.session.add(order)
-        db.session.commit()
+    # Order Terminal Order Printing
+    details = {key: {'quantity': items.get('quantity'),
+                     'total': items.get('quantity') * items.get('price')}
+               for key, items in details.items()}
 
-        # Order Terminal Order Printing
-        details = {key: {'quantity': items.get('quantity'),
-                         'total': items.get('quantity') * items.get('price')}
-                   for key, items in details.items()}
+    vat = round((order.totalPrice / (1 + tax_rate_out)) * tax_rate_out, 2)
 
-        context = {"details": details,
-                   "company_name": company_info.get('company_name', ''),
-                   "address": company_info.get('address'),
-                   "now": datetime.now().strftime("%Y-%m-%d %H:%M:%S"),
-                   "tax_id": company_info.get('tax_id'),
-                   "wait_number": order.id,
-                   "total": order.totalPrice,
-                   "VAT": round((order.totalPrice / (1 + tax_rate_out)) * tax_rate_out, 2)}
+    context = {"details": details,
+               "company_name": company_info.get('company_name', ''),
+               "address": company_info.get('address'),
+               "now": format_datetime(datetime.now(), locale="de_DE"),
+               "tax_id": company_info.get('tax_id'),
+               "wait_number": order.id,
+               "total": formatter(order.totalPrice),
+               "VAT": formatter(vat)}
 
-        temp_file = str(Path(app.root_path) / 'static' / 'docx' / 'terminal_temp_out.docx')
-        save_as = f"wait_receipt_{order.id}"
+    temp_file = str(Path(app.root_path) / 'static' / 'docx' / 'terminal_temp_out.docx')
+    save_as = f"wait_receipt_{order.id}"
 
-        # Read the printer setting data from the json file
-        with open(str(Path(app.root_path) / "settings" / "printer.json"),
-                  encoding="utf8") as file:
+    # Read the printer setting data from the json file
+    with open(str(Path(app.root_path) / "settings" / "printer.json"),
+              encoding="utf8") as file:
 
-            data = file.read()
+        data = file.read()
 
-        data = json.loads(data)
+    data = json.loads(data)
 
-        def master_printer():
+    def master_printer():
 
-            # Print Receipt
-            terminal_templating(context=context,
-                               temp_file=temp_file,
-                               save_as=save_as,
-                               printer=data.get('terminal').get('printer'))
+        # Print Receipt
+        terminal_templating(context=context,
+                            temp_file=temp_file,
+                            save_as=save_as,
+                            printer=data.get('terminal').get('printer'))
 
-        # Start the thread
-        th = Thread(target=master_printer)
-        th.start()
+    # Start the thread
+    th = Thread(target=master_printer)
+    th.start()
 
-        flash("Ihre Bestellung war erfolgreich bitte melden Sie sich bei den Kasse! ")
-
-        return redirect(url_for('food_frontview'))
-
-    return redirect(url_for('food_frontview'))
+    return jsonify({'success': 'Ihre Bestellung war erfolgreich. Bitte melden Sie sich bei der Kasse!'})
 
 
 # Complete a takeaway order
@@ -642,15 +639,27 @@ def checkout_takeaway_admin(order_id):
             # Pay via cash
             if form.cash_submit.data:
 
+                if form.coupon_amount.data and form.discount_rate.data:
+
+                    flash(f"不能同时使用折扣和代金券结账")
+                    return redirect(url_for('checkout_takeaway_admin',
+                                            order_id=order_id))
+
                 if form.coupon_amount.data:
 
-                    order.totalPrice = form.grandtotal.data - form.coupon_amount.data
+                    order.totalPrice = form.grandtotal.data
+
+                    order.discount = form.coupon_amount.data
+
                     pay_via['coupon_amount'] = form.coupon_amount.data
+
                     logging['Total'] = order.totalPrice
 
                 elif form.discount_rate.data:
 
-                    order.totalPrice = form.grandtotal.data * form.discount_rate.data
+                    order.totalPrice = form.grandtotal.data
+                    order.discount_rate = form.discount_rate.data
+
                     pay_via['discount_rate'] = form.discount_rate.data
                     logging['Total'] = order.totalPrice
 
@@ -661,16 +670,28 @@ def checkout_takeaway_admin(order_id):
             # Pay via card
             elif form.card_submit.data:
 
+                if form.coupon_amount.data and form.discount_rate.data:
+
+                    flash(f"不能同时使用折扣和代金券结账")
+                    return redirect(url_for('checkout_takeaway_admin',
+                                            order_id=order_id))
+
                 if form.coupon_amount.data:
 
-                    order.totalPrice = form.grandtotal.data - form.coupon_amount.data
+                    order.totalPrice = form.grandtotal.data
+
+                    order.discount = form.coupon_amount.data
+
                     pay_via['coupon_amount'] = form.coupon_amount.data
 
                     logging['Total'] = order.totalPrice
 
                 elif form.discount_rate.data:
 
-                    order.totalPrice = form.grandtotal.data * form.discount_rate.data
+                    order.totalPrice = form.grandtotal.data
+
+                    order.discount_rate = form.discount_rate.data
+
                     pay_via['discount_rate'] = form.discount_rate.data
 
                     logging['Total'] = order.totalPrice
@@ -714,17 +735,32 @@ def checkout_takeaway_admin(order_id):
             bar_temp = str(Path(app.root_path) / 'static' / 'docx' / 'bar.docx')
             save_as_bar = f"meallist_bar_{order.id}"
 
-            vat = formatter(round((order.totalPrice / tax_rate_out)*tax_rate_out, 2))
-
             context = {"details": details,
-                         "company_name": company_info.get('company_name', ''),
-                         "address": company_info.get('address'),
-                         "now": datetime.now().strftime("%Y-%m-%d %H:%M:%S"),
-                         "tax_id": company_info.get('tax_id'),
-                         "wait_number": order.id,
-                         "total": formatter(round(order.totalPrice, 2)),
-                         "pay_via": json.loads(order.pay_via).get('method', ""),
-                         "VAT": vat}
+                       "company_name": company_info.get('company_name', ''),
+                       "address": company_info.get('address'),
+                       "now": datetime.now().strftime("%Y-%m-%d %H:%M:%S"),
+                       "tax_id": company_info.get('tax_id'),
+                       "wait_number": order.id,
+                       "total": formatter(round(order.totalPrice, 2)),
+                       "pay_via": json.loads(order.pay_via).get('method', "")}
+
+            if order.discount > 0:
+
+                vat = formatter(round(((order.totalPrice - order.discount)
+                                       / tax_rate_out)*tax_rate_out, 2))
+
+                context['VAT'] = vat
+                context['discount'] = order.discount
+                context['end_total'] = order.totalPrice - order.discount
+
+            elif order.discount_rate > 0:
+
+                vat = formatter(round(((order.totalPrice * order.discount_rate)
+                                       / tax_rate_out) * tax_rate_out, 2))
+
+                context['VAT'] = vat
+                context['discount'] = (1 - order.discount_rate) * order.totalPrice
+                context['end_total'] = order.totalPrice * order.discount_rate
 
             temp_file = str(Path(app.root_path) / 'static' / 'docx' / 'receipt_temp_out.docx')
             save_as = f"receipt_{order.id}"

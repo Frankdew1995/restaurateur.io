@@ -12,6 +12,22 @@
 <h1 class="h3 mb-2 text-gray-800">{{title}}</h1>
 <hr>
 
+{% with messages = get_flashed_messages() %}
+
+  {% if messages %}
+
+    {% for message in messages %}
+
+    <div class="alert alert-warning" role="alert">
+        <h5>{{ message }}</h5>
+    </div>
+
+    {% endfor %}
+
+  {% endif %}
+
+{% endwith %}
+
 {% endblock %}
 
 
@@ -116,11 +132,9 @@
             </a>
           </button>
 
-
           {{form.coupon_amount(id="coupon", class="collapse", placeholder="请输入代金券金额")}}
 
           {{form.discount_rate(id="discount", class="collapse", placeholder="请输入折扣点，如0.9打九折")}}
-
 
           {{ form.cash_submit(class="btn btn-secondary") }}
 
@@ -173,6 +187,7 @@
     </div>
 </form>
 <!-- end of form -->
+
 
 
 

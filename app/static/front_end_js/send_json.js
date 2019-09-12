@@ -1,17 +1,11 @@
 
 const checkBtn = document.getElementById('checkout');
 
-
-
-
-
 checkBtn.addEventListener("click", function(){
-
 
   const totalPrice = document.getElementById("cart-total").textContent
 
-  const order = {'totalPrice': totalPrice
-                  };
+  const order = {'totalPrice': totalPrice};
 
   const productDetails = []
 
@@ -32,11 +26,29 @@ checkBtn.addEventListener("click", function(){
 
   var request = new XMLHttpRequest();
   request.open('POST', '/takeout/checkout', true);
+
+  request.onload = function() {
+  if (this.status >= 200 && this.status < 400) {
+      // Success!
+      var resp = JSON.parse(this.response);
+      console.log(resp);
+
+      // if error, log the error messages
+      if (resp.error){
+
+          alert(resp.error);
+
+      } else {
+        // if success, alert the msg and redirect to takeaway page
+        alert(resp.success);
+
+        // redirct handling + javascript template literals
+        window.location = "/takeaway/frontviews";
+      }
+
+  }
+  };
+
   request.setRequestHeader('Content-Type', 'application/x-www-form-urlencoded; charset=UTF-8');
   request.send(data);
-
-
-
-
-
 });

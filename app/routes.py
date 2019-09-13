@@ -1861,15 +1861,15 @@ def export_qrcode(table_name):
 
     import sys
 
-    if sys.platform == "win32":
-
-        import comtypes.client
-
-        xl = comtypes.client.CreateObject("excel.Application")
-
-        wb = xl.Workbooks.Open(file)
-
-        xl.Visible = True
+    # if sys.platform == "win32":
+    #
+    #     import comtypes.client
+    #
+    #     xl = comtypes.client.CreateObject("excel.Application")
+    #
+    #     wb = xl.Workbooks.Open(file)
+    #
+    #     xl.Visible = True
 
     return send_file(file,
                      as_attachment=True,
@@ -3915,15 +3915,15 @@ def export_log():
 
     import sys
 
-    if sys.platform == "win32":
-
-        import comtypes.client
-
-        xl = comtypes.client.CreateObject("excel.Application")
-
-        wb = xl.Workbooks.Open(file)
-
-        xl.Visible = True
+    # if sys.platform == "win32":
+    #
+    #     import comtypes.client
+    #
+    #     xl = comtypes.client.CreateObject("excel.Application")
+    #
+    #     wb = xl.Workbooks.Open(file)
+    #
+    #     xl.Visible = True
 
     return send_file(file, as_attachment=True, mimetype="text/csv")
 
@@ -7273,7 +7273,8 @@ def jpbuffet_guest_checkout():
         orders = db.session.query(Order).filter(
             Order.type == "In",
             Order.isPaid == False,
-            Order.table_name == table_name).order_by(Order.timeCreated.desc()).all()
+            Order.table_name == table_name,
+            Order.isCancelled == False).order_by(Order.timeCreated.desc()).all()
 
         if len(orders) > 0:
 

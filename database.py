@@ -12,10 +12,10 @@ today = datetime.now(tz=pytz.timezone(timezone)).date()
 orders = db.session.query(Order).filter(
     Order.type == "Out").all()
 
-for order in orders:
 
-    if not order.totalPrice:
+logs = db.session.query(Log).all()
 
-        order.totalPrice = 0
+for log in logs:
 
-        db.session.commit()
+    db.session.delete(log)
+    db.session.commit()

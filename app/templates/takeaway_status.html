@@ -90,7 +90,7 @@
             <center><h1 class="alert alert-success">Abholbereit</h1></center>
             {% for order in orders %}
             {% if order.isReady and not order.isPickedUp %}
-
+            <br>
             <div class="card">
 
               <div class="card-body">
@@ -104,10 +104,12 @@
               </div>
 
             </div>
+            <br>
             {% endif %}
             {% endfor %}
 
           </div>
+          <br>
 
 
 

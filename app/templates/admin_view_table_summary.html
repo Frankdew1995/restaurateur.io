@@ -40,6 +40,23 @@
 {% block content %}
 
 
+{% with messages = get_flashed_messages() %}
+
+  {% if messages %}
+
+    {% for message in messages %}
+
+    <div class="alert alert-success" role="alert">
+        <h3>{{ message }}</h3>
+    </div>
+
+    {% endfor %}
+
+  {% endif %}
+
+{% endwith %}
+
+
 
 <!-- start of form -->
 <form class="" action="" method="POST" enctype="multipart/form-data">

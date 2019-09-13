@@ -138,7 +138,7 @@
             <div class="card-body">
               <div class="card-text d-flex justify-content-between text-capitalize">
                 <h5 id="store-item-name">{{ dish.name }}</h5>
-                <h5 class="store-item-value">€ <strong id="store-item-price" class="font-weight-bold">{{ dish.price_gross  }}</strong></h5>
+                <h5 class="store-item-value">€ <strong id="store-item-price" class="font-weight-bold">{{ formatter(dish.price_gross)  }}</strong></h5>
 
               </div>
             </div>

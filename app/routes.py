@@ -67,7 +67,7 @@ tax_rate_in = float(company_info.get('tax_rate_in', 0.0))
 
 tax_rate_out = float(company_info.get('tax_rate_out', 0.0))
 
-base_url = "http://94713ec1.ngrok.io"
+base_url = "http://166393f9.ngrok.io"
 suffix_url = "guest/navigation"
 
 timezone = 'Europe/Berlin'
@@ -455,7 +455,8 @@ def food_frontview():
     context =dict(dishes=dishes,
                   categories=categories,
                   title='Xstar Takeout Food',
-                  tel="+ 49 555555")
+                  tel="+ 49 555555",
+                  formatter=formatter)
 
     return render_template('foodfrontview.html', **context)
 
@@ -463,70 +464,79 @@ def food_frontview():
 @app.route("/takeout/checkout", methods=["POST"])
 def takeaway_checkout():
 
-    # Json Data Posted via AJAX
-    json_data = request.get_json("details")
+    try:
 
-    details = json_data.get('details')
+        # Json Data Posted via AJAX
+        json_data = request.get_json("details")
 
-    price_dict = {i.get('itemName'): i.get('itemPrice') for i in details}
+        details = json_data.get('details')
 
-    food = [i.get('itemName') for i in details]
+        food = [i.get('itemName') for i in details]
 
-    unique_food = list(set(food))
+        unique_food = list(set(food))
 
-    details = {dish: {'quantity': food.count(dish),
-                      'price': float(price_dict.get(dish))} for dish in unique_food}
+        details = {dish: {'quantity': food.count(dish),
+                          'price': Food.query.filter_by(name=dish).first_or_404().price_gross}
+                   for dish in unique_food}
 
-    order = Order(
-        totalPrice=json_data.get('totalPrice'),
-        orderNumber=str(uuid4().int),
-        items=json.dumps(details),
-        timeCreated=datetime.now(tz=pytz.timezone(timezone)),
-        type="Out")
+        total_price = sum([i[1].get('quantity') * i[1].get('price')
+                           for i in details.items()])
 
-    db.session.add(order)
-    db.session.commit()
+        order = Order(
+            totalPrice=total_price,
+            orderNumber=str(uuid4().int),
+            items=json.dumps(details),
+            timeCreated=datetime.now(tz=pytz.timezone(timezone)),
+            type="Out",
+            endTotal=total_price)
 
-    # Order Terminal Order Printing
-    details = {key: {'quantity': items.get('quantity'),
-                     'total': items.get('quantity') * items.get('price')}
-               for key, items in details.items()}
+        db.session.add(order)
+        db.session.commit()
 
-    vat = round((order.totalPrice / (1 + tax_rate_out)) * tax_rate_out, 2)
+        # Order Terminal Order Printing
+        details = {key: {'quantity': items.get('quantity'),
+                         'total': items.get('quantity') * items.get('price')}
+                   for key, items in details.items()}
 
-    context = {"details": details,
-               "company_name": company_info.get('company_name', ''),
-               "address": company_info.get('address'),
-               "now": format_datetime(datetime.now(), locale="de_DE"),
-               "tax_id": company_info.get('tax_id'),
-               "wait_number": order.id,
-               "total": formatter(order.totalPrice),
-               "VAT": formatter(vat)}
+        vat = round((order.totalPrice / (1 + tax_rate_out)) * tax_rate_out, 2)
 
-    temp_file = str(Path(app.root_path) / 'static' / 'docx' / 'terminal_temp_out.docx')
-    save_as = f"wait_receipt_{order.id}"
+        context = {"details": details,
+                   "company_name": company_info.get('company_name', ''),
+                   "address": company_info.get('address'),
+                   "now": format_datetime(datetime.now(), locale="de_DE"),
+                   "tax_id": company_info.get('tax_id'),
+                   "wait_number": order.id,
+                   "total": formatter(order.totalPrice),
+                   "VAT": formatter(vat)}
 
-    # Read the printer setting data from the json file
-    with open(str(Path(app.root_path) / "settings" / "printer.json"),
-              encoding="utf8") as file:
+        temp_file = str(Path(app.root_path) / 'static' / 'docx' / 'terminal_temp_out.docx')
+        save_as = f"wait_receipt_{order.id}"
 
-        data = file.read()
+        # Read the printer setting data from the json file
+        with open(str(Path(app.root_path) / "settings" / "printer.json"),
+                  encoding="utf8") as file:
 
-    data = json.loads(data)
+            data = file.read()
 
-    def master_printer():
+        data = json.loads(data)
 
-        # Print Receipt
-        terminal_templating(context=context,
-                            temp_file=temp_file,
-                            save_as=save_as,
-                            printer=data.get('terminal').get('printer'))
+        def master_printer():
 
-    # Start the thread
-    th = Thread(target=master_printer)
-    th.start()
+            # Print Receipt
+            terminal_templating(context=context,
+                                temp_file=temp_file,
+                                save_as=save_as,
+                                printer=data.get('terminal').get('printer'))
 
-    return jsonify({'success': 'Ihre Bestellung war erfolgreich. Bitte melden Sie sich bei der Kasse!'})
+        # Start the thread
+        th = Thread(target=master_printer)
+        th.start()
+
+        return jsonify({'success': 'Ihre Bestellung war erfolgreich. Bitte melden Sie sich bei der Kasse!'})
+
+    except:
+
+        return jsonify({'error': 'Ups.... die Bestellung ist leider nicht erfolgreich. Bitte versuchen Sie es erneut'})
 
 
 # Complete a takeaway order
@@ -647,7 +657,7 @@ def checkout_takeaway_admin(order_id):
 
                 if form.coupon_amount.data:
 
-                    order.totalPrice = form.grandtotal.data
+                    order.endTotal = order.totalPrice - form.coupon_amount.data
 
                     order.discount = form.coupon_amount.data
 
@@ -657,7 +667,7 @@ def checkout_takeaway_admin(order_id):
 
                 elif form.discount_rate.data:
 
-                    order.totalPrice = form.grandtotal.data
+                    order.endTotal = order.totalPrice * form.discount_rate.data
                     order.discount_rate = form.discount_rate.data
 
                     pay_via['discount_rate'] = form.discount_rate.data
@@ -678,7 +688,7 @@ def checkout_takeaway_admin(order_id):
 
                 if form.coupon_amount.data:
 
-                    order.totalPrice = form.grandtotal.data
+                    order.endTotal = order.totalPrice - form.coupon_amount.data
 
                     order.discount = form.coupon_amount.data
 
@@ -688,7 +698,7 @@ def checkout_takeaway_admin(order_id):
 
                 elif form.discount_rate.data:
 
-                    order.totalPrice = form.grandtotal.data
+                    order.endTotal = order.totalPrice * form.discount_rate.data
 
                     order.discount_rate = form.discount_rate.data
 
@@ -742,25 +752,18 @@ def checkout_takeaway_admin(order_id):
                        "tax_id": company_info.get('tax_id'),
                        "wait_number": order.id,
                        "total": formatter(round(order.totalPrice, 2)),
-                       "pay_via": json.loads(order.pay_via).get('method', "")}
+                       "end_total": formatter(order.endTotal),
+                       "pay_via": json.loads(order.pay_via).get('method', ""),
+                       "discount": formatter(0),
+                       "VAT": formatter((order.endTotal / tax_rate_out) * tax_rate_out)}
 
-            if order.discount > 0:
+            if form.coupon_amount.data:
 
-                vat = formatter(round(((order.totalPrice - order.discount)
-                                       / tax_rate_out)*tax_rate_out, 2))
+                context['discount'] = formatter(form.coupon_amount.data)
 
-                context['VAT'] = vat
-                context['discount'] = order.discount
-                context['end_total'] = order.totalPrice - order.discount
+            elif order.discount_rate:
 
-            elif order.discount_rate > 0:
-
-                vat = formatter(round(((order.totalPrice * order.discount_rate)
-                                       / tax_rate_out) * tax_rate_out, 2))
-
-                context['VAT'] = vat
-                context['discount'] = (1 - order.discount_rate) * order.totalPrice
-                context['end_total'] = order.totalPrice * order.discount_rate
+                context['discount'] = formatter((1 - form.discount_rate.data) * order.totalPrice)
 
             temp_file = str(Path(app.root_path) / 'static' / 'docx' / 'receipt_temp_out.docx')
             save_as = f"receipt_{order.id}"
@@ -844,8 +847,7 @@ def takeaway_orders_manage():
 
     orders = Order.query.filter(
         Order.type == "Out",
-        Order.isCancelled == False,
-        Order.isPaid == False).all()
+        Order.isCancelled == False).all()
 
     # Filtering only orders today based on timezone Berlin
     orders = [order for order in orders if
@@ -1018,15 +1020,14 @@ def admin_view_alacarte_open_orders():
     # Filtering alacarte unpaid orders and the targeted table
     orders = db.session.query(Order).filter(
         Order.type == "In",
-        Order.isPaid == False).all()
+        Order.isPaid == False,
+        Order.isCancelled == False).all()
 
     cur_orders = [order for order in orders if
                   order.timeCreated.date() ==
                   datetime.now(tz=pytz.timezone(timezone)).date()]
 
     items = {order.id: json.loads(order.items) for order in cur_orders}
-
-    # containers = {order.id: json.loads(order.container) for order in cur_orders}
 
     context = dict(open_orders=cur_orders,
                    items=items,
@@ -1180,7 +1181,11 @@ def admin_view_paid_alacarte_orders():
         Order.type == "In",
         Order.isPaid == True).all()
 
-    cur_orders = orders
+    cancelled_orders = db.session.query(Order).filter(
+        Order.type == "In",
+        Order.isCancelled == True).all()
+
+    cur_orders = orders + cancelled_orders
 
     items = {order.id: json.loads(order.items) for order in cur_orders}
 
@@ -2332,15 +2337,25 @@ def admin_view_table(table_name):
                 # Pay via cash
                 if form.cash_submit.data:
 
+                    if form.coupon_amount.data and form.discount_rate.data:
+
+                        flash(f"不能同时使用折扣和代金券结账")
+                        return redirect(url_for('admin_view_table',
+                                                table_name=table_name))
+
                     if form.coupon_amount.data:
 
                         order.discount = form.coupon_amount.data
+
+                        order.endTotal = order.totalPrice - form.coupon_amount.data
 
                         pay_via['coupon_amount'] = form.coupon_amount.data
 
                     elif form.discount_rate.data:
 
                         order.discount_rate = form.discount_rate.data
+
+                        order.endTotal = order.totalPrice * form.discount_rate.data
                         pay_via['discount_rate'] = form.discount_rate.data
 
                     pay_via["method"] = "Cash"
@@ -2349,15 +2364,26 @@ def admin_view_table(table_name):
                 # Pay via card
                 elif form.card_submit.data:
 
+                    if form.coupon_amount.data and form.discount_rate.data:
+
+                        flash(f"不能同时使用折扣和代金券结账")
+                        return redirect(url_for('admin_view_table',
+                                                table_name=table_name))
+
                     if form.coupon_amount.data:
 
                         order.discount = form.coupon_amount.data
+
+                        order.endTotal = order.totalPrice - form.coupon_amount.data
 
                         pay_via['coupon_amount'] = form.coupon_amount.data
 
                     elif form.discount_rate.data:
 
                         order.discount_rate = form.discount_rate.data
+
+                        order.endTotal = order.totalPrice * form.discount_rate.data
+
                         pay_via['discount_rate'] = form.discount_rate.data
 
                     pay_via['method'] = "Card"
@@ -2391,6 +2417,11 @@ def admin_view_table(table_name):
 
                 dishes = json.loads(order.items)
 
+                # Calculate the total for each dish in dishes
+                for key, items in dishes.items():
+
+                    items['total'] = items.get('quantity') * items.get('price')
+
                 total_price = order.totalPrice
 
                 context = {"details": dishes,
@@ -2400,10 +2431,21 @@ def admin_view_table(table_name):
                            "tax_id": company_info.get('tax_id'),
                            "order_id": order.id,
                            "table_name": table_name,
-                           "total": formatter(total_price),
+                           "total": formatter(order.totalPrice),
+                           "end_total": formatter(order.endTotal),
                            "pay_via": json.loads(order.pay_via).get('method', ""),
                            "VAT": formatter(
-                               round((total_price / tax_rate_out) * tax_rate_out, 2))}
+                               round((order.endTotal / tax_rate_in) * tax_rate_in, 2)),
+                           'discount': formatter(0)}
+
+                if form.coupon_amount.data:
+
+                    context['discount'] = formatter(order.discount)
+
+                if form.discount_rate.data:
+
+                    context['discount'] = formatter(order.totalPrice \
+                                                    * (1 - form.discount_rate.data))
 
                 temp_file = str(Path(app.root_path) / 'static' / 'docx' / 'receipt_temp_inhouse.docx')
                 save_as = f"receipt_{order.id}"
@@ -2755,6 +2797,15 @@ def alacarte_navigate(table_name, seat_number):
     # Query Tables
     table = Table.query.filter_by(name=table_name).first_or_404()
 
+    if not is_business_hours():
+
+        context = dict(title="Gastnavigation",
+                       table_name=table_name,
+                       seat_number=seat_number,
+                       is_business_hours=is_business_hours())
+
+        return render_template("guest_index.html", **context)
+
     # if table existing and table is on
     if table and table.is_on:
 
@@ -2788,13 +2839,13 @@ def order_alacarte(table_name, seat_number):
 
     categories = list(set([dish.category for dish in dishes]))
 
-    context=dict(referrer=request.headers.get('Referer'),
-                 dishes=dishes,
-                 categories=categories,
-                 title=u"À la carte",
-                 table_name=table_name,
-                 seat_number=seat_number,
-                 formatter=formatter)
+    context = dict(referrer=request.headers.get('Referer'),
+                   dishes=dishes,
+                   categories=categories,
+                   title=u"À la carte",
+                   table_name=table_name,
+                   seat_number=seat_number,
+                   formatter=formatter)
 
     if table and table.is_on:
 
@@ -2817,8 +2868,6 @@ def alacarte_guest_checkout():
         table_name = json_data.get('tableName').upper()
         seat_number = json_data.get('seatNumber')
 
-        total_price = float(json_data.get('totalPrice'))
-
         details = json_data.get('details')
 
         price_dict = {Food.query.get_or_404(int(i.get('itemId'))).name:
@@ -2833,10 +2882,13 @@ def alacarte_guest_checkout():
                  'order_by': seat_number}
             for i in details}
 
+        total_price = sum([i[1].get('quantity') * i[1].get('price') for i in details.items()])
+
         # Check if this table is already associated with an open order
         orders = db.session.query(Order).filter(
             Order.type == "In",
             Order.isPaid == False,
+            Order.isCancelled==False,
             Order.table_name == table_name).order_by(Order.timeCreated.desc()).all()
 
         if len(orders) > 0:
@@ -2852,6 +2904,7 @@ def alacarte_guest_checkout():
                 # Create a new order for this table
                 order = Order(
                     totalPrice=total_price,
+                    endTotal=total_price,
                     orderNumber=str(uuid4().int),
                     items=json.dumps(details),
                     timeCreated=now,
@@ -2860,7 +2913,9 @@ def alacarte_guest_checkout():
                     seat_number=seat_number,
                     isCancelled=False,
                     dishes=json.dumps([{datetime.timestamp(now): {"items": details,
-                                                                  "order_id": cur_max_id + 1}}]))
+                                                                  "order_id": cur_max_id + 1,
+                                                                  "order_by":seat_number,
+                                                                  "subtype":None}}]))
 
                 db.session.add(order)
                 db.session.commit()
@@ -2882,7 +2937,10 @@ def alacarte_guest_checkout():
                     dishes = json.loads(order.dishes)
 
                 dishes.append({datetime.timestamp(now): {"items": details,
-                                                          "order_id": order.id}})
+                                                         "order_id": order.id,
+                                                         "order_by": seat_number,
+                                                         "subtype": None
+                                                         }})
 
                 order.dishes = json.dumps(dishes)
 
@@ -2906,6 +2964,10 @@ def alacarte_guest_checkout():
 
                 db.session.commit()
 
+                order.endTotal = order.totalPrice
+
+                db.session.commit()
+
         else:
 
             now = datetime.now(pytz.timezone(timezone))
@@ -2915,6 +2977,7 @@ def alacarte_guest_checkout():
             # Create a new order for this table
             order = Order(
                 totalPrice=total_price,
+                endTotal=total_price,
                 orderNumber=str(uuid4().int),
                 items=json.dumps(details),
                 timeCreated=now,
@@ -2923,7 +2986,10 @@ def alacarte_guest_checkout():
                 seat_number=seat_number,
                 isCancelled=False,
                 dishes=json.dumps([{datetime.timestamp(now): {"items": details,
-                                                              "order_id": cur_max_id + 1}}])
+                                                              "order_id": cur_max_id + 1,
+                                                              "order_by": seat_number,
+                                                              "subtype": None
+                                                              }}])
             )
 
             db.session.add(order)
@@ -3187,15 +3253,24 @@ def view_table(table_name):
                 # Pay via cash
                 if form.cash_submit.data:
 
+                    if form.coupon_amount.data and form.discount_rate.data:
+
+                        flash(f"不能同时使用折扣和代金券结账")
+                        return redirect(url_for('admin_view_table',
+                                                table_name=table_name))
+
                     if form.coupon_amount.data:
 
                         order.discount = form.coupon_amount.data
+
+                        order.endTotal = order.totalPrice - form.coupon_amount.data
 
                         pay_via['coupon_amount'] = form.coupon_amount.data
 
                     elif form.discount_rate.data:
 
                         order.discount_rate = form.discount_rate.data
+                        order.endTotal = order.totalPrice * form.discount_rate.data
                         pay_via['discount_rate'] = form.discount_rate.data
 
                     pay_via["method"] = "Cash"
@@ -3204,15 +3279,26 @@ def view_table(table_name):
                 # Pay via card
                 elif form.card_submit.data:
 
+                    if form.coupon_amount.data and form.discount_rate.data:
+
+                        flash(f"不能同时使用折扣和代金券结账")
+                        return redirect(url_for('admin_view_table',
+                                                table_name=table_name))
+
                     if form.coupon_amount.data:
 
                         order.discount = form.coupon_amount.data
+
+                        order.endTotal = order.totalPrice - form.coupon_amount.data
 
                         pay_via['coupon_amount'] = form.coupon_amount.data
 
                     elif form.discount_rate.data:
 
                         order.discount_rate = form.discount_rate.data
+
+                        order.endTotal = order.totalPrice * form.discount_rate.data
+
                         pay_via['discount_rate'] = form.discount_rate.data
 
                     pay_via['method'] = "Card"
@@ -3242,6 +3328,11 @@ def view_table(table_name):
 
                     pass
 
+                # Calculate the totalf for each dish in dishes
+                for key, items in dishes.items():
+
+                    items['total'] = items.get('quantity') * items.get('quantity')
+
                 context = {"details": dishes,
                            "company_name": company_info.get('company_name', ''),
                            "address": company_info.get('address'),
@@ -3249,10 +3340,20 @@ def view_table(table_name):
                            "tax_id": company_info.get('tax_id'),
                            "order_id": order.id,
                            "table_name": table_name,
-                           "total": formatter(total_price),
+                           "total": formatter(order.totalPrice),
                            "pay_via": json.loads(order.pay_via).get('method', ""),
                            "VAT": formatter(
-                               round((total_price / tax_rate_out) * tax_rate_out, 2))}
+                               round((order.endTotal / tax_rate_in) * tax_rate_in, 2)),
+                           "end_total": formatter(order.endTotal),
+                           'discount': formatter(0)}
+
+                if form.coupon_amount.data:
+
+                    context['discount'] = formatter(order.discount)
+
+                if form.discount_rate.data:
+
+                    context['discount'] = formatter((1 - order.discount_rate) * order.totalPrice)
 
                 temp_file = str(Path(app.root_path) / 'static' / 'docx' / 'receipt_temp_inhouse.docx')
                 save_as = f"receipt_{order.id}"
@@ -3304,9 +3405,12 @@ def view_table(table_name):
             if section2user == None:
 
                 waiter_name = "Unbekannt"
+
             else:
+
                 try:
                     waiter_name = section2user.get(section).alias
+
                 except:
                     waiter_name = "Unbekannt"
 
@@ -6056,11 +6160,11 @@ def view_receipt(order_id):
 
     if order.type == "In":
 
-        vat = (order.totalPrice / (1 + tax_rate_in)) * tax_rate_in
+        vat = (order.endTotal / (1 + tax_rate_in)) * tax_rate_in
 
     else:
 
-        vat = (order.totalPrice / (1 + tax_rate_out)) * tax_rate_out
+        vat = (order.endTotal / (1 + tax_rate_out)) * tax_rate_out
 
     context = dict(order=order,
                    ordered_items=ordered_items,
@@ -6069,8 +6173,10 @@ def view_receipt(order_id):
                    datetime_format=datetime_format,
                    company_name=company_info.get('company_name'),
                    total=formatter(total),
+                   end_total=formatter(order.endTotal),
                    vat=formatter(round(vat, 2)),
-                   formatter=formatter)
+                   formatter=formatter,
+                   discount=formatter(order.totalPrice - order.endTotal))
 
     return render_template("view_receipt.html", **context)
 
@@ -6221,46 +6327,65 @@ def guest_navigate(table_name, seat_number):
 
         order = orders[0]
 
-        print(order)
-
         if order.timeCreated.date() == today:
 
             batches = json.loads(order.dishes)
+
+            active_seats = []
 
             for batch in batches:
 
                 last_ordered = list(batch.keys())[0]
 
-                if batch.get(last_ordered).get('order_by') == seat_number \
-                        and batch.get(last_ordered).get('subtype') == "jpbuffet":
+                seat = batch.get(last_ordered).get('order_by')
 
-                    if int(batch.get(last_ordered).get('is_kid')) == 0:
+                active_seats.append(seat)
+
+            # If the current seat has already ordered
+            if seat_number in active_seats:
+
+                for batch in batches:
+
+                    last_ordered = list(batch.keys())[0]
+
+                    # The guest didn't order buffet
+                    if batch.get(last_ordered).get('order_by') == seat_number \
+                            and not batch.get(last_ordered).get('subtype'):
+
+                        return redirect(url_for('alacarte_navigate',
+                                                table_name=table_name,
+                                                seat_number=seat_number))
+
+                    if batch.get(last_ordered).get('order_by') == seat_number \
+                            and batch.get(last_ordered).get('subtype') == "jpbuffet":
+
+                        if int(batch.get(last_ordered).get('is_kid')) == 0:
+
+                            return redirect(url_for('jpbuffet_index',
+                                                    table_name=table_name,
+                                                    seat_number=seat_number,
+                                                    is_kid=0,
+                                                    ))
 
                         return redirect(url_for('jpbuffet_index',
-                                                table_name=table_name,
-                                                seat_number=seat_number,
-                                                is_kid=0,
-                                                ))
+                                                    table_name=table_name,
+                                                    seat_number=seat_number,
+                                                    is_kid=1))
 
-                    return redirect(url_for('jpbuffet_index',
-                                                table_name=table_name,
-                                                seat_number=seat_number,
-                                                is_kid=1))
+                    elif batch.get(last_ordered).get('order_by') == seat_number \
+                            and batch.get(last_ordered).get('subtype') == "mongo":
 
-                elif batch.get(last_ordered).get('order_by') == seat_number \
-                        and batch.get(last_ordered).get('subtype') == "mongo":
+                        if int(batch.get(last_ordered).get('is_kid')) == 0:
 
-                    if int(batch.get(last_ordered).get('is_kid')) == 0:
+                            return redirect(url_for('mongo_index',
+                                                    table_name=table_name,
+                                                    seat_number=seat_number,
+                                                    is_kid=0))
 
                         return redirect(url_for('mongo_index',
                                                 table_name=table_name,
                                                 seat_number=seat_number,
-                                                is_kid=0))
-
-                    return redirect(url_for('mongo_index',
-                                            table_name=table_name,
-                                            seat_number=seat_number,
-                                            is_kid=1))
+                                                is_kid=1))
 
     from string import ascii_uppercase
 
@@ -6445,6 +6570,7 @@ def mongo_guest_order(table_name, seat_number, is_kid):
             # Create a new order for this table
             order = Order(
                 totalPrice=buffet_price,
+                endTotal=buffet_price,
                 orderNumber=str(uuid4().int),
                 items=json.dumps(details),
                 timeCreated=now,
@@ -6509,6 +6635,10 @@ def mongo_guest_order(table_name, seat_number, is_kid):
 
                 db.session.commit()
 
+                order.endTotal = order.totalPrice
+
+                db.session.commit()
+
     else:
 
         now = datetime.now(pytz.timezone(timezone))
@@ -6518,6 +6648,7 @@ def mongo_guest_order(table_name, seat_number, is_kid):
         # Create a new order for this table
         order = Order(
             totalPrice=buffet_price,
+            endTotal=buffet_price,
             orderNumber=str(uuid4().int),
             items=json.dumps(details),
             timeCreated=now,
@@ -6562,8 +6693,6 @@ def mongo_guest_checkout():
         table_name = json_data.get('tableName').upper()
         seat_number = json_data.get('seatNumber')
 
-        total_price = float(json_data.get('totalPrice'))
-
         details = json_data.get('details')
 
         price_dict = {Food.query.get_or_404(int(i.get('itemId'))).name:
@@ -6577,6 +6706,9 @@ def mongo_guest_checkout():
                  'class_name': Food.query.get_or_404(int(i.get('itemId'))).class_name,
                  'order_by': seat_number}
             for i in details}
+
+        total_price = sum([i[1].get('quantity') * i[1].get('price')
+                           for i in details.items()])
 
         # Check if this table is already associated with an open order
         orders = db.session.query(Order).filter(
@@ -6597,6 +6729,7 @@ def mongo_guest_checkout():
                 # Create a new order for this table
                 order = Order(
                     totalPrice=total_price,
+                    endTotal=total_price,
                     orderNumber=str(uuid4().int),
                     items=json.dumps(details),
                     timeCreated=now,
@@ -6651,6 +6784,10 @@ def mongo_guest_checkout():
 
                 db.session.commit()
 
+                order.endTotal = order.totalPrice
+
+                db.session.commit()
+
         else:
 
             now = datetime.now(pytz.timezone(timezone))
@@ -6660,6 +6797,7 @@ def mongo_guest_checkout():
             # Create a new order for this table
             order = Order(
                 totalPrice=total_price,
+                endTotal=total_price,
                 orderNumber=str(uuid4().int),
                 items=json.dumps(details),
                 timeCreated=now,
@@ -7098,6 +7236,8 @@ def jpbuffet_guest_checkout():
                  "is_kid": is_kid}
             for i in details}
 
+        total_price = sum([i[1].get('quantity') * i[1].get('price') for i in details.items()])
+
         # Check if this table is already associated with an open order
         orders = db.session.query(Order).filter(
             Order.type == "In",
@@ -7117,6 +7257,7 @@ def jpbuffet_guest_checkout():
                 # Create a new order for this table
                 order = Order(
                     totalPrice=total_price + buffet_price,
+                    endTotal=total_price + buffet_price,
                     orderNumber=str(uuid4().int),
                     items=json.dumps(details),
                     timeCreated=now,
@@ -7238,6 +7379,11 @@ def jpbuffet_guest_checkout():
 
                 db.session.commit()
 
+                # Reset the end price of an order to be the total price
+                order.endTotal = order.totalPrice
+
+                db.session.commit()
+
         else:
 
             now = datetime.now(pytz.timezone(timezone))
@@ -7247,6 +7393,7 @@ def jpbuffet_guest_checkout():
             # Create a new order for this table
             order = Order(
                 totalPrice=total_price + buffet_price,
+                endTotal=total_price + buffet_price,
                 orderNumber=str(uuid4().int),
                 items=json.dumps(details),
                 timeCreated=now,
@@ -7437,6 +7584,8 @@ def guest_drinks_checkout():
                  "is_kid": is_kid}
             for i in details}
 
+        total_price = sum([i[1].get('quantity') * i[1].get('price') for i in details.items()])
+
         # Check if this table is already associated with an open order
         orders = db.session.query(Order).filter(
             Order.type == "In",
@@ -7456,6 +7605,7 @@ def guest_drinks_checkout():
                 # Create a new order for this table
                 order = Order(
                     totalPrice=total_price + buffet_price,
+                    endTotal=total_price + buffet_price,
                     orderNumber=str(uuid4().int),
                     items=json.dumps(details),
                     timeCreated=now,
@@ -7532,6 +7682,10 @@ def guest_drinks_checkout():
 
                 db.session.commit()
 
+                order.endTotal = order.totalPrice
+
+                db.session.commit()
+
         else:
 
             now = datetime.now(pytz.timezone(timezone))
@@ -7541,6 +7695,7 @@ def guest_drinks_checkout():
             # Create a new order for this table
             order = Order(
                 totalPrice=total_price + buffet_price,
+                endTotal=total_price + buffet_price,
                 orderNumber=str(uuid4().int),
                 items=json.dumps(details),
                 timeCreated=now,
@@ -7690,6 +7845,8 @@ def jpbuffet_special_checkout():
                  "is_kid": is_kid}
             for i in details}
 
+        total_price = sum([i[1].get('quantity') * i[1].get('price') for i in details.items()])
+
         # Check if this table is already associated with an open order
         orders = db.session.query(Order).filter(
             Order.type == "In",
@@ -7709,6 +7866,7 @@ def jpbuffet_special_checkout():
                 # Create a new order for this table
                 order = Order(
                     totalPrice=total_price + buffet_price,
+                    endTotal=total_price + buffet_price,
                     orderNumber=str(uuid4().int),
                     items=json.dumps(details),
                     timeCreated=now,
@@ -7785,6 +7943,10 @@ def jpbuffet_special_checkout():
 
                 db.session.commit()
 
+                order.endTotal = order.totalPrice
+
+                db.session.commit()
+
         else:
 
             now = datetime.now(pytz.timezone(timezone))
@@ -7794,6 +7956,7 @@ def jpbuffet_special_checkout():
             # Create a new order for this table
             order = Order(
                 totalPrice=total_price + buffet_price,
+                endTotal=total_price + buffet_price,
                 orderNumber=str(uuid4().int),
                 items=json.dumps(details),
                 timeCreated=now,

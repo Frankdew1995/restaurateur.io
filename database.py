@@ -9,10 +9,13 @@ timezone = "Europe/Berlin"
 
 today = datetime.now(tz=pytz.timezone(timezone)).date()
 
-orders = db.session.query(Order).filter(Order.isCancelled == True).order_by(Order.settleTime.desc()).all()
+orders = db.session.query(Order).filter(
+    Order.type == "Out").all()
 
-order = orders[0]
+for order in orders:
 
-db.session.delete(order)
+    if not order.totalPrice:
 
-db.session.commit()
+        order.totalPrice = 0
+
+        db.session.commit()

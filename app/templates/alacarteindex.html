@@ -9,7 +9,7 @@
   <meta name="description" content="">
   <meta name="author" content="">
 
-  <title>{{title}}</title>
+  <title id="title">{{title}}</title>
 
   <!-- Bootstrap Core CSS -->
   <link href="{{ url_for('static', filename='css/bootstrap.min.css') }}" rel="stylesheet">
@@ -104,6 +104,7 @@
         </div>
 
 
+
         <div class="column">
 
             <img class="img1" src={{ url_for('static', filename='img/jsyl.png') }}/>
@@ -117,7 +118,7 @@
 
         <div class="column">
 
-              <a href={{ url_for('guest_call_pay', table_name=table_name, seat_number=seat_number) }}>
+              <a href="#" id="pay">
                 <img class="img1" src={{ url_for('static', filename='img/wyjz.png') }}/>
               </a>
             <h6>
@@ -130,11 +131,11 @@
 
         <div class="column">
 
-            <a href={{ url_for('guest_call_service', table_name=table_name, seat_number=seat_number) }}>
+            <a href="#" id="service">
               <img class="img1" src={{ url_for('static', filename='img/fwyxd.png') }}/>
             </a>
           <h6>
-            <strong>Ruf Kellner</strong>
+            <strong>Service</strong>
           </h6>
 
         </div>
@@ -143,6 +144,14 @@
 
       </div>
     </div>
+
+    <p style="display:none">
+
+      <span id="tableName">{{table_name}}</span>
+      <span id="seatNumber">{{seat_number}}</span>
+
+    </p>
+
 
 
     <p>
@@ -161,6 +170,8 @@
 
   <!-- Custom scripts for this template -->
   <script src="{{ url_for('static', filename='js/stylish-portfolio.min.js') }}"></script>
+  <script src="{{ url_for('static', filename='js/alacarte_service_call.js') }}"></script>
+
 
 </body>
 

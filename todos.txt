@@ -44,6 +44,8 @@ shall be redirected to the corresponding page;
 29. Round 2 for all decimal values
 27. JP BUFFET meallist print
 28. Mongo Buffet meallist print
+33 takeaway guest checkout handling
+32 takeaway order status
 
 
 To Dos:
@@ -58,6 +60,8 @@ To Dos:
 
 30 special dishes differentiate by buffet types?
 31 all invoices add the discount and discount rate
+32 alacarte service call
+33 invoicing printing testing
 
 
 

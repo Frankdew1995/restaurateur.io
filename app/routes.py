@@ -2019,13 +2019,12 @@ def add_user():
 
     if request.method == "POST" or form.validate_on_submit():
 
-        username = form.username.data
-        alias = form.alias.data
-        section = form.section.data
-        password = form.password.data
+        try:
 
-        # Checking user accounts duplicates
-        if not User.query.filter_by(username=username).first_or_404():
+            username = form.username.data
+            alias = form.alias.data
+            section = form.section.data
+            password = form.password.data
 
             # By default permission for waiter/takeaway account is 1 and 0
             permissions = form.account_type.data
@@ -2047,7 +2046,11 @@ def add_user():
 
             return redirect(url_for('users_manage'))
 
-        return redirect(url_for('users_manage'))
+        except:
+
+            flash(message=u"请不要重复添加账号", category="success")
+
+            return redirect(url_for('users_manage'))
 
     context = dict(referrer=referrer,
                    company_name=company_info.get('company_name'),

@@ -67,7 +67,7 @@ tax_rate_in = float(company_info.get('tax_rate_in', 0.0))
 
 tax_rate_out = float(company_info.get('tax_rate_out', 0.0))
 
-base_url = "http://166393f9.ngrok.io"
+base_url = "http://75aa4848.eu.ngrok.io"
 suffix_url = "guest/navigation"
 
 timezone = 'Europe/Berlin'
@@ -2047,9 +2047,7 @@ def add_user():
 
             return redirect(url_for('users_manage'))
 
-        # flash(message=f"账户名{username}已经存在, 请重新再试!", category="error")
-        #
-        # return redirect(url_for('add_user'))
+        return redirect(url_for('users_manage'))
 
     context = dict(referrer=referrer,
                    company_name=company_info.get('company_name'),
@@ -2753,7 +2751,7 @@ def edit_buffet_price(week_number):
         data[week_number]['kid']['noon'] = form.price_for_kid_noon.data
         data[week_number]['kid']['after'] = form.price_for_kid_after.data
 
-        data[week_number]['lastUpdate'] = datetime.now(tz=pytz.timezone(timezone)).strftime("%Y.%-m.%-d %H:%M:%S")
+        data[week_number]['lastUpdate'] = datetime.now(tz=pytz.timezone(timezone)).strftime(datetime_format)
 
         data[week_number]['note'] = form.note.data
 
@@ -4238,7 +4236,7 @@ def print_z_receipt(date_time):
 
     cur_unpaid_alacarte_orders = [order for order in unpaid_orders if
                                   order.type == "In" and
-                                  order.timeCreated.date() == today]
+                                  order.timeCreated.date() == today and not order.isCancelled]
 
     revenue_from_cur_unpaid_tables = sum([order.totalPrice for
                                           order in cur_unpaid_alacarte_orders])
@@ -6090,6 +6088,12 @@ def view_printing_receipts():
 def print_receipt(order_id):
 
     order = Order.query.get_or_404(int(order_id))
+
+    if not order.isPaid:
+
+        flash(f"打印失败，请先为订单{order.id}结账，再打印发票。", category='success')
+
+        return redirect(url_for('view_printing_receipts'))
 
     dishes = json.loads(order.items)
 

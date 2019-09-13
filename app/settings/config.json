@@ -24,7 +24,7 @@
         "END": "23:59:00"
       }
     },
-    "ORDER_LIMIT": 6,
+    "ORDER_LIMIT": 5,
     "BUFFET_MODE": "jpbuffet"
   }
 ]

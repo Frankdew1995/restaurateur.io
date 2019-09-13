@@ -26,12 +26,17 @@
   },
   {
     "Class": "Food",
-    "Subcategory": "Mongo Buffet",
-    "Unit": "Pfanne"
+    "Subcategory": "Fish",
+    "Unit": ""
   },
   {
     "Class": "Food",
-    "Subcategory": "Fish",
-    "Unit": ""
+    "Subcategory": "Mongo Buffet",
+    "Unit": "Pfand"
+  },
+  {
+    "Class": "Food",
+    "Subcategory": "Grill",
+    "Unit": "pfanne"
   }
 ]

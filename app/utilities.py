@@ -131,7 +131,7 @@ def qrcode2excel(tables):
     import json
     import xlsxwriter
 
-    save_abs_path = str(Path(app.root_path) / 'Downloads' / 'qrcode.xlsx')
+    save_abs_path = str(Path(app.root_path) / 'cache' / 'qrcode.xlsx')
 
     # Create an new Excel file and add a worksheet.
     workbook = xlsxwriter.Workbook(save_abs_path)

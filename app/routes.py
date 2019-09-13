@@ -1859,6 +1859,18 @@ def export_qrcode(table_name):
 
         file = qrcode2excel(tables=[table_name])
 
+    import sys
+
+    if sys.platform == "win32":
+
+        import comtypes.client
+
+        xl = comtypes.client.CreateObject("excel.Application")
+
+        wb = xl.Workbooks.Open(file)
+
+        xl.Visible = True
+
     return send_file(file,
                      as_attachment=True,
                      mimetype="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet")
@@ -3900,6 +3912,18 @@ def view_log(log_id):
 def export_log():
 
     file = str(Path(app.root_path) / 'cache' / 'logging.csv')
+
+    import sys
+
+    if sys.platform == "win32":
+
+        import comtypes.client
+
+        xl = comtypes.client.CreateObject("excel.Application")
+
+        wb = xl.Workbooks.Open(file)
+
+        xl.Visible = True
 
     return send_file(file, as_attachment=True, mimetype="text/csv")
 

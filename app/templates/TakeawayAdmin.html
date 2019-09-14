@@ -74,6 +74,14 @@
         </a>
       </li>
 
+      {% if current_user.permissions >2 %}
+      <li class="nav-item active">
+        <a class="nav-link" href={{ url_for('index') }}>
+          <i class="fas fa-backward"></i>
+          <span>返回后台</span></a>
+      </li>
+      {% endif %}
+
       <!-- Divider -->
       <hr class="sidebar-divider d-none d-md-block">
 

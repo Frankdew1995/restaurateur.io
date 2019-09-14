@@ -10,12 +10,12 @@ timezone = "Europe/Berlin"
 today = datetime.now(tz=pytz.timezone(timezone)).date()
 
 orders = db.session.query(Order).filter(
-    Order.type == "Out").all()
+    Order.type == "In").all()
 
 
-logs = db.session.query(Log).all()
+for order in orders:
 
-for log in logs:
+    if order.timeCreated.date() == today:
 
-    db.session.delete(log)
-    db.session.commit()
+        db.session.delete(order)
+        db.session.commit()

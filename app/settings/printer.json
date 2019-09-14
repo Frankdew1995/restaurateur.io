@@ -2,21 +2,21 @@
   "kitchen": {
     "printer": "Star TSP100 Cutter (TSP143) eco",
     "cn_key": "\u53a8\u623f",
-    "is_on": true
+    "is_on": false
   },
   "bar": {
     "printer": "Star TSP100 Cutter (TSP143)",
     "cn_key": "\u6c34\u5427",
-    "is_on": true
+    "is_on": false
   },
   "receipt": {
     "printer": "Star TSP100 Cutter (TSP143) eco",
     "cn_key": "\u7968\u636e",
-    "is_on": true
+    "is_on": false
   },
   "terminal": {
     "printer": "Star TSP100 Cutter (TSP143)",
     "cn_key": "\u5916\u5356\u7ec8\u7aef",
-    "is_on": true
+    "is_on": false
   }
 }

@@ -25,6 +25,7 @@
       }
     },
     "ORDER_LIMIT": 5,
-    "BUFFET_MODE": "mongo"
+    "BUFFET_MODE": "jpbuffet",
+    "NGROK_URL": "http://736de798.ngrok.io"
   }
 ]

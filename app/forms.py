@@ -180,6 +180,8 @@ class StoreSettingForm(FlaskForm):
                                        ("mongo", u"蒙古餐 - Mongo Buffet"),
                                        ("jpbuffet", u"日本餐 - Japan Buffet")])
 
+    ngrok_url = StringField("ngrok url", validators=[DataRequired()])
+
     submit = SubmitField(u"确认更新")
 
 

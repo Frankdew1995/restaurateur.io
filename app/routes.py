@@ -38,20 +38,15 @@ from babel.dates import format_date, format_datetime, format_time
 from babel.numbers import format_decimal, format_percent
 
 # Some global variables - read from config file.
-
 info = json_reader(str(Path.cwd() / 'app' / 'settings' / 'config.json'))
-
 
 company_info = {
             "tax_rate_out": info.get('TAX_RATE').get('takeaway'),
             "tax_rate_in": info.get('TAX_RATE').get('Inhouse Order'),
             "company_name": info.get('STORE_NAME'),
             "address": f'{info.get("STREET")} {info.get("STREET NO.")}, {info.get("ZIP")} {info.get("CITY")}',
-            "tax_id": info.get('TAX_ID'),
-
-        }
-
-info = json_reader(str(Path.cwd() / 'app' / 'settings' / 'config.json'))
+            "tax_id": info.get('TAX_ID')
+    }
 
 hours = info.get('BUSINESS_HOURS')
 
@@ -67,7 +62,7 @@ tax_rate_in = float(company_info.get('tax_rate_in', 0.0))
 
 tax_rate_out = float(company_info.get('tax_rate_out', 0.0))
 
-base_url = "http://75aa4848.eu.ngrok.io"
+base_url = info.get('NGROK_URL')
 suffix_url = "guest/navigation"
 
 timezone = 'Europe/Berlin'
@@ -757,7 +752,7 @@ def checkout_takeaway_admin(order_id):
                            "end_total": formatter(order.endTotal),
                            "pay_via": json.loads(order.pay_via).get('method', ""),
                            "discount": formatter(0),
-                           "VAT": formatter((order.endTotal / tax_rate_out) * tax_rate_out)}
+                           "VAT": formatter((order.endTotal / (1 + tax_rate_out)) * tax_rate_out)}
 
                 if form.coupon_amount.data:
 
@@ -1868,15 +1863,21 @@ def export_qrcode(table_name):
 
     import sys
 
-    # if sys.platform == "win32":
-    #
-    #     import comtypes.client
-    #
-    #     xl = comtypes.client.CreateObject("excel.Application")
-    #
-    #     wb = xl.Workbooks.Open(file)
-    #
-    #     xl.Visible = True
+    import webbrowser
+
+    url = file
+
+    if sys.platform == "win32":
+
+        try:
+            # Windows
+            chrome_path = 'C:/Program Files (x86)/Google/Chrome/Application/chrome.exe %s'
+
+            webbrowser.get(chrome_path).open(url)
+
+        except:
+
+            pass
 
     return send_file(file,
                      as_attachment=True,
@@ -1939,7 +1940,8 @@ def set_store():
                                            }},
 
             "ORDER_LIMIT": form.order_limit_per_round.data,
-            "BUFFET_MODE": form.buffet_mode.data
+            "BUFFET_MODE": form.buffet_mode.data,
+            "NGROK_URL": form.ngrok_url.data
         }]
 
         with open(str(Path(app.root_path) / 'settings' / 'config.json'), 'w') as f:
@@ -1965,6 +1967,7 @@ def set_store():
     form.order_times.data = data.get('ORDER_TIMES')
     form.order_limit_per_round.data = data.get('ORDER_LIMIT','')
     form.buffet_mode.data = data.get('BUFFET_MODE')
+    form.ngrok_url.data = data.get('NGROK_URL').strip()
 
     try:
         form.business_hours_start_morning.data = data.get('BUSINESS_HOURS').get('MORNING').get('START')
@@ -2214,7 +2217,8 @@ def admin_active_tables():
     # Filtering alacarte unpaid orders
     orders = Order.query.filter(
         Order.type == "In",
-        Order.isPaid == False).all()
+        Order.isPaid == False,
+        ).all()
 
     # Filtering only orders which happened the same day.(TZ: Berlin) + order is not cancelled
     open_orders = [order for order in orders if order.timeCreated.date()
@@ -2427,23 +2431,6 @@ def admin_view_table(table_name):
 
                     db.session.commit()
 
-                    try:
-
-                        # Writing logs to the csv file
-                        activity_logger(order_id=order.id,
-                                        operation_type=u'结账',
-                                        page_name=u'跑堂界面 > 桌子详情',
-                                        descr=f'''结账订单号:{order.id}\n
-                                                桌子编号：{order.table_name}-{order.seat_number}
-                                                支付方式:{logging.get('Pay')}\n
-                                                结账金额: {order.totalPrice}\n
-                                                订单类型: AlaCarte\n''',
-                                        log_time=str(datetime.now(tz=pytz.timezone(timezone))),
-                                        status=u'成功')
-                    except:
-
-                        pass
-
                     dishes = json.loads(order.items)
 
                     # Calculate the total for each dish in dishes
@@ -2452,6 +2439,8 @@ def admin_view_table(table_name):
                         items['total'] = formatter(items.get('quantity') * items.get('price'))
 
                     total_price = order.totalPrice
+
+                    vat = (order.endTotal / (1 + tax_rate_in)) * tax_rate_in
 
                     context = {"details": dishes,
                                "company_name": company_info.get('company_name', ''),
@@ -2463,8 +2452,7 @@ def admin_view_table(table_name):
                                "total": formatter(order.totalPrice),
                                "end_total": formatter(order.endTotal),
                                "pay_via": json.loads(order.pay_via).get('method', ""),
-                               "VAT": formatter(
-                                   round((order.endTotal / tax_rate_in) * tax_rate_in, 2)),
+                               "VAT": formatter(vat),
                                'discount': formatter(0)}
 
                     if form.coupon_amount.data:
@@ -2497,6 +2485,23 @@ def admin_view_table(table_name):
                     th = Thread(target=master_printer)
 
                     th.start()
+
+                    try:
+
+                        # Writing logs to the csv file
+                        activity_logger(order_id=order.id,
+                                        operation_type=u'结账',
+                                        page_name=u'跑堂界面 > 桌子详情',
+                                        descr=f'''结账订单号:{order.id}\n
+                                                桌子编号：{order.table_name}-{order.seat_number}
+                                                支付方式:{logging.get('Pay')}\n
+                                                结账金额: {order.totalPrice}\n
+                                                订单类型: AlaCarte\n''',
+                                        log_time=str(datetime.now(tz=pytz.timezone(timezone))),
+                                        status=u'成功')
+                    except:
+
+                        pass
 
                     return redirect(url_for('admin_active_tables'))
 
@@ -3144,6 +3149,8 @@ def guest_call_pay():
 @login_required
 def waiter_admin():
 
+    referrer = request.headers.get('Referer')
+
     # if Account suspended
     if not json.loads(current_user.container).get('inUse'):
 
@@ -3244,7 +3251,8 @@ def waiter_admin():
                            form=form,
                            selected_sections=selected_sections,
                            company_name=company_info.get('company_name'),
-                           title="订单查看")
+                           title="订单查看",
+                           referrer=referrer)
 
 
 # Waiter views a table's aggregated order summary
@@ -3379,7 +3387,7 @@ def view_table(table_name):
                                "total": formatter(order.totalPrice),
                                "pay_via": json.loads(order.pay_via).get('method', ""),
                                "VAT": formatter(
-                                   round((order.endTotal / tax_rate_in) * tax_rate_in, 2)),
+                                   round((order.endTotal / (1+ tax_rate_in)) * tax_rate_in, 2)),
                                "end_total": formatter(order.endTotal),
                                'discount': formatter(0)}
 
@@ -3942,15 +3950,21 @@ def export_log():
 
     import sys
 
-    # if sys.platform == "win32":
-    #
-    #     import comtypes.client
-    #
-    #     xl = comtypes.client.CreateObject("excel.Application")
-    #
-    #     wb = xl.Workbooks.Open(file)
-    #
-    #     xl.Visible = True
+    import webbrowser
+
+    url = file
+
+    if sys.platform == "win32":
+
+        try:
+            # Windows
+            chrome_path = 'C:/Program Files (x86)/Google/Chrome/Application/chrome.exe %s'
+
+            webbrowser.get(chrome_path).open(url)
+
+        except:
+
+            pass
 
     return send_file(file, as_attachment=True, mimetype="text/csv")
 
@@ -4877,107 +4891,112 @@ def revenue_by_days():
 
     if form.validate_on_submit() or request.method == "POST":
 
-        start = form.start_date.data
-        end = form.end_date.data
+        try:
 
-        # Accumulating for in/alacarte orders
-        alacarte_total = sum(
-                           [order.totalPrice for order in
-                            [order for order in paid_alacarte_orders
-                             if start <= order.timeCreated.date() <= end]])
+            start = form.start_date.data
+            end = form.end_date.data
 
-        ala_cash_total = sum(
-                           [order.totalPrice for order in
-                            [order for order in paid_alacarte_orders
-                             if start <= order.timeCreated.date() <= end
-                             and json.loads(order.pay_via).get('method') == "Cash"]])
+            # Accumulating for in/alacarte orders
+            alacarte_total = sum(
+                               [order.totalPrice for order in
+                                [order for order in paid_alacarte_orders
+                                 if start <= order.timeCreated.date() <= end]])
 
-        ala_card_total = sum(
-                            [order.totalPrice for order in
-                             [order for order in paid_alacarte_orders
-                              if start <= order.timeCreated.date() <= end
-                              and json.loads(order.pay_via).get('method') == "Card"]])
+            ala_cash_total = sum(
+                               [order.totalPrice for order in
+                                [order for order in paid_alacarte_orders
+                                 if start <= order.timeCreated.date() <= end
+                                 and json.loads(order.pay_via).get('method') == "Cash"]])
 
-        alacarte = {'Total': formatter(alacarte_total),
-                    'Total_Cash': formatter(ala_cash_total),
-                    'Total_Card': formatter(ala_card_total)}
+            ala_card_total = sum(
+                                [order.totalPrice for order in
+                                 [order for order in paid_alacarte_orders
+                                  if start <= order.timeCreated.date() <= end
+                                  and json.loads(order.pay_via).get('method') == "Card"]])
 
-        # Filtered paid alacarte orders
-        filtered_paid_alacarte_orders = [order for order in paid_alacarte_orders
-                                         if start <= order.timeCreated.date() <= end]
+            alacarte = {'Total': formatter(alacarte_total),
+                        'Total_Cash': formatter(ala_cash_total),
+                        'Total_Card': formatter(ala_card_total)}
 
-        # Compute used sections during the DateRange
-        filtered_used_sections = list(set([Table.query.filter_by(name=order.table_name).first_or_404().section
-                                      for order in paid_alacarte_orders if start <= order.timeCreated.date() <= end]))
+            # Filtered paid alacarte orders
+            filtered_paid_alacarte_orders = [order for order in paid_alacarte_orders
+                                             if start <= order.timeCreated.date() <= end]
 
-        from collections import OrderedDict
+            # Compute used sections during the DateRange
+            filtered_used_sections = list(set([Table.query.filter_by(name=order.table_name).first_or_404().section
+                                          for order in paid_alacarte_orders if start <= order.timeCreated.date() <= end]))
 
-        revenue_by_sections = {section:
-                                {"Cash": formatter(sum([order.totalPrice for order in [order for order in filtered_paid_alacarte_orders
-                                          if Table.query.filter_by(name=order.table_name).first_or_404().section == section
-                                          and json.loads(order.pay_via).get('method') == "Cash"]])),
+            from collections import OrderedDict
 
-                                  "Card": formatter(sum([order.totalPrice for order in [order for order in filtered_paid_alacarte_orders
-                                        if Table.query.filter_by(name=order.table_name).first_or_404().section == section
-                                        and json.loads(order.pay_via).get('method') == "Card"]])),
+            revenue_by_sections = {section:
+                                    {"Cash": formatter(sum([order.totalPrice for order in [order for order in filtered_paid_alacarte_orders
+                                              if Table.query.filter_by(name=order.table_name).first_or_404().section == section
+                                              and json.loads(order.pay_via).get('method') == "Cash"]])),
 
-                                  "Total": formatter(sum([order.totalPrice for order in [order for order in filtered_paid_alacarte_orders
-                                          if Table.query.filter_by(name=order.table_name).first_or_404().section == section]]))
+                                      "Card": formatter(sum([order.totalPrice for order in [order for order in filtered_paid_alacarte_orders
+                                            if Table.query.filter_by(name=order.table_name).first_or_404().section == section
+                                            and json.loads(order.pay_via).get('method') == "Card"]])),
 
-                                      } for section in filtered_used_sections}
+                                      "Total": formatter(sum([order.totalPrice for order in [order for order in filtered_paid_alacarte_orders
+                                              if Table.query.filter_by(name=order.table_name).first_or_404().section == section]]))
 
-        revenue_by_sections = OrderedDict(sorted(revenue_by_sections.items(), key=lambda t: t[0]))
+                                          } for section in filtered_used_sections}
 
-        # Accumulating for out orders
-        out_total = sum([order.totalPrice for order
-                      in [order for order in paid_out_orders
-                          if start <= order.timeCreated.date() <= end]])
+            revenue_by_sections = OrderedDict(sorted(revenue_by_sections.items(), key=lambda t: t[0]))
 
-        out_cash_total = sum([order.totalPrice for order in
-                             [order for order in paid_out_orders
-                              if start <= order.timeCreated.date() <= end
-                              and json.loads(order.pay_via).get('method') == "Cash"]])
+            # Accumulating for out orders
+            out_total = sum([order.totalPrice for order
+                          in [order for order in paid_out_orders
+                              if start <= order.timeCreated.date() <= end]])
 
-        out_card_total = sum(
-                            [order.totalPrice for order in
-                             [order for order in paid_out_orders
-                              if start <= order.timeCreated.date() <= end
-                              and json.loads(order.pay_via).get('method') == "Card"]])
+            out_cash_total = sum([order.totalPrice for order in
+                                 [order for order in paid_out_orders
+                                  if start <= order.timeCreated.date() <= end
+                                  and json.loads(order.pay_via).get('method') == "Cash"]])
 
-        out = {'Total': formatter(out_total),
-                'Total_Cash': formatter(out_cash_total),
-                'Total_Card': formatter(out_card_total)}
+            out_card_total = sum(
+                                [order.totalPrice for order in
+                                 [order for order in paid_out_orders
+                                  if start <= order.timeCreated.date() <= end
+                                  and json.loads(order.pay_via).get('method') == "Card"]])
 
-        final_card_total = out_card_total + ala_card_total
+            out = {'Total': formatter(out_total),
+                    'Total_Cash': formatter(out_cash_total),
+                    'Total_Card': formatter(out_card_total)}
 
-        final_cash_total = out_cash_total + ala_cash_total
+            final_card_total = out_card_total + ala_card_total
 
-        final_total = final_card_total + final_cash_total
+            final_cash_total = out_cash_total + ala_cash_total
 
-        context = dict(referrer=referrer,
-                       alacarte=alacarte,
-                       out=out,
-                       form=form,
-                       company_name=company_info.get('company_name'),
-                       revenue_by_sections=revenue_by_sections,
-                       title=u"日结",
-                       formatter=formatter,
-                       final_card_total=formatter(final_card_total),
-                       final_cash_total=formatter(final_cash_total),
-                       final_total=formatter(final_total),
-                       start=format_datetime(start, locale="de_DE"),
-                       end=format_datetime(end, locale="de_DE"))
+            final_total = final_card_total + final_cash_total
 
-        # Print the daily receipt
-        if form.print.data:
+            context = dict(referrer=referrer,
+                           alacarte=alacarte,
+                           out=out,
+                           form=form,
+                           company_name=company_info.get('company_name'),
+                           revenue_by_sections=revenue_by_sections,
+                           title=u"日结",
+                           formatter=formatter,
+                           final_card_total=formatter(final_card_total),
+                           final_cash_total=formatter(final_cash_total),
+                           final_total=formatter(final_total),
+                           start=format_datetime(start, locale="de_DE"),
+                           end=format_datetime(end, locale="de_DE"))
 
-            save_as = f"daily_revenue_report_{str(uuid4())}"
+            # Print the daily receipt
+            if form.print.data:
 
-            th = Thread(target=daily_revenue_templating, args=(context, save_as, ))
+                save_as = f"daily_revenue_report_{str(uuid4())}"
 
-            th.start()
+                th = Thread(target=daily_revenue_templating, args=(context, save_as, ))
 
-            flash(f"日结报告正在打印，若未正常打印，请检查打印机是否正确配置或者处于打开状态")
+                th.start()
+
+                flash(f"日结报告正在打印，若未正常打印，请检查打印机是否正确配置或者处于打开状态")
+        except:
+
+            return redirect(url_for('revenue_by_days'))
 
         return render_template('revenue_by_days.html', **context)
 
@@ -6748,8 +6767,6 @@ def mongo_guest_order(table_name, seat_number, is_kid):
 def mongo_guest_checkout():
 
     if request.method == "POST":
-
-        print("Ok")
 
         # Json Data Posted via AJAX
         json_data = request.json

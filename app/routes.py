@@ -47,11 +47,8 @@ company_info = {
             "tax_rate_in": info.get('TAX_RATE').get('Inhouse Order'),
             "company_name": info.get('STORE_NAME'),
             "address": f'{info.get("STREET")} {info.get("STREET NO.")}, {info.get("ZIP")} {info.get("CITY")}',
-            "tax_id": info.get('TAX_ID'),
-
-        }
-
-info = json_reader(str(Path.cwd() / 'app' / 'settings' / 'config.json'))
+            "tax_id": info.get('TAX_ID')
+    }
 
 hours = info.get('BUSINESS_HOURS')
 
@@ -67,7 +64,7 @@ tax_rate_in = float(company_info.get('tax_rate_in', 0.0))
 
 tax_rate_out = float(company_info.get('tax_rate_out', 0.0))
 
-base_url = "http://75aa4848.eu.ngrok.io"
+base_url = info.get('NGROK_URL')
 suffix_url = "guest/navigation"
 
 timezone = 'Europe/Berlin'
@@ -640,184 +637,191 @@ def checkout_takeaway_admin(order_id):
 
         if request.method == "POST":
 
-            pay_via = {}
+            try:
 
-            # Set the settleID and settleTime
-            settle_id = str(uuid4().int)
-            settle_time = datetime.now(tz=pytz.timezone(timezone))
+                pay_via = {}
 
-            # Pay via cash
-            if form.cash_submit.data:
+                # Set the settleID and settleTime
+                settle_id = str(uuid4().int)
+                settle_time = datetime.now(tz=pytz.timezone(timezone))
 
-                if form.coupon_amount.data and form.discount_rate.data:
+                # Pay via cash
+                if form.cash_submit.data:
 
-                    flash(f"不能同时使用折扣和代金券结账")
-                    return redirect(url_for('checkout_takeaway_admin',
-                                            order_id=order_id))
+                    if form.coupon_amount.data and form.discount_rate.data:
 
-                if form.coupon_amount.data:
+                        flash(f"不能同时使用折扣和代金券结账")
+                        return redirect(url_for('checkout_takeaway_admin',
+                                                order_id=order_id))
 
-                    order.endTotal = order.totalPrice - form.coupon_amount.data
+                    if form.coupon_amount.data:
 
-                    order.discount = form.coupon_amount.data
+                        order.endTotal = order.totalPrice - form.coupon_amount.data
 
-                    pay_via['coupon_amount'] = form.coupon_amount.data
+                        order.discount = form.coupon_amount.data
 
-                    logging['Total'] = order.totalPrice
+                        pay_via['coupon_amount'] = form.coupon_amount.data
 
-                elif form.discount_rate.data:
+                        logging['Total'] = order.totalPrice
 
-                    order.endTotal = order.totalPrice * form.discount_rate.data
-                    order.discount_rate = form.discount_rate.data
+                    elif form.discount_rate.data:
 
-                    pay_via['discount_rate'] = form.discount_rate.data
-                    logging['Total'] = order.totalPrice
+                        order.endTotal = order.totalPrice * form.discount_rate.data
+                        order.discount_rate = form.discount_rate.data
 
-                pay_via["method"] = "Cash"
+                        pay_via['discount_rate'] = form.discount_rate.data
+                        logging['Total'] = order.totalPrice
 
-                logging['Pay'] = u'现金'
+                    pay_via["method"] = "Cash"
 
-            # Pay via card
-            elif form.card_submit.data:
+                    logging['Pay'] = u'现金'
 
-                if form.coupon_amount.data and form.discount_rate.data:
+                # Pay via card
+                elif form.card_submit.data:
 
-                    flash(f"不能同时使用折扣和代金券结账")
-                    return redirect(url_for('checkout_takeaway_admin',
-                                            order_id=order_id))
+                    if form.coupon_amount.data and form.discount_rate.data:
 
-                if form.coupon_amount.data:
+                        flash(f"不能同时使用折扣和代金券结账")
+                        return redirect(url_for('checkout_takeaway_admin',
+                                                order_id=order_id))
 
-                    order.endTotal = order.totalPrice - form.coupon_amount.data
+                    if form.coupon_amount.data:
 
-                    order.discount = form.coupon_amount.data
+                        order.endTotal = order.totalPrice - form.coupon_amount.data
 
-                    pay_via['coupon_amount'] = form.coupon_amount.data
+                        order.discount = form.coupon_amount.data
 
-                    logging['Total'] = order.totalPrice
+                        pay_via['coupon_amount'] = form.coupon_amount.data
 
-                elif form.discount_rate.data:
+                        logging['Total'] = order.totalPrice
 
-                    order.endTotal = order.totalPrice * form.discount_rate.data
+                    elif form.discount_rate.data:
 
-                    order.discount_rate = form.discount_rate.data
+                        order.endTotal = order.totalPrice * form.discount_rate.data
 
-                    pay_via['discount_rate'] = form.discount_rate.data
+                        order.discount_rate = form.discount_rate.data
 
-                    logging['Total'] = order.totalPrice
+                        pay_via['discount_rate'] = form.discount_rate.data
 
-                pay_via['method'] = "Card"
-                logging['Pay'] = u'卡'
+                        logging['Total'] = order.totalPrice
 
-            order.settleTime = settle_time
-            order.settleID = settle_id
+                    pay_via['method'] = "Card"
+                    logging['Pay'] = u'卡'
 
-            order.isPaid = True
+                order.settleTime = settle_time
+                order.settleID = settle_id
 
-            order.pay_via = json.dumps(pay_via)
+                order.isPaid = True
 
-            order.type = 'Out'
-            logging['Type'] = u'外卖'
+                order.pay_via = json.dumps(pay_via)
 
-            db.session.commit()
+                order.type = 'Out'
+                logging['Type'] = u'外卖'
 
-            details = {key: {'quantity': items.get('quantity'),
-                             'total': items.get('quantity') * items.get('price')}
-                                for key, items in json.loads(order.items).items()}
+                db.session.commit()
 
-            details_kitchen = {key: {'quantity': items.get('quantity'),
-                                     'total': items.get('quantity') * items.get('price')}
-                                        for key, items in order_items.items() if items.get("class_name") == "Food"}
-
-            details_bar = {key: {'quantity': items.get('quantity'),
+                details = {key: {'quantity': items.get('quantity'),
                                  'total': items.get('quantity') * items.get('price')}
-                                    for key, items in order_items.items() if items.get("class_name") == "Drinks"}
+                                    for key, items in json.loads(order.items).items()}
 
-            context_kitchen = {"details": details_kitchen,
+                details_kitchen = {key: {'quantity': items.get('quantity'),
+                                         'total': items.get('quantity') * items.get('price')}
+                                            for key, items in order_items.items() if items.get("class_name") == "Food"}
+
+                details_bar = {key: {'quantity': items.get('quantity'),
+                                     'total': items.get('quantity') * items.get('price')}
+                                        for key, items in order_items.items() if items.get("class_name") == "Drinks"}
+
+                context_kitchen = {"details": details_kitchen,
+                                   "wait_number": order.id}
+
+                kitchen_temp = str(Path(app.root_path) / 'static' / 'docx' / 'kitchen.docx')
+                save_as_kitchen = f"meallist_kitchen_{order.id}"
+
+                context_bar = {"details": details_bar,
                                "wait_number": order.id}
 
-            kitchen_temp = str(Path(app.root_path) / 'static' / 'docx' / 'kitchen.docx')
-            save_as_kitchen = f"meallist_kitchen_{order.id}"
+                bar_temp = str(Path(app.root_path) / 'static' / 'docx' / 'bar.docx')
+                save_as_bar = f"meallist_bar_{order.id}"
 
-            context_bar = {"details": details_bar,
-                           "wait_number": order.id}
+                context = {"details": details,
+                           "company_name": company_info.get('company_name', ''),
+                           "address": company_info.get('address'),
+                           "now": datetime.now().strftime("%Y-%m-%d %H:%M:%S"),
+                           "tax_id": company_info.get('tax_id'),
+                           "wait_number": order.id,
+                           "total": formatter(round(order.totalPrice, 2)),
+                           "end_total": formatter(order.endTotal),
+                           "pay_via": json.loads(order.pay_via).get('method', ""),
+                           "discount": formatter(0),
+                           "VAT": formatter((order.endTotal / tax_rate_out) * tax_rate_out)}
 
-            bar_temp = str(Path(app.root_path) / 'static' / 'docx' / 'bar.docx')
-            save_as_bar = f"meallist_bar_{order.id}"
+                if form.coupon_amount.data:
 
-            context = {"details": details,
-                       "company_name": company_info.get('company_name', ''),
-                       "address": company_info.get('address'),
-                       "now": datetime.now().strftime("%Y-%m-%d %H:%M:%S"),
-                       "tax_id": company_info.get('tax_id'),
-                       "wait_number": order.id,
-                       "total": formatter(round(order.totalPrice, 2)),
-                       "end_total": formatter(order.endTotal),
-                       "pay_via": json.loads(order.pay_via).get('method', ""),
-                       "discount": formatter(0),
-                       "VAT": formatter((order.endTotal / tax_rate_out) * tax_rate_out)}
+                    context['discount'] = formatter(form.coupon_amount.data)
 
-            if form.coupon_amount.data:
+                elif order.discount_rate:
 
-                context['discount'] = formatter(form.coupon_amount.data)
+                    context['discount'] = formatter((1 - form.discount_rate.data) * order.totalPrice)
 
-            elif order.discount_rate:
+                temp_file = str(Path(app.root_path) / 'static' / 'docx' / 'receipt_temp_out.docx')
+                save_as = f"receipt_{order.id}"
 
-                context['discount'] = formatter((1 - form.discount_rate.data) * order.totalPrice)
+                # Read the printer setting data from the json file
+                with open(str(Path(app.root_path) / "settings" / "printer.json"), encoding="utf8") as file:
 
-            temp_file = str(Path(app.root_path) / 'static' / 'docx' / 'receipt_temp_out.docx')
-            save_as = f"receipt_{order.id}"
+                    data = file.read()
 
-            # Read the printer setting data from the json file
-            with open(str(Path(app.root_path) / "settings" / "printer.json"), encoding="utf8") as file:
+                data = json.loads(data)
 
-                data = file.read()
+                def master_printer():
 
-            data = json.loads(data)
+                    # Print Receipt
+                    receipt_templating(context=context,
+                                       temp_file=temp_file,
+                                       save_as=save_as,
+                                       printer=data.get('receipt').get('printer')
+                                       )
 
-            def master_printer():
+                    # Print to kitchen
+                    kitchen_templating(context=context_kitchen,
+                                       temp_file=kitchen_temp,
+                                       save_as=save_as_kitchen,
+                                       printer=data.get('kitchen').get('printer'))
 
-                # Print Receipt
-                receipt_templating(context=context,
-                                   temp_file=temp_file,
-                                   save_as=save_as,
-                                   printer=data.get('receipt').get('printer')
-                                   )
+                    # Print to bar
+                    bar_templating(context=context_bar,
+                                   temp_file=bar_temp,
+                                   save_as=save_as_bar,
+                                   printer=data.get('bar').get('printer'))
 
-                # Print to kitchen
-                kitchen_templating(context=context_kitchen,
-                                   temp_file=kitchen_temp,
-                                   save_as=save_as_kitchen,
-                                   printer=data.get('kitchen').get('printer'))
+                # Start the thread
+                th = Thread(target=master_printer)
+                th.start()
 
-                # Print to bar
-                bar_templating(context=context_bar,
-                               temp_file=bar_temp,
-                               save_as=save_as_bar,
-                               printer=data.get('bar').get('printer'))
+                try:
+                    # Writing logs to the csv file
+                    activity_logger(order_id=order.id,
+                                    operation_type=u'结账',
+                                    page_name=u'外卖界面 > 订单结账',
+                                    descr=f'''结账订单号:{order.id}\n
+                                    支付方式:{logging.get('Pay')}\n
+                                    账单金额: {order.totalPrice}\n
+                                    订单类型:{logging.get('Type')}\n''',
+                                    log_time=str(datetime.now(tz=pytz.timezone(timezone))),
+                                    status=u'成功')
+                except:
 
-            # Start the thread
-            th = Thread(target=master_printer)
-            th.start()
+                    print("Database Integrity Error")
+                    db.session.rollback()
 
-            try:
-                # Writing logs to the csv file
-                activity_logger(order_id=order.id,
-                                operation_type=u'结账',
-                                page_name=u'外卖界面 > 订单结账',
-                                descr=f'''结账订单号:{order.id}\n
-                                支付方式:{logging.get('Pay')}\n
-                                账单金额: {order.totalPrice}\n
-                                订单类型:{logging.get('Type')}\n''',
-                                log_time=str(datetime.now(tz=pytz.timezone(timezone))),
-                                status=u'成功')
+                flash(f"已经为订单{order.id}结账")
+
+                return redirect(url_for('takeaway_orders_manage'))
+
             except:
 
-                pass
-
-            flash(f"已经为订单{order.id}结账")
-
-            return redirect(url_for('takeaway_orders_manage'))
+                return redirect(url_for('takeaway_orders_manage'))
 
         context = dict(order=order,
                        order_items=order_items,
@@ -1861,15 +1865,21 @@ def export_qrcode(table_name):
 
     import sys
 
-    # if sys.platform == "win32":
-    #
-    #     import comtypes.client
-    #
-    #     xl = comtypes.client.CreateObject("excel.Application")
-    #
-    #     wb = xl.Workbooks.Open(file)
-    #
-    #     xl.Visible = True
+    import webbrowser
+
+    url = file
+
+    if sys.platform == "win32":
+
+        try:
+            # Windows
+            chrome_path = 'C:/Program Files (x86)/Google/Chrome/Application/chrome.exe %s'
+
+            webbrowser.get(chrome_path).open(url)
+
+        except:
+
+            pass
 
     return send_file(file,
                      as_attachment=True,
@@ -1932,7 +1942,8 @@ def set_store():
                                            }},
 
             "ORDER_LIMIT": form.order_limit_per_round.data,
-            "BUFFET_MODE": form.buffet_mode.data
+            "BUFFET_MODE": form.buffet_mode.data,
+            "NGROK_URL": form.ngrok_url.data
         }]
 
         with open(str(Path(app.root_path) / 'settings' / 'config.json'), 'w') as f:
@@ -1958,6 +1969,7 @@ def set_store():
     form.order_times.data = data.get('ORDER_TIMES')
     form.order_limit_per_round.data = data.get('ORDER_LIMIT','')
     form.buffet_mode.data = data.get('BUFFET_MODE')
+    form.ngrok_url.data = data.get('NGROK_URL').strip()
 
     try:
         form.business_hours_start_morning.data = data.get('BUSINESS_HOURS').get('MORNING').get('START')
@@ -2207,7 +2219,8 @@ def admin_active_tables():
     # Filtering alacarte unpaid orders
     orders = Order.query.filter(
         Order.type == "In",
-        Order.isPaid == False).all()
+        Order.isPaid == False,
+        ).all()
 
     # Filtering only orders which happened the same day.(TZ: Berlin) + order is not cancelled
     open_orders = [order for order in orders if order.timeCreated.date()
@@ -2265,12 +2278,19 @@ def admin_transfer_table(table_name):
     form.target_table.choices.extend([(table.name, f"{table.name} - {table.number}人") \
                                       for table in available_tables])
 
-    if form.validate_on_submit():
+    if form.validate_on_submit() or request.method == "POST":
 
         cur_table_orders = [order for order in open_orders if
                             order.table_name == table_name]
 
         target_table = form.target_table.data
+
+        if len([order for order in open_orders if
+                order.table_name == target_table]) > 0:
+
+            flash("不能转台到还在就餐的桌子，请重新选择")
+
+            return redirect(url_for('admin_transfer_table'))
 
         for order in cur_table_orders:
 
@@ -2339,150 +2359,156 @@ def admin_view_table(table_name):
             # Check if a checkout button is clicked
             if form.validate_on_submit() or request.method == "POST":
 
-                # Set the settleID and settleTime
-                settle_id = str(uuid4().int)
-                settle_time = datetime.now(tz=pytz.timezone(timezone))
-
-                logging = {}
-
-                pay_via = {}
-
-                # Pay via cash
-                if form.cash_submit.data:
-
-                    if form.coupon_amount.data and form.discount_rate.data:
-
-                        flash(f"不能同时使用折扣和代金券结账")
-                        return redirect(url_for('admin_view_table',
-                                                table_name=table_name))
-
-                    if form.coupon_amount.data:
-
-                        order.discount = form.coupon_amount.data
-
-                        order.endTotal = order.totalPrice - form.coupon_amount.data
-
-                        pay_via['coupon_amount'] = form.coupon_amount.data
-
-                    elif form.discount_rate.data:
-
-                        order.discount_rate = form.discount_rate.data
-
-                        order.endTotal = order.totalPrice * form.discount_rate.data
-                        pay_via['discount_rate'] = form.discount_rate.data
-
-                    pay_via["method"] = "Cash"
-                    logging['Pay'] = u'现金'
-
-                # Pay via card
-                elif form.card_submit.data:
-
-                    if form.coupon_amount.data and form.discount_rate.data:
-
-                        flash(f"不能同时使用折扣和代金券结账")
-                        return redirect(url_for('admin_view_table',
-                                                table_name=table_name))
-
-                    if form.coupon_amount.data:
-
-                        order.discount = form.coupon_amount.data
-
-                        order.endTotal = order.totalPrice - form.coupon_amount.data
-
-                        pay_via['coupon_amount'] = form.coupon_amount.data
-
-                    elif form.discount_rate.data:
-
-                        order.discount_rate = form.discount_rate.data
-
-                        order.endTotal = order.totalPrice * form.discount_rate.data
-
-                        pay_via['discount_rate'] = form.discount_rate.data
-
-                    pay_via['method'] = "Card"
-                    logging['Pay'] = u'卡'
-
-                order.settleTime = settle_time
-                order.settleID = settle_id
-
-                order.isPaid = True
-
-                order.pay_via = json.dumps(pay_via)
-
-                db.session.commit()
-
                 try:
 
-                    # Writing logs to the csv file
-                    activity_logger(order_id=order.id,
-                                    operation_type=u'结账',
-                                    page_name=u'跑堂界面 > 桌子详情',
-                                    descr=f'''结账订单号:{order.id}\n
-                                            桌子编号：{order.table_name}-{order.seat_number}
-                                            支付方式:{logging.get('Pay')}\n
-                                            结账金额: {order.totalPrice}\n
-                                            订单类型: AlaCarte\n''',
-                                    log_time=str(datetime.now(tz=pytz.timezone(timezone))),
-                                    status=u'成功')
+                    # Set the settleID and settleTime
+                    settle_id = str(uuid4().int)
+                    settle_time = datetime.now(tz=pytz.timezone(timezone))
+
+                    logging = {}
+
+                    pay_via = {}
+
+                    # Pay via cash
+                    if form.cash_submit.data:
+
+                        if form.coupon_amount.data and form.discount_rate.data:
+
+                            flash(f"不能同时使用折扣和代金券结账")
+                            return redirect(url_for('admin_view_table',
+                                                    table_name=table_name))
+
+                        if form.coupon_amount.data:
+
+                            order.discount = form.coupon_amount.data
+
+                            order.endTotal = order.totalPrice - form.coupon_amount.data
+
+                            pay_via['coupon_amount'] = form.coupon_amount.data
+
+                        elif form.discount_rate.data:
+
+                            order.discount_rate = form.discount_rate.data
+
+                            order.endTotal = order.totalPrice * form.discount_rate.data
+                            pay_via['discount_rate'] = form.discount_rate.data
+
+                        pay_via["method"] = "Cash"
+                        logging['Pay'] = u'现金'
+
+                    # Pay via card
+                    elif form.card_submit.data:
+
+                        if form.coupon_amount.data and form.discount_rate.data:
+
+                            flash(f"不能同时使用折扣和代金券结账")
+                            return redirect(url_for('admin_view_table',
+                                                    table_name=table_name))
+
+                        if form.coupon_amount.data:
+
+                            order.discount = form.coupon_amount.data
+
+                            order.endTotal = order.totalPrice - form.coupon_amount.data
+
+                            pay_via['coupon_amount'] = form.coupon_amount.data
+
+                        elif form.discount_rate.data:
+
+                            order.discount_rate = form.discount_rate.data
+
+                            order.endTotal = order.totalPrice * form.discount_rate.data
+
+                            pay_via['discount_rate'] = form.discount_rate.data
+
+                        pay_via['method'] = "Card"
+                        logging['Pay'] = u'卡'
+
+                    order.settleTime = settle_time
+                    order.settleID = settle_id
+
+                    order.isPaid = True
+
+                    order.pay_via = json.dumps(pay_via)
+
+                    db.session.commit()
+
+                    dishes = json.loads(order.items)
+
+                    # Calculate the total for each dish in dishes
+                    for key, items in dishes.items():
+
+                        items['total'] = formatter(items.get('quantity') * items.get('price'))
+
+                    total_price = order.totalPrice
+
+                    context = {"details": dishes,
+                               "company_name": company_info.get('company_name', ''),
+                               "address": company_info.get('address'),
+                               "now": format_datetime(datetime.now(), locale="de_DE"),
+                               "tax_id": company_info.get('tax_id'),
+                               "order_id": order.id,
+                               "table_name": table_name,
+                               "total": formatter(order.totalPrice),
+                               "end_total": formatter(order.endTotal),
+                               "pay_via": json.loads(order.pay_via).get('method', ""),
+                               "VAT": formatter(
+                                   round((order.endTotal / tax_rate_in) * tax_rate_in, 2)),
+                               'discount': formatter(0)}
+
+                    if form.coupon_amount.data:
+
+                        context['discount'] = formatter(order.discount)
+
+                    if form.discount_rate.data:
+
+                        context['discount'] = formatter(order.totalPrice \
+                                                        * (1 - form.discount_rate.data))
+
+                    temp_file = str(Path(app.root_path) / 'static' / 'docx' / 'receipt_temp_inhouse.docx')
+                    save_as = f"receipt_{order.id}"
+
+                    with open(str(Path(app.root_path) / "settings" / "printer.json"), encoding="utf8") as file:
+
+                        data = file.read()
+
+                    data = json.loads(data)
+
+                    printer = data.get('receipt').get('printer')
+
+                    def master_printer():
+
+                        receipt_templating(context=context,
+                                           temp_file=temp_file,
+                                           save_as=save_as,
+                                           printer=printer)
+
+                    th = Thread(target=master_printer)
+
+                    th.start()
+
+                    try:
+
+                        # Writing logs to the csv file
+                        activity_logger(order_id=order.id,
+                                        operation_type=u'结账',
+                                        page_name=u'跑堂界面 > 桌子详情',
+                                        descr=f'''结账订单号:{order.id}\n
+                                                桌子编号：{order.table_name}-{order.seat_number}
+                                                支付方式:{logging.get('Pay')}\n
+                                                结账金额: {order.totalPrice}\n
+                                                订单类型: AlaCarte\n''',
+                                        log_time=str(datetime.now(tz=pytz.timezone(timezone))),
+                                        status=u'成功')
+                    except:
+
+                        pass
+
+                    return redirect(url_for('admin_active_tables'))
+
                 except:
 
-                    pass
-
-                dishes = json.loads(order.items)
-
-                # Calculate the total for each dish in dishes
-                for key, items in dishes.items():
-
-                    items['total'] = items.get('quantity') * items.get('price')
-
-                total_price = order.totalPrice
-
-                context = {"details": dishes,
-                           "company_name": company_info.get('company_name', ''),
-                           "address": company_info.get('address'),
-                           "now": format_datetime(datetime.now(), locale="de_DE"),
-                           "tax_id": company_info.get('tax_id'),
-                           "order_id": order.id,
-                           "table_name": table_name,
-                           "total": formatter(order.totalPrice),
-                           "end_total": formatter(order.endTotal),
-                           "pay_via": json.loads(order.pay_via).get('method', ""),
-                           "VAT": formatter(
-                               round((order.endTotal / tax_rate_in) * tax_rate_in, 2)),
-                           'discount': formatter(0)}
-
-                if form.coupon_amount.data:
-
-                    context['discount'] = formatter(order.discount)
-
-                if form.discount_rate.data:
-
-                    context['discount'] = formatter(order.totalPrice \
-                                                    * (1 - form.discount_rate.data))
-
-                temp_file = str(Path(app.root_path) / 'static' / 'docx' / 'receipt_temp_inhouse.docx')
-                save_as = f"receipt_{order.id}"
-
-                with open(str(Path(app.root_path) / "settings" / "printer.json"), encoding="utf8") as file:
-
-                    data = file.read()
-
-                data = json.loads(data)
-
-                printer = data.get('receipt').get('printer')
-
-                def master_printer():
-
-                    receipt_templating(context=context,
-                                       temp_file=temp_file,
-                                       save_as=save_as,
-                                       printer=printer)
-
-                th = Thread(target=master_printer)
-
-                th.start()
-
-                return redirect(url_for('admin_active_tables'))
+                    return redirect(url_for('admin_active_tables'))
 
             # Calculate the total price for this table
             total_price = order.totalPrice
@@ -3124,6 +3150,8 @@ def guest_call_pay():
 @login_required
 def waiter_admin():
 
+    referrer = request.headers.get('Referer')
+
     # if Account suspended
     if not json.loads(current_user.container).get('inUse'):
 
@@ -3223,7 +3251,8 @@ def waiter_admin():
                            form=form,
                            selected_sections=selected_sections,
                            company_name=company_info.get('company_name'),
-                           title="订单查看")
+                           title="订单查看",
+                           referrer=referrer)
 
 
 # Waiter views a table's aggregated order summary
@@ -3255,142 +3284,148 @@ def view_table(table_name):
             # Check if a checkout button is clicked
             if request.method == "POST" or form.validate_on_submit():
 
-                # Set settleId and SettleTime
-                settle_id = str(uuid4().int)
-                settle_time = datetime.now(tz=pytz.timezone(timezone))
-
-                logging = {}
-
-                pay_via = {}
-
-                # Pay via cash
-                if form.cash_submit.data:
-
-                    if form.coupon_amount.data and form.discount_rate.data:
-
-                        flash(f"不能同时使用折扣和代金券结账")
-                        return redirect(url_for('admin_view_table',
-                                                table_name=table_name))
-
-                    if form.coupon_amount.data:
-
-                        order.discount = form.coupon_amount.data
-
-                        order.endTotal = order.totalPrice - form.coupon_amount.data
-
-                        pay_via['coupon_amount'] = form.coupon_amount.data
-
-                    elif form.discount_rate.data:
-
-                        order.discount_rate = form.discount_rate.data
-                        order.endTotal = order.totalPrice * form.discount_rate.data
-                        pay_via['discount_rate'] = form.discount_rate.data
-
-                    pay_via["method"] = "Cash"
-                    logging['Pay'] = u'现金'
-
-                # Pay via card
-                elif form.card_submit.data:
-
-                    if form.coupon_amount.data and form.discount_rate.data:
-
-                        flash(f"不能同时使用折扣和代金券结账")
-                        return redirect(url_for('admin_view_table',
-                                                table_name=table_name))
-
-                    if form.coupon_amount.data:
-
-                        order.discount = form.coupon_amount.data
-
-                        order.endTotal = order.totalPrice - form.coupon_amount.data
-
-                        pay_via['coupon_amount'] = form.coupon_amount.data
-
-                    elif form.discount_rate.data:
-
-                        order.discount_rate = form.discount_rate.data
-
-                        order.endTotal = order.totalPrice * form.discount_rate.data
-
-                        pay_via['discount_rate'] = form.discount_rate.data
-
-                    pay_via['method'] = "Card"
-                    logging['Pay'] = u'卡'
-
-                order.isPaid = True
-
-                order.settleID = settle_id
-                order.settleTime = settle_time
-
-                order.pay_via = json.dumps(pay_via)
-
-                db.session.commit()
                 try:
-                    # Writing logs to the csv file
-                    activity_logger(order_id=order.id,
-                                    operation_type=u'结账',
-                                    page_name=u'跑堂界面 > 桌子详情',
-                                    descr=f'''结账订单号:{order.id}\n
-                                            桌子编号：{order.table_name}-{order.seat_number}
-                                            支付方式:{logging.get('Pay')}\n
-                                            结账金额: {order.totalPrice}\n
-                                            订单类型:AlaCarte\n''',
-                                    log_time=str(datetime.now(pytz.timezone('Europe/Berlin'))),
-                                    status=u'成功')
+
+                    # Set settleId and SettleTime
+                    settle_id = str(uuid4().int)
+                    settle_time = datetime.now(tz=pytz.timezone(timezone))
+
+                    logging = {}
+
+                    pay_via = {}
+
+                    # Pay via cash
+                    if form.cash_submit.data:
+
+                        if form.coupon_amount.data and form.discount_rate.data:
+
+                            flash(f"不能同时使用折扣和代金券结账")
+                            return redirect(url_for('admin_view_table',
+                                                    table_name=table_name))
+
+                        if form.coupon_amount.data:
+
+                            order.discount = form.coupon_amount.data
+
+                            order.endTotal = order.totalPrice - form.coupon_amount.data
+
+                            pay_via['coupon_amount'] = form.coupon_amount.data
+
+                        elif form.discount_rate.data:
+
+                            order.discount_rate = form.discount_rate.data
+                            order.endTotal = order.totalPrice * form.discount_rate.data
+                            pay_via['discount_rate'] = form.discount_rate.data
+
+                        pay_via["method"] = "Cash"
+                        logging['Pay'] = u'现金'
+
+                    # Pay via card
+                    elif form.card_submit.data:
+
+                        if form.coupon_amount.data and form.discount_rate.data:
+
+                            flash(f"不能同时使用折扣和代金券结账")
+                            return redirect(url_for('admin_view_table',
+                                                    table_name=table_name))
+
+                        if form.coupon_amount.data:
+
+                            order.discount = form.coupon_amount.data
+
+                            order.endTotal = order.totalPrice - form.coupon_amount.data
+
+                            pay_via['coupon_amount'] = form.coupon_amount.data
+
+                        elif form.discount_rate.data:
+
+                            order.discount_rate = form.discount_rate.data
+
+                            order.endTotal = order.totalPrice * form.discount_rate.data
+
+                            pay_via['discount_rate'] = form.discount_rate.data
+
+                        pay_via['method'] = "Card"
+                        logging['Pay'] = u'卡'
+
+                    order.isPaid = True
+
+                    order.settleID = settle_id
+                    order.settleTime = settle_time
+
+                    order.pay_via = json.dumps(pay_via)
+
+                    db.session.commit()
+                    try:
+                        # Writing logs to the csv file
+                        activity_logger(order_id=order.id,
+                                        operation_type=u'结账',
+                                        page_name=u'跑堂界面 > 桌子详情',
+                                        descr=f'''结账订单号:{order.id}\n
+                                                桌子编号：{order.table_name}-{order.seat_number}
+                                                支付方式:{logging.get('Pay')}\n
+                                                结账金额: {order.totalPrice}\n
+                                                订单类型:AlaCarte\n''',
+                                        log_time=str(datetime.now(pytz.timezone('Europe/Berlin'))),
+                                        status=u'成功')
+                    except:
+
+                        pass
+
+                    # Calculate the totalf for each dish in dishes
+                    for key, items in dishes.items():
+
+                        items['total'] = formatter(items.get('quantity') * items.get('quantity'))
+
+                    context = {"details": dishes,
+                               "company_name": company_info.get('company_name', ''),
+                               "address": company_info.get('address'),
+                               "now": format_datetime(datetime.now(), locale="de_DE"),
+                               "tax_id": company_info.get('tax_id'),
+                               "order_id": order.id,
+                               "table_name": table_name,
+                               "total": formatter(order.totalPrice),
+                               "pay_via": json.loads(order.pay_via).get('method', ""),
+                               "VAT": formatter(
+                                   round((order.endTotal / tax_rate_in) * tax_rate_in, 2)),
+                               "end_total": formatter(order.endTotal),
+                               'discount': formatter(0)}
+
+                    if form.coupon_amount.data:
+
+                        context['discount'] = formatter(order.discount)
+
+                    if form.discount_rate.data:
+
+                        context['discount'] = formatter((1 - order.discount_rate) * order.totalPrice)
+
+                    temp_file = str(Path(app.root_path) / 'static' / 'docx' / 'receipt_temp_inhouse.docx')
+                    save_as = f"receipt_{order.id}"
+
+                    with open(str(Path(app.root_path) / "settings" / "printer.json"), encoding="utf8") as file:
+
+                        data = file.read()
+
+                    data = json.loads(data)
+
+                    printer = data.get('receipt').get('printer')
+
+                    def master_printer():
+
+                        receipt_templating(context=context,
+                                           temp_file=temp_file,
+                                           save_as=save_as,
+                                           printer=printer)
+
+                    th = Thread(target=master_printer)
+
+                    th.start()
+
+                    return redirect(url_for('waiter_admin'))
+
                 except:
 
-                    pass
-
-                # Calculate the totalf for each dish in dishes
-                for key, items in dishes.items():
-
-                    items['total'] = items.get('quantity') * items.get('quantity')
-
-                context = {"details": dishes,
-                           "company_name": company_info.get('company_name', ''),
-                           "address": company_info.get('address'),
-                           "now": format_datetime(datetime.now(), locale="de_DE"),
-                           "tax_id": company_info.get('tax_id'),
-                           "order_id": order.id,
-                           "table_name": table_name,
-                           "total": formatter(order.totalPrice),
-                           "pay_via": json.loads(order.pay_via).get('method', ""),
-                           "VAT": formatter(
-                               round((order.endTotal / tax_rate_in) * tax_rate_in, 2)),
-                           "end_total": formatter(order.endTotal),
-                           'discount': formatter(0)}
-
-                if form.coupon_amount.data:
-
-                    context['discount'] = formatter(order.discount)
-
-                if form.discount_rate.data:
-
-                    context['discount'] = formatter((1 - order.discount_rate) * order.totalPrice)
-
-                temp_file = str(Path(app.root_path) / 'static' / 'docx' / 'receipt_temp_inhouse.docx')
-                save_as = f"receipt_{order.id}"
-
-                with open(str(Path(app.root_path) / "settings" / "printer.json"), encoding="utf8") as file:
-
-                    data = file.read()
-
-                data = json.loads(data)
-
-                printer = data.get('receipt').get('printer')
-
-                def master_printer():
-
-                    receipt_templating(context=context,
-                                       temp_file=temp_file,
-                                       save_as=save_as,
-                                       printer=printer)
-
-                th = Thread(target=master_printer)
-
-                th.start()
-
-                return redirect(url_for('waiter_admin'))
+                    return redirect(url_for('waiter_admin'))
 
             section = Table.query.filter_by(name=table_name).first_or_404().section
 
@@ -3915,15 +3950,21 @@ def export_log():
 
     import sys
 
-    # if sys.platform == "win32":
-    #
-    #     import comtypes.client
-    #
-    #     xl = comtypes.client.CreateObject("excel.Application")
-    #
-    #     wb = xl.Workbooks.Open(file)
-    #
-    #     xl.Visible = True
+    import webbrowser
+
+    url = file
+
+    if sys.platform == "win32":
+
+        try:
+            # Windows
+            chrome_path = 'C:/Program Files (x86)/Google/Chrome/Application/chrome.exe %s'
+
+            webbrowser.get(chrome_path).open(url)
+
+        except:
+
+            pass
 
     return send_file(file, as_attachment=True, mimetype="text/csv")
 
@@ -4850,107 +4891,112 @@ def revenue_by_days():
 
     if form.validate_on_submit() or request.method == "POST":
 
-        start = form.start_date.data
-        end = form.end_date.data
+        try:
 
-        # Accumulating for in/alacarte orders
-        alacarte_total = sum(
-                           [order.totalPrice for order in
-                            [order for order in paid_alacarte_orders
-                             if start <= order.timeCreated.date() <= end]])
+            start = form.start_date.data
+            end = form.end_date.data
 
-        ala_cash_total = sum(
-                           [order.totalPrice for order in
-                            [order for order in paid_alacarte_orders
-                             if start <= order.timeCreated.date() <= end
-                             and json.loads(order.pay_via).get('method') == "Cash"]])
+            # Accumulating for in/alacarte orders
+            alacarte_total = sum(
+                               [order.totalPrice for order in
+                                [order for order in paid_alacarte_orders
+                                 if start <= order.timeCreated.date() <= end]])
 
-        ala_card_total = sum(
-                            [order.totalPrice for order in
-                             [order for order in paid_alacarte_orders
-                              if start <= order.timeCreated.date() <= end
-                              and json.loads(order.pay_via).get('method') == "Card"]])
+            ala_cash_total = sum(
+                               [order.totalPrice for order in
+                                [order for order in paid_alacarte_orders
+                                 if start <= order.timeCreated.date() <= end
+                                 and json.loads(order.pay_via).get('method') == "Cash"]])
 
-        alacarte = {'Total': formatter(alacarte_total),
-                    'Total_Cash': formatter(ala_cash_total),
-                    'Total_Card': formatter(ala_card_total)}
+            ala_card_total = sum(
+                                [order.totalPrice for order in
+                                 [order for order in paid_alacarte_orders
+                                  if start <= order.timeCreated.date() <= end
+                                  and json.loads(order.pay_via).get('method') == "Card"]])
 
-        # Filtered paid alacarte orders
-        filtered_paid_alacarte_orders = [order for order in paid_alacarte_orders
-                                         if start <= order.timeCreated.date() <= end]
+            alacarte = {'Total': formatter(alacarte_total),
+                        'Total_Cash': formatter(ala_cash_total),
+                        'Total_Card': formatter(ala_card_total)}
 
-        # Compute used sections during the DateRange
-        filtered_used_sections = list(set([Table.query.filter_by(name=order.table_name).first_or_404().section
-                                      for order in paid_alacarte_orders if start <= order.timeCreated.date() <= end]))
+            # Filtered paid alacarte orders
+            filtered_paid_alacarte_orders = [order for order in paid_alacarte_orders
+                                             if start <= order.timeCreated.date() <= end]
 
-        from collections import OrderedDict
+            # Compute used sections during the DateRange
+            filtered_used_sections = list(set([Table.query.filter_by(name=order.table_name).first_or_404().section
+                                          for order in paid_alacarte_orders if start <= order.timeCreated.date() <= end]))
 
-        revenue_by_sections = {section:
-                                {"Cash": formatter(sum([order.totalPrice for order in [order for order in filtered_paid_alacarte_orders
-                                          if Table.query.filter_by(name=order.table_name).first_or_404().section == section
-                                          and json.loads(order.pay_via).get('method') == "Cash"]])),
+            from collections import OrderedDict
 
-                                  "Card": formatter(sum([order.totalPrice for order in [order for order in filtered_paid_alacarte_orders
-                                        if Table.query.filter_by(name=order.table_name).first_or_404().section == section
-                                        and json.loads(order.pay_via).get('method') == "Card"]])),
+            revenue_by_sections = {section:
+                                    {"Cash": formatter(sum([order.totalPrice for order in [order for order in filtered_paid_alacarte_orders
+                                              if Table.query.filter_by(name=order.table_name).first_or_404().section == section
+                                              and json.loads(order.pay_via).get('method') == "Cash"]])),
 
-                                  "Total": formatter(sum([order.totalPrice for order in [order for order in filtered_paid_alacarte_orders
-                                          if Table.query.filter_by(name=order.table_name).first_or_404().section == section]]))
+                                      "Card": formatter(sum([order.totalPrice for order in [order for order in filtered_paid_alacarte_orders
+                                            if Table.query.filter_by(name=order.table_name).first_or_404().section == section
+                                            and json.loads(order.pay_via).get('method') == "Card"]])),
 
-                                      } for section in filtered_used_sections}
+                                      "Total": formatter(sum([order.totalPrice for order in [order for order in filtered_paid_alacarte_orders
+                                              if Table.query.filter_by(name=order.table_name).first_or_404().section == section]]))
 
-        revenue_by_sections = OrderedDict(sorted(revenue_by_sections.items(), key=lambda t: t[0]))
+                                          } for section in filtered_used_sections}
 
-        # Accumulating for out orders
-        out_total = sum([order.totalPrice for order
-                      in [order for order in paid_out_orders
-                          if start <= order.timeCreated.date() <= end]])
+            revenue_by_sections = OrderedDict(sorted(revenue_by_sections.items(), key=lambda t: t[0]))
 
-        out_cash_total = sum([order.totalPrice for order in
-                             [order for order in paid_out_orders
-                              if start <= order.timeCreated.date() <= end
-                              and json.loads(order.pay_via).get('method') == "Cash"]])
+            # Accumulating for out orders
+            out_total = sum([order.totalPrice for order
+                          in [order for order in paid_out_orders
+                              if start <= order.timeCreated.date() <= end]])
 
-        out_card_total = sum(
-                            [order.totalPrice for order in
-                             [order for order in paid_out_orders
-                              if start <= order.timeCreated.date() <= end
-                              and json.loads(order.pay_via).get('method') == "Card"]])
+            out_cash_total = sum([order.totalPrice for order in
+                                 [order for order in paid_out_orders
+                                  if start <= order.timeCreated.date() <= end
+                                  and json.loads(order.pay_via).get('method') == "Cash"]])
 
-        out = {'Total': formatter(out_total),
-                'Total_Cash': formatter(out_cash_total),
-                'Total_Card': formatter(out_card_total)}
+            out_card_total = sum(
+                                [order.totalPrice for order in
+                                 [order for order in paid_out_orders
+                                  if start <= order.timeCreated.date() <= end
+                                  and json.loads(order.pay_via).get('method') == "Card"]])
 
-        final_card_total = out_card_total + ala_card_total
+            out = {'Total': formatter(out_total),
+                    'Total_Cash': formatter(out_cash_total),
+                    'Total_Card': formatter(out_card_total)}
 
-        final_cash_total = out_cash_total + ala_cash_total
+            final_card_total = out_card_total + ala_card_total
 
-        final_total = final_card_total + final_cash_total
+            final_cash_total = out_cash_total + ala_cash_total
 
-        context = dict(referrer=referrer,
-                       alacarte=alacarte,
-                       out=out,
-                       form=form,
-                       company_name=company_info.get('company_name'),
-                       revenue_by_sections=revenue_by_sections,
-                       title=u"日结",
-                       formatter=formatter,
-                       final_card_total=formatter(final_card_total),
-                       final_cash_total=formatter(final_cash_total),
-                       final_total=formatter(final_total),
-                       start=format_datetime(start, locale="de_DE"),
-                       end=format_datetime(end, locale="de_DE"))
+            final_total = final_card_total + final_cash_total
 
-        # Print the daily receipt
-        if form.print.data:
+            context = dict(referrer=referrer,
+                           alacarte=alacarte,
+                           out=out,
+                           form=form,
+                           company_name=company_info.get('company_name'),
+                           revenue_by_sections=revenue_by_sections,
+                           title=u"日结",
+                           formatter=formatter,
+                           final_card_total=formatter(final_card_total),
+                           final_cash_total=formatter(final_cash_total),
+                           final_total=formatter(final_total),
+                           start=format_datetime(start, locale="de_DE"),
+                           end=format_datetime(end, locale="de_DE"))
 
-            save_as = f"daily_revenue_report_{str(uuid4())}"
+            # Print the daily receipt
+            if form.print.data:
 
-            th = Thread(target=daily_revenue_templating, args=(context, save_as, ))
+                save_as = f"daily_revenue_report_{str(uuid4())}"
 
-            th.start()
+                th = Thread(target=daily_revenue_templating, args=(context, save_as, ))
 
-            flash(f"日结报告正在打印，若未正常打印，请检查打印机是否正确配置或者处于打开状态")
+                th.start()
+
+                flash(f"日结报告正在打印，若未正常打印，请检查打印机是否正确配置或者处于打开状态")
+        except:
+
+            return redirect(url_for('revenue_by_days'))
 
         return render_template('revenue_by_days.html', **context)
 
@@ -6138,6 +6184,10 @@ def print_receipt(order_id):
 
         tax_rate = tax_rate_out
 
+    for key, items in dishes.items():
+
+        items['total'] = formatter(items.get('quantity') * items.get('price'))
+
     context = {"details": dishes,
                "company_name": company_info.get('company_name', ''),
                "address": company_info.get('address'),
@@ -6146,9 +6196,11 @@ def print_receipt(order_id):
                "order_id": order.id,
                "table_name": table_name,
                "total": formatter(total_price),
+               "end_total": formatter(order.endTotal),
                "pay_via": json.loads(order.pay_via).get('method', ""),
+               "discount": formatter(order.totalPrice - order.endTotal),
                "VAT": formatter(
-                   round((total_price / tax_rate) * tax_rate, 2))}
+                   round((order.endTotal / tax_rate) * tax_rate, 2))}
 
     temp_file = str(Path(app.root_path) / 'static' / 'docx' / 'receipt_temp_inhouse.docx')
     save_as = f"receipt_{order.id}"
@@ -6716,8 +6768,6 @@ def mongo_guest_checkout():
 
     if request.method == "POST":
 
-        print("Ok")
-
         # Json Data Posted via AJAX
         json_data = request.json
 
@@ -6745,7 +6795,8 @@ def mongo_guest_checkout():
         orders = db.session.query(Order).filter(
             Order.type == "In",
             Order.isPaid == False,
-            Order.table_name == table_name).order_by(Order.timeCreated.desc()).all()
+            Order.table_name == table_name,
+            Order.isCancelled == False).order_by(Order.timeCreated.desc()).all()
 
         if len(orders) > 0:
 
@@ -7622,7 +7673,8 @@ def guest_drinks_checkout():
         orders = db.session.query(Order).filter(
             Order.type == "In",
             Order.isPaid == False,
-            Order.table_name == table_name).order_by(Order.timeCreated.desc()).all()
+            Order.table_name == table_name,
+            Order.isCancelled == False).order_by(Order.timeCreated.desc()).all()
 
         if len(orders) > 0:
 
@@ -7883,7 +7935,8 @@ def jpbuffet_special_checkout():
         orders = db.session.query(Order).filter(
             Order.type == "In",
             Order.isPaid == False,
-            Order.table_name == table_name).order_by(Order.timeCreated.desc()).all()
+            Order.table_name == table_name,
+            Order.isCancelled == False).order_by(Order.timeCreated.desc()).all()
 
         if len(orders) > 0:
 

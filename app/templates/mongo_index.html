@@ -163,7 +163,7 @@
 
         <div class="card-image">
 
-          <a href={{ url_for('guest_call_service', table_name=table_name, seat_number=seat_number) }}>
+          <a href="#" id="service">
             <img src={{ url_for('static', filename="img/mongo_service.png") }}>
           </a>
         </div>
@@ -175,13 +175,20 @@
     <div class="col s6 s6">
       <div class="card">
         <div class="card-image">
-          <a href={{ url_for('guest_call_pay', table_name=table_name, seat_number=seat_number) }}>
+          <a href="#" id="pay">
             <img src={{ url_for('static', filename="img/mongo_pay.png") }}>
           </a>
         </div>
 
       </div>
     </div>
+    <p style="display:none">
+
+      <span id="tableName">{{table_name}}</span>
+      <span id="seatNumber">{{seat_number}}</span>
+      <span id="isKid">{{is_kid}}</span>
+
+    </p>
 
 
 
@@ -194,6 +201,6 @@
 
   <!-- Compiled and minified JavaScript -->
   <script src="https://cdnjs.cloudflare.com/ajax/libs/materialize/1.0.0/js/materialize.min.js"></script>
-
+  <script src={{ url_for('static', filename="js/mongo_service_call.js") }} charset="utf-8"></script>
   </body>
 </html>

@@ -13,7 +13,9 @@ class Config(object):
 
     SQLALCHEMY_TRACK_MODIFICATIONS = False
 
-    DEBUG = True
+    DEBUG = False
+
+    CACHE_TYPE = "simple"
 
 class DevConfig(Config):
 

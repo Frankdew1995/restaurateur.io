@@ -96,22 +96,26 @@ def generate_qrcode(table, seat, base_url, suffix_url):
 def activity_logger(order_id, operation_type,
                     page_name, descr,
                     status, log_time):
+    try:
+        from .models import Log
+        from app import db
 
-    from .models import Log
-    from app import db
+        log = Log()
 
-    log = Log()
+        log.order_id = order_id
+        log.status = status
+        log.operation = operation_type
+        log.desc = descr
+        log.time = log_time
+        log.page = page_name
 
-    log.order_id = order_id
-    log.status = status
-    log.operation = operation_type
-    log.desc = descr
-    log.time = log_time
-    log.page = page_name
+        db.session.add(log)
 
-    db.session.add(log)
+        db.session.commit()
 
-    db.session.commit()
+    except:
+
+        print("Database Integrity Error")
 
     import csv
 

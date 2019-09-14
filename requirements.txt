@@ -9,10 +9,12 @@ colorama==0.4.1
 comtypes==1.1.7
 docxtpl==0.6.3
 Flask==1.1.1
+Flask-Caching==1.7.2
 Flask-Login==0.4.1
 Flask-Migrate==2.5.2
 Flask-SQLAlchemy==2.4.0
 Flask-WTF==0.14.2
+future==0.17.1
 httplib2==0.13.0
 idna==2.8
 itsdangerous==1.1.0
@@ -25,8 +27,12 @@ pendulum==2.0.5
 Pillow==6.1.0
 pyasn1==0.4.5
 pyasn1-modules==0.2.5
+PyFladesk==1.1
 pypng==0.0.19
 PyQRCode==1.2.1
+PyQt5==5.13.1
+PyQt5-sip==4.19.19
+PyQtWebEngine==5.13.1
 pyserial==3.4
 python-dateutil==2.8.0
 python-docx==0.8.7

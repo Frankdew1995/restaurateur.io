@@ -3173,7 +3173,8 @@ def waiter_admin():
     # Filtering alacarte unpaid orders
     orders = Order.query.filter(
         Order.type == "In",
-        Order.isPaid == False).all()
+        Order.isPaid == False,
+        Order.isCancelled == False ).all()
 
     # Filtering only orders which happened the same day.(TZ: Berlin)
     orders = [order for order in orders if

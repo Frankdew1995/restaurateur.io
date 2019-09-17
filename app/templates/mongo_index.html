@@ -151,7 +151,12 @@
     <div class="col s6 s6">
       <div class="card">
         <div class="card-image">
-          <img src={{ url_for('static', filename="img/mongo_drink.png") }}>
+
+          <a href={{  url_for('mongo_order_drinks', table_name=table_name, seat_number=seat_number, is_kid=is_kid) }}>
+
+            <img src={{ url_for('static', filename="img/mongo_drink.png") }}>
+
+          </a>
         </div>
 
       </div>

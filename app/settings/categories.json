@@ -6,11 +6,6 @@
   },
   {
     "Class": "Food",
-    "Subcategory": "Chinese cuisine",
-    "Unit": "Topf"
-  },
-  {
-    "Class": "Food",
     "Subcategory": "Japan Buffet",
     "Unit": "Teller"
   },
@@ -38,5 +33,15 @@
     "Class": "Food",
     "Subcategory": "Grill",
     "Unit": "pfanne"
+  },
+  {
+    "Class": "Drinks",
+    "Subcategory": "Beer",
+    "Unit": ""
+  },
+  {
+    "Class": "Food",
+    "Subcategory": "Sichuan Cuisine",
+    "Unit": "Topf"
   }
 ]

@@ -6,7 +6,7 @@ const checkBtn = document.getElementById('checkout');
 checkBtn.addEventListener("click", function(){
 
 
-  alert("Ihre Bestellung ist an die Kueche gesendet!");
+  // alert("Ihre Bestellung ist an die Kueche gesendet!");
 
 
   const totalPrice = parseFloat(document.getElementById("priceTotal").textContent);
@@ -43,6 +43,34 @@ checkBtn.addEventListener("click", function(){
 
   var request = new XMLHttpRequest();
   request.open('POST', '/mongo/guest/checkout', true);
+
+
+  request.onload = function() {
+        if (this.status >= 200 && this.status < 400) {
+            // Success!
+            var resp = JSON.parse(this.response);
+            console.log(resp);
+
+            // if error, log the error messages
+            if (resp.error){
+
+                alert(resp.error);
+                // refresh without cache
+                location.reload(true);
+
+            } else {
+              // if success, alert the msg and redirect to alacarte index page
+
+              alert(resp.success);
+
+              // redirct handling + javascript template literals > alacarte index page
+              window.location = `/mongo/index/${order.tableName}/${order.seatNumber}/${order.isKid}`;
+            }
+
+      }
+      };
+
+
   request.setRequestHeader('Content-Type', 'application/json; charset=UTF-8');
   request.send(data);
 

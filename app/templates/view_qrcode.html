@@ -51,6 +51,17 @@
   <p>
     座位号: {{seat_number}}
 
+  </p>
+
+  <p>
+
+    Web URL:
+
+    <a href="{{base_url}}{{ url_for('guest_navigate', table_name=table_name, seat_number=seat_number) }}">
+
+      {{base_url}}{{ url_for('guest_navigate', table_name=table_name, seat_number=seat_number) }}
+
+    </a>
 
   </p>
 

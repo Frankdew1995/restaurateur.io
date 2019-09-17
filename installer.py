@@ -15,12 +15,34 @@ def remove_qrcodes():
         try:
             os.remove(file)
 
-        except:
+        except Exception as e:
 
-            pass
+            print(str(e))
+
+        print(f"Removed {file}")
+
+
+def remove_docx():
+
+    docs = glob(str(Path(app.root_path) / 'static' / 'out' / 'receipts' / '*.docx'))
+
+    pdfs = glob(str(Path(app.root_path) / 'static' / 'out' / 'receipts' / '*.pdf'))
+
+    files = docs + pdfs
+
+    for file in files:
+
+        try:
+            os.remove(file)
+
+        except Exception as e:
+
+            print(str(e))
+
         print(f"Removed {file}")
 
 
 if __name__ == '__main__':
 
     remove_qrcodes()
+    remove_docx()

@@ -46,7 +46,11 @@ shall be redirected to the corresponding page;
 28. Mongo Buffet meallist print
 33 takeaway guest checkout handling
 32 takeaway order status
-
+32 alacarte service call
+31 all invoices add the discount and discount rate
+36. alacarte order drinks and by categories
+30 special dishes differentiate by buffet types?
+35. Add response in the new order post route to inform client if the order was successful
 
 To Dos:
 
@@ -58,10 +62,12 @@ To Dos:
 
 29. daily revenue_report printing
 
-30 special dishes differentiate by buffet types?
-31 all invoices add the discount and discount rate
-32 alacarte service call
 33 invoicing printing testing
+
+34. add event-triggered auto reload for order pages.
+
+
+
 
 
 

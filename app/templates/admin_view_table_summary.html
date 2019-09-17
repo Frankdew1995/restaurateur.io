@@ -76,7 +76,7 @@
             <thead>
               <tr>
                 <th scope="col">Tisch-Nr.</th>
-                <th>{{table_name}}</th>
+                <th id="tableName">{{table_name}}</th>
               </tr>
             </thead>
 
@@ -163,8 +163,8 @@
         <table class="table table-bordered" style="width:100%">
           <thead>
             <tr>
-              <th scope="col">菜品种类</th>
-              <th scope="col">菜品名称</th>
+              <th scope="col">种类</th>
+              <th scope="col">名称</th>
               <th scope="col">数量</th>
               <th scope="col">单价 €</th>
               <th scope="col">价格 €</th>
@@ -190,7 +190,7 @@
 
         <hr>
         <button type="button" class="btn btn-secondary" style="margin-left:25px;margin-top:50px">
-          <a style="color: rgb(247, 249, 252)" href={{ referrer }} >
+          <a style="color: rgb(247, 249, 252)" href={{ url_for('admin_active_tables') }} >
             返回
           </a>
         </button>
@@ -224,5 +224,6 @@
 <script type="text/javascript" charset="utf8" src="https://cdn.datatables.net/1.10.19/js/dataTables.bootstrap4.min.js"></script>
 <script type="text/javascript" charset="utf8" src="https://code.jquery.com/jquery-3.3.1.js"></script>
 <script type="text/javascript" charset="utf8" src="https://cdn.datatables.net/1.10.19/js/jquery.dataTables.min.js"></script>
+<script src={{ url_for('static', filename="js/listen_table_updates.js") }} charset="utf-8"></script>
 
 {% endblock %}

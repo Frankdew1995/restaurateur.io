@@ -232,28 +232,32 @@
 <script type="text/javascript" charset="utf8" src="https://cdn.datatables.net/1.10.19/js/dataTables.bootstrap4.min.js"></script>
 <script type="text/javascript" charset="utf8" src="https://code.jquery.com/jquery-3.3.1.js"></script>
 <script type="text/javascript" charset="utf8" src="https://cdn.datatables.net/1.10.19/js/jquery.dataTables.min.js"></script>
+
+<script src="{{ url_for('static', filename='front_end_js/mark_done_order.js') }}"></script>
+
+<!-- Pusher JS Client -->
+<script src="https://js.pusher.com/5.0/pusher.min.js"></script>
+
+<!-- Pusher listening orders -->
 <script type="text/javascript">
 
-var request = new XMLHttpRequest();
-request.open('GET', '/all_takeaway_orders', true);
+    Pusher.logToConsole = true;
 
-request.onload = function() {
-  if (request.status >= 200 && request.status < 400) {
-    // Success!
-    var data = JSON.parse(request.responseText);
-    console.log(data);
-  } else {
-    // We reached our target server, but it returned an error
+    var pusher = new Pusher('eacdbb9eee6d56fc20b6', {
+      cluster: 'eu',
+      forceTLS: true
+    });
 
-  }
-};
+    var channel = pusher.subscribe('orders');
 
-request.onerror = function() {
-  // There was a connection error of some sort
-};
+    // listen new takeout orders
+    channel.bind('new out order', function(data) {
+      if (data.success){
+        location.reload(true);
+      }
+    });
 
-request.send();
 </script>
-<script src="{{ url_for('static', filename='front_end_js/mark_done_order.js') }}"></script>
+
 
 {% endblock %}

@@ -64,7 +64,7 @@
     <div class="product-price">{{ formatter(details.get('price')) }}</div>
 
     <div class="product-quantity">
-      <input type="number" value={{ details.get('quantity')  }} min="1" readonly="readonly">
+      <span>{{ details.get('quantity')  }}</span>
     </div>
 
     <div class="product-line-price">{{ formatter(details.get('price') * details.get('quantity')) }}</div>

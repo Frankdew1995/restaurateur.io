@@ -29,6 +29,10 @@
 
     }
 
+    table {
+      text-align: center;
+    }
+
 </style>
 {% endblock %}
 
@@ -87,6 +91,7 @@
             <td>{{section}}</td>
 
             <td style="text-align:right">
+              {% if sections2users.get(section).username %}
               <span>
                 <button type="button" class="btn btn-info" style="border-color:#26a69a; background-color:#26a69a;">
                   <a href={{ url_for('revenue_view_auth',
@@ -96,6 +101,15 @@
                   </a>
                 </button>
               </span>
+              {% else %}
+              <span>
+                <button type="button" class="btn btn-info" style="border-color:#26a69a; background-color:#26a69a;">
+                  <a href={{ url_for('revenue_by_section', section=section) }} style="color: rgb(247, 249, 252)">
+                    查看
+                  </a>
+                </button>
+              </span>
+              {% endif %}
             </td>
           </tr>
           {% endfor %}

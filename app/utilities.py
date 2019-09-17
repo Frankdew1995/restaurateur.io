@@ -20,6 +20,7 @@ import subprocess
 from babel.dates import format_date, format_datetime, format_time
 from babel.numbers import format_decimal, format_percent
 
+import pusher
 
 # Save Image and return image path
 def store_picture(file):
@@ -113,9 +114,9 @@ def activity_logger(order_id, operation_type,
 
         db.session.commit()
 
-    except:
+    except Exception as e:
 
-        print("Database Integrity Error")
+        print(str(e))
 
     import csv
 
@@ -746,3 +747,27 @@ def daily_revenue_templating(context,
                 break
 
         return "ok"
+
+
+def trigger_event(channel, event, response):
+
+    info = json_reader(str(Path(app.root_path) / 'settings' / 'credentials.json'))
+
+    # read Pusher credentials
+    creds = info.get('PUSHER')
+    app_id = creds.get('APP_ID')
+    key = creds.get('KEY')
+    secret = creds.get('SECRET')
+    cluster = creds.get('CLUSTER')
+    ssl = creds.get('SSL')
+
+    channels_client = pusher.Pusher(
+
+        app_id=app_id,
+        key=key,
+        secret=secret,
+        cluster=cluster,
+        ssl=ssl
+    )
+
+    channels_client.trigger(channel, event, response)

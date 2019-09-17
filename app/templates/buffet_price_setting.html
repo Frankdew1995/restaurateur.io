@@ -11,6 +11,15 @@
     margin-left: 937px;
     margin-bottom: 20px;
   }
+
+  table {
+
+    text-align: center;
+  }
+
+
+
+
 </style>
 
 {% endblock %}
@@ -67,13 +76,13 @@
           <td>{{key}}</td>
           <td> {{items.get('label')}} </td>
 
-          <td>{{items.get('adult').get('noon')}}</td>
+          <td>{{ formatter(items.get('adult').get('noon')) }}</td>
 
-          <td>{{items.get('adult').get('after')}}</td>
+          <td>{{ formatter(items.get('adult').get('after')) }}</td>
 
-          <td>{{items.get('kid').get('noon')}}</td>
+          <td>{{ formatter(items.get('kid').get('noon')) }}</td>
 
-          <td>{{items.get('kid').get('after')}}</td>
+          <td>{{ formatter(items.get('kid').get('after')) }}</td>
 
           <td>{{items.get('lastUpdate','')}}</td>
 

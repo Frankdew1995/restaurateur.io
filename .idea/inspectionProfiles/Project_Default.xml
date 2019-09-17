@@ -4,7 +4,7 @@
     <inspection_tool class="PyPackageRequirementsInspection" enabled="true" level="WARNING" enabled_by_default="true">
       <option name="ignoredPackages">
         <value>
-          <list size="229">
+          <list size="230">
             <item index="0" class="java.lang.String" itemvalue="oauth2client" />
             <item index="1" class="java.lang.String" itemvalue="rsa" />
             <item index="2" class="java.lang.String" itemvalue="alembic" />
@@ -234,6 +234,7 @@
             <item index="226" class="java.lang.String" itemvalue="sphinxcontrib-jsmath" />
             <item index="227" class="java.lang.String" itemvalue="ply" />
             <item index="228" class="java.lang.String" itemvalue="openpyxl" />
+            <item index="229" class="java.lang.String" itemvalue="pyngrok" />
           </list>
         </value>
       </option>

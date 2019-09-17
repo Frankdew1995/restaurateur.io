@@ -78,7 +78,7 @@
     </div>
     {% else %}
     <div class="product-quantity">
-      <input type="number" value={{ details.get('quantity')  }} min="1" readonly="readonly">
+      <span>{{ details.get('quantity')  }}</span>
     </div>
     {% endif %}
     <div class="product-line-price">{{ formatter(details.get('price') * details.get('quantity')) }}</div>

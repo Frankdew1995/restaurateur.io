@@ -53,16 +53,25 @@
       <div class="collapse navbar-collapse" id="myNav">
         <ul class="navbar-nav mx-auto text-capitalize">
 
-
+          {% for cate in categories %}
           <li class="nav-item active">
-            <a class="nav-link" href="#">home</a>
+            <a class="nav-link" href={{ url_for('order_alacarte_by_category',
+                                        table_name=table_name,
+                                        seat_number=seat_number,
+                                        cate=cate) }}>{{cate}}
+            </a>
           </li>
-          <li class="nav-item">
-            <a class="nav-link " href="#">about</a>
+          {% endfor %}
+          <li class="nav-item active">
+            <a class="nav-link" href={{ url_for('order_alacarte_drinks',
+                                        table_name=table_name,
+                                        seat_number=seat_number) }}>
+                                        Getränke
+
+            </a>
           </li>
-          <li class="nav-item">
-            <a class="nav-link" href="#">store</a>
-          </li>
+
+
         </ul>
 
       </div>
@@ -75,25 +84,28 @@
 
 
       <li>
-         <a href={{ referrer }}>
+         <a href={{ url_for('alacarte_navigate', table_name=table_name, seat_number=seat_number) }}>
            <i class="fas fa-home"></i>
          </a>
       </li>
 
 
-       <li>
-          <a href="#" id="cart-info">
-            <i class="fas fa-phone"></i>
-          </a>
-       </li>
-
 
        <li>
-          <a href="#" id="cart-info">
-            <i class="fas fa-hand-holding-usd"></i>
-          </a>
+
+         <a href={{ referrer }} id="cart-info">
+           <i class="fas fa-backward"></i>
+         </a>
+
        </li>
 
+       <li>
+
+         <a href="#tableName" id="cart-info">
+           <i class="fas fa-arrow-up"></i>
+         </a>
+
+       </li>
 
      </ul>
 
@@ -122,7 +134,7 @@
 
      			<footer class="cd-cart__footer">
 
-            <a href={{ url_for('alacarte_navigate', table_name=table_name, seat_number=seat_number) }} class="cd-cart__checkout" id="checkout">
+            <a href="#" class="cd-cart__checkout" id="checkout">
                <em>Bestellen -€ <span id='priceTotal'></span>
                </em>
              </a>

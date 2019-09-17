@@ -34,6 +34,10 @@
       text-align: left
     }
 
+    table {
+      text-align: center;
+    }
+
 
 </style>
 {% endblock %}
@@ -127,175 +131,108 @@
         <div class="card">
           <div class="card-body">
 
-            <ul class="list-group list-group-flush">
-              <li class="list-group-item">
-                <span>
-                  卡帐€:
-                </span>
-                <span>
-                  {{ out.get('Total_Card') }}
-                </span>
-              </li>
-              <li class="list-group-item">
-                <span>
-                  现金€:
-                </span>
-                <span>
-                  {{ out.get('Total_Cash') }}
-                </span>
-              </li>
-              <li class="list-group-item">
-                <span>
-                  总计€:
-                </span>
-                <span>
+            <table id="example" >
 
-                  {{out.get('Total')}}
+              <thead>
+                <tr>
+                  <th scope="col">卡帐 €</th>
+                  <th scope="col">现金 €</th>
+                  <th scope="col">总计 €</th>
+                </tr>
+                <tbody>
+                  <tr>
+                    <td>{{ out.get('Total_Card') }}</td>
+                    <td>{{ out.get('Total_Cash') }}</td>
+                    <td>{{out.get('Total')}}</td>
+                  </tr>
 
-                </span>
-              </li>
-          </ul>
+                </tbody>
+              </thead>
+            </table>
 
         </div>
 
       </div>
 
       <br>
+      <br>
 
-      <h4>分区</h4>
-      <div class="row">
+      {% if revenue_by_sections %}
+      <h4>分区 -
+        <span>
+          卡帐€: {{ alacarte.get('Total_Card', '') }}
+        </span>
 
-        {% if revenue_by_sections %}
-        {% for section, details in revenue_by_sections.items() %}
-        <div class="column">
+        <span>
+          现金€: {{ alacarte.get('Total_Cash', '') }}
+        </span>
 
-          <div class="card">
-            <div class="card-body">
-              <div class="card-header">
-                  {{section}}区
-              </div>
-              <ul class="list-group list-group-flush">
-                <li class="list-group-item">
-                  <span>
-                    卡帐€:{{ details.get('Card', '') }}
-                  </span>
-                  <span>
+        <span>
+          总计€: {{ alacarte.get('Total', '') }}
+        </span>
 
+      </h4>
 
-                  </span>
-                </li>
-                <li class="list-group-item">
-                  <span>
-                    现金€:{{ details.get('Cash', '') }}
-                  </span>
-                  <span>
+      <div class="card">
 
+        <div class="card-body">
 
-                  </span>
-                </li>
-                <li class="list-group-item">
-                  <span>
-                    总计€:{{ details.get('Total', '') }}
-                  </span>
-                  <span>
+          <table id="sections">
 
+            <thead>
+              <tr>
+                <th scope="col">分区</th>
+                <th scope="col">卡帐 €</th>
+                <th scope="col">现金 €</th>
+                <th scope="col">总计 €</th>
+              </tr>
+              <tbody>
+                {% for section, details in revenue_by_sections.items() %}
+                <tr>
+                  <td>{{section}}</td>
+                  <td>{{ details.get('Card', '') }}</td>
+                  <td>{{ details.get('Cash', '') }}</td>
+                  <td>{{ details.get('Total', '') }}</td>
+                </tr>
+                {% endfor %}
 
-                  </span>
-                </li>
-            </ul>
-
-          </div>
-
-        </div>
-
-        </div>
-        {% endfor %}
-        {% endif %}
-
-        <!-- aggregattion for alacarte by total, card and cash -->
-        <div class="column">
-
-          <div class="card">
-            <div class="card-body">
-              <div class="card-header">
-                  汇总
-              </div>
-              <ul class="list-group list-group-flush">
-                <li class="list-group-item">
-                  <span>
-                    卡帐€:{{ alacarte.get('Total_Card', '') }}
-                  </span>
-                  <span>
-
-
-                  </span>
-                </li>
-                <li class="list-group-item">
-                  <span>
-                    现金€:{{ alacarte.get('Total_Cash', '') }}
-                  </span>
-                  <span>
-
-
-                  </span>
-                </li>
-                <li class="list-group-item">
-                  <span>
-                    总计€:{{ alacarte.get('Total', '') }}
-                  </span>
-                  <span>
-
-
-                  </span>
-                </li>
-            </ul>
-
-          </div>
-
-        </div>
-
-        </div>
+              </tbody>
+            </thead>
+          </table>
 
       </div>
 
+    </div>
 
+    <br>
+    <br>
+    {% endif %}
 
 
     <br>
-    <h4>汇总</h4>
+    <h4>汇总 (外卖 + 分区)</h4>
     <div class="card">
       <div class="card-body">
 
-        <ul class="list-group list-group-flush">
-          <li class="list-group-item">
-            <span>
-              卡帐€:
-            </span>
-            <span>
 
-              {{ final_card_total }}
+        <table id="final" >
 
-            </span>
-          </li>
-          <li class="list-group-item">
-            <span>
-              现金€:
-            </span>
-            <span>
-              {{ final_cash_total }}
-            </span>
-          </li>
-          <li class="list-group-item">
-            <span>
-              总计€:
-            </span>
-            <span>
+          <thead>
+            <tr>
+              <th scope="col">卡帐 €</th>
+              <th scope="col">现金 €</th>
+              <th scope="col">总计 €</th>
+            </tr>
+            <tbody>
+              <tr>
+                <td>{{ final_card_total }}</td>
+                <td>{{ final_cash_total }}</td>
+                <td>{{ final_total }}</td>
+              </tr>
 
-              {{ final_total }}
-
-            </span>
-          </li>
-      </ul>
+            </tbody>
+          </thead>
+        </table>
 
     </div>
 
@@ -328,9 +265,22 @@
 
 {% block scripts %}
 <script>
+
+
+
+
     $(document).ready(function() {
     $('#example').DataTable();
+    $('#sections').DataTable();
+    $('#final').DataTable();
+
+
+
 } );
+
+
+
+
 </script>
 <script type="text/javascript" charset="utf8" src="https://cdn.datatables.net/1.10.19/js/dataTables.bootstrap4.min.js"></script>
 <script type="text/javascript" charset="utf8" src="https://code.jquery.com/jquery-3.3.1.js"></script>

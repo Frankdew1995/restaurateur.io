@@ -37,7 +37,6 @@ checkBtn.addEventListener("click", function(){
         });
 
 
-
         const tableName = document.getElementById("tableName").textContent;
         const seatNumber = document.getElementById("seatNumber").textContent;
         const isKid = document.getElementById("isKid").textContent;

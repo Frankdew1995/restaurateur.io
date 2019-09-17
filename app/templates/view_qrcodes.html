@@ -30,27 +30,22 @@
 
 <div class="container">
 
-  <p>所有二维码</p>
+  <p>所有二维码 - 桌子: {{table_name}}</p>
 
-  <p>
 
     {% for qrcode in table2qr.get(table_name) %}
+    <p>
 
-    <a href={{ url_for('view_qrcode', qrcode_name=qrcode.split('.')[0]) }}>
-        <span>
-          {{qrcode.split('.')[0]}},
-        </span>
-    </a>
+      <a href={{ url_for('view_qrcode', qrcode_name=qrcode.split('.')[0]) }}>
+          <span>
+            {{qrcode.split('.')[0]}}
+          </span>
+      </a>
+
+    </p>
 
     {% endfor %}
 
-  </p>
-
-  <p>
-
-    桌子: {{table_name}}
-
-  </p>
 
 </div>
 <br>

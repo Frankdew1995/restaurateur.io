@@ -1,0 +1,231 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta http-equiv="X-UA-Compatible" content="ie=edge">
+  <!-- bootstrap css -->
+  <link rel="stylesheet" href="{{ url_for('static', filename='css/bootstrap.min.css') }}">
+
+  <!-- main css -->
+  <!-- font awesome -->
+  <link rel="stylesheet" href="{{ url_for('static', filename='fontawesome-free/css/all.css') }}">
+  <link rel="stylesheet" href="{{ url_for('static', filename='alacarte_cart/css/sticky.css') }}">
+  <link rel="stylesheet" href="{{ url_for('static', filename='alacarte_cart/css/quantity_modifier.css') }}">
+  <link rel="stylesheet" href="{{ url_for('static', filename='alacarte_cart/css/style.css') }}">
+  <link rel="stylesheet" href="{{ url_for('static', filename='alacarte_cart/css/style.scss') }}">
+
+  <link rel="stylesheet" href="{{ url_for('static', filename='front_end_css/style.css') }}">
+
+
+
+  <link href="https://fonts.googleapis.com/css?family=Roboto&display=swap" rel="stylesheet">
+
+  <title>{{ title }}</title>
+
+</head>
+
+<style media="screen">
+
+
+  body{font-family: 'Roboto', sans-serif;
+
+
+
+  }
+
+
+</style>
+
+
+
+
+<body>
+  <!-- header -->
+  <header>
+    <nav class="navbar navbar-expand-lg px-4">
+      <a class="navbar-brand" href="#"><img src="img/logo.svg" alt=""></a>
+      <button class="navbar-toggler" type="button" data-toggle="collapse" data-target="#myNav">
+        <span class="toggler-icon"><i class="fas fa-bars"></i></span>
+      </button>
+
+      <div class="collapse navbar-collapse" id="myNav">
+        <ul class="navbar-nav mx-auto text-capitalize">
+
+          {% for cate in categories %}
+          <li class="nav-item active">
+            <a class="nav-link" href={{ url_for('order_alacarte_drinks_category',
+                                        table_name=table_name,
+                                        seat_number=seat_number,
+                                        cate=cate) }}>{{cate}}
+            </a>
+          </li>
+          {% endfor %}
+
+
+        </ul>
+
+      </div>
+    </nav>
+    <!-- end of nav -->
+
+
+    <ul class="ct-socials">
+
+
+
+      <li>
+         <a href={{ url_for('alacarte_navigate', table_name=table_name, seat_number=seat_number) }}>
+           <i class="fas fa-home"></i>
+         </a>
+      </li>
+
+
+
+       <li>
+
+         <a href={{ referrer }} id="cart-info">
+           <i class="fas fa-backward"></i>
+         </a>
+
+       </li>
+
+       <li>
+
+         <a href="#tableName" id="cart-info">
+           <i class="fas fa-arrow-up"></i>
+         </a>
+
+       </li>
+
+     </ul>
+
+     <!-- start of cart section -->
+     <div class="cd-cart cd-cart--empty js-cd-cart">
+     	<a href="#0" class="cd-cart__trigger text-replace">
+     		Cart
+     		<ul class="cd-cart__count"> <!-- cart items count -->
+     			<li id="qtyDisplayer1">0</li>
+     			<li id="qtyDisplayer2">0</li>
+     		</ul> <!-- .cd-cart__count -->
+     	</a>
+
+     	<div class="cd-cart__content">
+     		<div class="cd-cart__layout">
+     			<header class="cd-cart__header">
+     				<h2>Cart</h2>
+     				<span class="cd-cart__undo">Item removed. <a href="#0">Undo</a></span>
+     			</header>
+
+     			<div class="cd-cart__body">
+     				<ul>
+     					<!-- products added to the cart will be inserted here using JavaScript -->
+     				</ul>
+     			</div>
+
+     			<footer class="cd-cart__footer">
+
+            <a href="#" class="cd-cart__checkout" id="checkout">
+               <em>Bestellen -€ <span id='priceTotal'></span>
+               </em>
+             </a>
+     			</footer>
+     		</div>
+     	</div> <!-- .cd-cart__content -->
+     </div>
+     <!--  end of cart section -->
+
+
+
+
+  </header>
+  <!-- header -->
+
+  <div class="container">
+
+    <p>
+      Tisch-Nr:
+      <span id="tableName">
+        {{table_name}}
+      </span>
+
+    </p>
+    <p>
+      Platz-Nr:
+      <span id=seatNumber>
+        {{seat_number}}
+      </span>
+    </p>
+
+  </div>
+
+  <!-- store -->
+  <section id="store" class="store py-5">
+    <div class="container">
+
+      <!-- store  items-->
+      <div class="row" class="store-items" id="store-items">
+        <!-- single item -->
+        {% for dish in dishes %}
+        <div class="col-10 col-sm-6 col-lg-4 mx-auto my-3 store-item sweets" data-item="sweets" id={{ dish.id }}>
+          <div class="card">
+            <div class="img-container">
+              <img src="{{ url_for('static', filename='img/' + dish.image)}}" class="card-img-top store-img" alt="">
+            </div>
+            <div class="card-body" id={{dish.id}}>
+              <div class="card-text d-flex justify-content-between text-capitalize">
+                <h5 id="store-item-name">{{ dish.name }}</h5>
+                <h5 class="store-item-value">€<strong id="store-item-price" class="font-weight-bold">{{ formatter(dish.price_gross)  }}</strong></h5>
+              </div>
+
+              <div class="input-group">
+                <input type="button" value="-" class="button-minus" data-field="quantity">
+                <input type="number" step="1" max="" value="1" name="quantity" class="quantity-field">
+                <input type="button" value="+" class="button-plus" data-field="quantity">
+              </div>
+
+              <span class="add-item-icon" data-price='{{dish.price_gross}}' id={{dish.id}}>
+                <i class="fas fa-shopping-cart"></i>
+              </span>
+            </div>
+
+          </div>
+          <!-- end of card-->
+        </div>
+        {% endfor %}
+
+      </div>
+  </section>
+  <!--end of store items -->
+
+
+  <!-- modal-container -->
+  <div class="container-fluid ">
+    <div class="row lightbox-container align-items-center">
+      <div class="col-10 col-md-10 mx-auto text-right lightbox-holder">
+        <span class="lightbox-close"><i class="fas fa-window-close"></i></span>
+        <div class="lightbox-item"></div>
+        <span class="lightbox-control btnLeft"><i class="fas fa-caret-left"></i></span>
+        <span class="lightbox-control btnRight"><i class="fas fa-caret-right"></i></span>
+      </div>
+    </div>
+  </div>
+
+
+  <!-- jquery -->
+  <script src="{{ url_for('static', filename='js/jquery/jquery.min.js') }}"></script>
+  <!-- bootstrap js -->
+  <script src="{{ url_for('static', filename='js/bootstrap/bootstrap.bundle.min.js') }}"></script>
+
+  <!-- script js -->
+  <!-- <script src="{{ url_for('static', filename='front_end_js/app.js') }}"></script> -->
+  <script src="{{ url_for('static', filename='alacarte_cart/js2/quantity_modifier.js') }}"></script>
+  <script src="{{ url_for('static', filename='alacarte_cart/js2/main.js') }}"></script>
+  <script src="{{ url_for('static', filename='alacarte_cart/js2/guest_checkout.js') }}"></script>
+  <script src="{{ url_for('static', filename='alacarte_cart/js2/util.js') }}"></script>
+
+
+</body>
+
+</html>

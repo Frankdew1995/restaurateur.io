@@ -1,6 +1,6 @@
 [
   {
-    "STORE_NAME": "Xstar GmbH",
+    "STORE_NAME": "Maxmann GmbH",
     "CITY": "Koeln",
     "STREET": "Maxmann Strasse",
     "STREET NO.": "555",
@@ -26,6 +26,6 @@
     },
     "ORDER_LIMIT": 5,
     "BUFFET_MODE": "jpbuffet",
-    "NGROK_URL": "http://736de798.ngrok.io"
+    "PUBLIC_TUNNEL_URL": "http://0120de19.eu.ngrok.io"
   }
 ]

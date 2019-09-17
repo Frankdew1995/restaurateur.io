@@ -25,6 +25,4 @@ def run_ngrok(path, port, auth):
         os.chdir(path)
         # ngrok auth
         subprocess.Popen(f"ngrok authtoken {auth}")
-        subprocess.Popen(["ngrok", "http", "-region=eu", f"{port}"],
-
-                         text=True)
+        subprocess.Popen(["ngrok", "http", "-region=eu", f"{port}"])

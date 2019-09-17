@@ -31,6 +31,10 @@
 
     }
 
+    table {
+      text-align: center;
+    }
+
 
 </style>
 {% endblock %}
@@ -142,7 +146,9 @@
 {% block scripts %}
 <script>
     $(document).ready(function() {
-    $('#example').DataTable();
+    $('#example').DataTable({
+      order: [[2, 'desc']]
+    });
 } );
 </script>
 <script type="text/javascript" charset="utf8" src="https://cdn.datatables.net/1.10.19/js/dataTables.bootstrap4.min.js"></script>

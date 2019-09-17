@@ -1,191 +1,210 @@
+
 <!DOCTYPE html>
 <html lang="en">
-
 <head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <meta http-equiv="X-UA-Compatible" content="ie=edge">
-  <!-- bootstrap css -->
-  <link rel="stylesheet" href="{{ url_for('static', filename='css/bootstrap.min.css') }}">
-  <!-- main css -->
-  <link rel="stylesheet" href="{{ url_for('static', filename='front_end_css/style.css') }}">
+  <meta http-equiv="Content-Type" content="text/html; charset=UTF-8"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1.0"/>
+  <title>{{title}}</title>
 
-  <!-- font awesome -->
-  <link rel="stylesheet" href="{{ url_for('static', filename='fontawesome-free/css/all.css') }}">
-  <link rel="stylesheet" href="{{ url_for('static', filename='alacarte_cart/css/sticky.css') }}">
-  <link rel="stylesheet" href="{{ url_for('static', filename='alacarte_cart/css/quantity_modifier.css') }}">
-  <link href="https://fonts.googleapis.com/css?family=Roboto&display=swap" rel="stylesheet">
-
-  <title>{{ title }}</title>
-
+  <!-- CSS  -->
+  <link href="https://fonts.googleapis.com/icon?family=Material+Icons" rel="stylesheet">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/materialize/1.0.0/css/materialize.min.css">
 </head>
 
 <style media="screen">
+      /* Custom Stylesheet */
+      /**
+      * Use this file to override Materialize files so you can update
+      * the core Materialize files in the future
+      *
+      * Made By MaterializeCSS.com
+      */
+
+      .right_img {
+          top: -35%;
+          position: absolute;
+          width: 100%;
+          display: flex;
+          justify-content: space-around;
+      }
 
 
-  body{font-family: 'Roboto', sans-serif;
+      .icon-block {
+      padding: 0 15px;
+      }
+      .icon-block .material-icons {
+      font-size: inherit;
+      }
 
 
 
-  }
+      .card .card-content {
 
+        border-radius: 0 0 2px 2px;
+        padding: 15px;
+      }
+
+      .card-title {
+        margin-top:1px;
+        text-align: left;
+      }
+
+      .blue-grey .darken-1 {
+
+        background-color: #202224;
+      }
+
+
+
+      .row {
+
+          margin-left: auto;
+          margin-right: auto;
+          margin-bottom: 0;
+
+      }
+
+      .card-content .white-text{
+        text-align: left;
+      }
+
+      .card-action > a{
+        margin-left: 5px;
+        margin-top: 5px;
+      }
+
+      .section {
+          padding-top: 0rem;
+          padding-bottom: 0rem;
+      }
+
+      .row .col {
+          float: left;
+          -webkit-box-sizing: border-box;
+          box-sizing: border-box;
+          padding: 0.1rem;
+          min-height: 1px;
+      }
+
+      .row .col.s12 {
+        width: 100%;
+        margin-left: auto;
+        margin-top: 1px;
+        left: auto;
+        right: auto;
+
+    }
 
 </style>
 
 
-
-
 <body>
-  <!-- header -->
-  <header>
-    <nav class="navbar navbar-expand-lg px-4">
-      <a class="navbar-brand" href="#"><img src="img/logo.svg" alt=""></a>
-      <button class="navbar-toggler" type="button" data-toggle="collapse" data-target="#myNav">
-        <span class="toggler-icon"><i class="fas fa-bars"></i></span>
-      </button>
-
-      <div class="collapse navbar-collapse" id="myNav">
-        <ul class="navbar-nav mx-auto text-capitalize">
 
 
-          <li class="nav-item active">
-            <a class="nav-link" href="#">home</a>
-          </li>
-          <li class="nav-item">
-            <a class="nav-link " href="#">about</a>
-          </li>
-          <li class="nav-item">
-            <a class="nav-link" href="#">store</a>
-          </li>
-        </ul>
-
-      </div>
-    </nav>
-    <!-- end of nav -->
-
-
-    <ul class="ct-socials">
-       <li>
-          <a href="#" id="cart-info">
-            <i class="fa fa-shopping-cart"></i>
-            <span class="badge badge-warning" id="item-count"></span>
-          </a>
-       </li>
-
-       <li>
-          <a href={{ url_for('alacarte_navigate', table_name=table_name, seat_number=seat_number) }}>
-            <i class="fas fa-home"></i>
-          </a>
-       </li>
-     </ul>
-
-     
-     <div id="cart" class="cart">
-
-       <!-- cart total -->
-       <div class="cart-total-container d-flex justify-content-around text-capitalize mt-5">
-         <h5>total</h5>
-         <h5> € <strong id="cart-total" class="font-weight-bold">0.00</strong> </h5>
-       </div>
-       <!--end cart total -->
-
-       <!-- cart buttons -->
-       <div class="cart-buttons-container mt-3 d-flex justify-content-between">
-         <a href="#" id="clear-cart" class="btn btn-outline-secondary btn-black text-uppercase">clear cart</a>
-         <a href={{ url_for('alacarte_navigate', table_name=table_name, seat_number=seat_number) }} id="checkout" class="btn btn-outline-secondary text-uppercase btn-pink">checkout</a>
-       </div>
-       <!--end of  cart buttons -->
-       <!--  -->
-     </div>
-
-  </header>
-  <!-- header -->
 
   <div class="container">
+    <div class="section">
 
-    <p>
-      Tisch-Nr:
-      <span id="tableName">
-        {{table_name}}
-      </span>
+      <!--   Icon Section   -->
+      <div class="row">
 
-    </p>
-    <p>
-      Platz-Nr:
-      <span id=seatNumber>
-        {{seat_number}}
-      </span>
-    </p>
+            <div class="col s12 m7">
+              <div class="card">
+                <div class="card-image">
+                  <img src={{ url_for('static', filename="img/alacarte_bg.jpg") }}>
+                </div>
+                <div class="card-content">
+                  <p>Das Bestellsystem wird aktiviert, wenn Sie entweder auf "BUFFET" oder "KINDER BUFFET" klicken.
+                    Die entsprechenden Mahlzeitengebühren werden nach dem Anklicken berechnet.</p>
+                </div>
 
-  </div>
-
-  <!-- store -->
-  <section id="store" class="store py-5">
-    <div class="container">
-
-      <!-- store  items-->
-      <div class="row" class="store-items" id="store-items">
-        <!-- single item -->
-        {% for dish in dishes %}
-        <div class="col-10 col-sm-6 col-lg-4 mx-auto my-3 store-item sweets" data-item="sweets" id={{ dish.id }}>
-          <div class="card ">
-            <div class="img-container">
-              <img src="{{ url_for('static', filename='img/' + dish.image)}}" class="card-img-top store-img" alt="">
-              <span class="store-item-icon">
-                <i class="fas fa-shopping-cart"></i>
-              </span>
+              </div>
             </div>
-            <div class="card-body">
-              <div class="card-text d-flex justify-content-between text-capitalize">
-                <h5 id="store-item-name">{{ dish.name }}</h5>
-                <h5 class="store-item-value">€ <strong id="store-item-price" class="font-weight-bold">{{ dish.price_gross  }}</strong></h5>
-              </div>
-              <div class="input-group">
-                <input type="button" value="-" class="button-minus" data-field="quantity">
-                <input type="number" step="1" max="" value="1" name="quantity" class="quantity-field">
-                <input type="button" value="+" class="button-plus" data-field="quantity">
-              </div>
-              <span class="add-item-icon">
-                <i class="fas fa-shopping-cart"></i>
-              </span>
+
+      </div>
+
+
+      <div class="row">
+
+
+
+        <div class="col s3 s3" id="timedeltaCard">
+          <div class="card">
+            <div class="card-image">
+
+              <a href="#">
+                <img src={{ url_for('static', filename="img/mongo_order.png") }}>
+              </a>
+
             </div>
 
           </div>
-          <!-- end of card-->
         </div>
-        {% endfor %}
+
+
+      <div class="col s3 s3">
+        <div class="card">
+          <div class="card-image">
+
+            <a href="#">
+
+              <img src={{ url_for('static', filename="img/img4.png") }}>
+
+            </a>
+          </div>
+
+        </div>
+      </div>
+
+
+      <div class="col s3 s3">
+        <div class="card">
+
+          <div class="card-image">
+
+            <a href="#" id="service">
+              <img src={{ url_for('static', filename="img/ala_service.png") }}>
+            </a>
+          </div>
+
+        </div>
+      </div>
+
+
+      <div class="col s3 s3">
+        <div class="card">
+          <div class="card-image">
+            <a href="#" id="pay">
+              <img src={{ url_for('static', filename="img/ala_pay.png") }}>
+            </a>
+          </div>
+
+        </div>
 
       </div>
-  </section>
-  <!--end of store items -->
 
-
-  <!-- modal-container -->
-  <div class="container-fluid ">
-    <div class="row lightbox-container align-items-center">
-      <div class="col-10 col-md-10 mx-auto text-right lightbox-holder">
-        <span class="lightbox-close"><i class="fas fa-window-close"></i></span>
-        <div class="lightbox-item"></div>
-        <span class="lightbox-control btnLeft"><i class="fas fa-caret-left"></i></span>
-        <span class="lightbox-control btnRight"><i class="fas fa-caret-right"></i></span>
-      </div>
     </div>
+    <br><br>
   </div>
 
 
-  <!-- jquery -->
-  <script src="{{ url_for('static', filename='js/jquery/jquery.min.js') }}"></script>
-  <!-- bootstrap js -->
-  <script src="{{ url_for('static', filename='js/bootstrap/bootstrap.bundle.min.js') }}"></script>
 
-  <!-- script js -->
-  <!-- <script src="{{ url_for('static', filename='front_end_js/app.js') }}"></script> -->
-  <script src="{{ url_for('static', filename='front_end_js/clear_cart.js') }}"></script>
-  <script src="{{ url_for('static', filename='alacarte_cart/js/quantity_modifier.js') }}"></script>
-  <script src="{{ url_for('static', filename='alacarte_cart/js/cart.js') }}"></script>
-  <script src="{{ url_for('static', filename='alacarte_cart/js/guest_checkout.js') }}"></script>
+  </div>
 
 
-</body>
+  <!-- Compiled and minified JavaScript -->
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/materialize/1.0.0/js/materialize.min.js"></script>
 
+  <script type="text/javascript">
+          window.onload = startInterval;
+          function startInterval() {
+              setInterval("startTime();",1000);
+          }
+          function startTime() {
+              var now = new Date();
+              document.getElementById('datetime').textContent = now.getHours() + ":" + now.getMinutes() + ":" +now.getSeconds();
+      }
+    </script>
+
+  </body>
 </html>

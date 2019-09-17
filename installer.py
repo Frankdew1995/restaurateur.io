@@ -1,10 +1,15 @@
-from app import app
+from app import app, db
 from app.utilities import void_pickle_dumper, formatter
 from pathlib import Path
 import subprocess
 import os
 from glob import glob
 
+
+def db_init():
+
+    db.create_all()
+    print("DB Init Successful!!")
 
 def remove_qrcodes():
 
@@ -46,3 +51,4 @@ if __name__ == '__main__':
 
     remove_qrcodes()
     remove_docx()
+    print("Init finished", "初始化完成")

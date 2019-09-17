@@ -732,7 +732,8 @@ def checkout_takeaway_admin(order_id):
                 db.session.commit()
 
                 details = {key: {'quantity': items.get('quantity'),
-                                 'total': items.get('quantity') * items.get('price')}
+                                 'total': formatter(items.get('quantity') * items.get('price')),
+                                 "price": formatter(items.get('price'))}
                                     for key, items in json.loads(order.items).items()}
 
                 details_kitchen = {key: {'quantity': items.get('quantity'),
@@ -755,6 +756,8 @@ def checkout_takeaway_admin(order_id):
                 bar_temp = str(Path(app.root_path) / 'static' / 'docx' / 'bar.docx')
                 save_as_bar = f"meallist_bar_{order.id}"
 
+                vat = (order.endTotal / (1 + tax_rate_out)) * tax_rate_out
+                net = order.endTotal / (1 + tax_rate_out)
                 context = {"details": details,
                            "company_name": company_info.get('company_name', ''),
                            "address": company_info.get('address'),
@@ -765,7 +768,8 @@ def checkout_takeaway_admin(order_id):
                            "end_total": formatter(order.endTotal),
                            "pay_via": json.loads(order.pay_via).get('method', ""),
                            "discount": formatter(0),
-                           "VAT": formatter((order.endTotal / (1 + tax_rate_out)) * tax_rate_out)}
+                           "VAT": formatter(vat),
+                           "NET": formatter(net)}
 
                 if form.coupon_amount.data:
 
@@ -1875,7 +1879,8 @@ def view_qrcode(qrcode_name):
                    company_name=company_info.get('company_name'),
                    table_name=table_name,
                    seat_number=seat_number,
-                   base_url=base_url)
+                   base_url=base_url,
+                   localhost="http://localhost:5000")
 
     return render_template('view_qrcode.html', **context)
 
@@ -2466,8 +2471,8 @@ def admin_view_table(table_name):
 
                     # Calculate the total for each dish in dishes
                     for key, items in dishes.items():
-
                         items['total'] = formatter(items.get('quantity') * items.get('price'))
+                        items['price'] = formatter(items.get('price'))
 
                     total_price = order.totalPrice
 
@@ -2484,6 +2489,7 @@ def admin_view_table(table_name):
                                "end_total": formatter(order.endTotal),
                                "pay_via": json.loads(order.pay_via).get('method', ""),
                                "VAT": formatter(vat),
+                               "NET": formatter(order.endTotal / (1 + tax_rate_in)),
                                'discount': formatter(0)}
 
                     if form.coupon_amount.data:
@@ -3585,10 +3591,14 @@ def view_table(table_name):
 
                     db.session.commit()
 
-                    # Calculate the totalf for each dish in dishes
+
+                    # Calculate the total for each dish in dishes
                     for key, items in dishes.items():
 
-                        items['total'] = formatter(items.get('quantity') * items.get('quantity'))
+                        items['total'] = formatter(items.get('quantity') * items.get('price'))
+                        items['price'] = formatter(items.get('price'))
+
+                    vat = (order.endTotal / (1 + tax_rate_in)) * tax_rate_in
 
                     context = {"details": dishes,
                                "company_name": company_info.get('company_name', ''),
@@ -3599,8 +3609,8 @@ def view_table(table_name):
                                "table_name": table_name,
                                "total": formatter(order.totalPrice),
                                "pay_via": json.loads(order.pay_via).get('method', ""),
-                               "VAT": formatter(
-                                   round((order.endTotal / (1+ tax_rate_in)) * tax_rate_in, 2)),
+                               "VAT": formatter(vat),
+                               "NET": formatter(order.endTotal / (1 + tax_rate_in)),
                                "end_total": formatter(order.endTotal),
                                'discount': formatter(0)}
 
@@ -6421,6 +6431,7 @@ def print_receipt(order_id):
     for key, items in dishes.items():
 
         items['total'] = formatter(items.get('quantity') * items.get('price'))
+        items['price'] = formatter(items.get('price'))
 
     context = {"details": dishes,
                "company_name": company_info.get('company_name', ''),

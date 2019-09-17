@@ -15,8 +15,6 @@ class Config(object):
 
     DEBUG = True
 
-    CACHE_TYPE = "simple"
-
 class DevConfig(Config):
 
     pass

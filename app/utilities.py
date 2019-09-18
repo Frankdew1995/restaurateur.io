@@ -21,6 +21,7 @@ from babel.dates import format_date, format_datetime, format_time
 from babel.numbers import format_decimal, format_percent
 
 import pusher
+import requests
 
 # Save Image and return image path
 def store_picture(file):
@@ -771,3 +772,21 @@ def trigger_event(channel, event, response):
     )
 
     channels_client.trigger(channel, event, response)
+
+
+def start_ngrok(port):
+
+    executable = str(Path(app.root_path) / 'utils' / 'ngrok' / 'ngrok')
+
+    # ngrok = subprocess.Popen([executable, 'http', '-region=eu', str(port)])
+
+    localhost_url = "http://localhost:4040/api/tunnels"  # Url with tunnel details
+    time.sleep(1)
+    tunnel_url = requests.get(localhost_url).text  # Get the tunnel information
+    j = json.loads(tunnel_url)
+    tunnel_url = j['tunnels'][0]['public_url']  # Do the parsing of the get
+    tunnel_url = tunnel_url.replace("https", "http")
+    return tunnel_url
+
+print(start_ngrok(port=5000))
+

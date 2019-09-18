@@ -47,8 +47,14 @@ def remove_docx():
         print(f"Removed {file}")
 
 
+def install_packages():
+
+    subprocess.call(["pip", "install", "-r", "requirements.txt"])
+
+
 if __name__ == '__main__':
 
-    remove_qrcodes()
-    remove_docx()
+    # remove_qrcodes()
+    # remove_docx()
+    install_packages()
     print("Init finished", "初始化完成")

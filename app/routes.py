@@ -40,6 +40,8 @@ from babel.numbers import format_decimal, format_percent
 # Some global variables - read from config file.
 info = json_reader(str(Path(app.root_path) / 'settings' / 'config.json'))
 
+settings = json_reader(str(Path(app.root_path) / 'settings' / 'credentials.json'))
+
 company_info = {
             "tax_rate_out": info.get('TAX_RATE').get('takeaway'),
             "tax_rate_in": info.get('TAX_RATE').get('Inhouse Order'),
@@ -62,12 +64,28 @@ tax_rate_in = float(company_info.get('tax_rate_in', 0.0))
 
 tax_rate_out = float(company_info.get('tax_rate_out', 0.0))
 
-base_url = info.get('PUBLIC_TUNNEL_URL')
+# Get the public tunnel url
+base_url = settings.get('PUBLIC_TUNNEL_URL')
+
 suffix_url = "guest/navigation"
 
 timezone = 'Europe/Berlin'
 
 today = datetime.now(tz=pytz.timezone(timezone)).date()
+
+
+# Custom Error Page
+@app.errorhandler(404)
+def page_not_found(e):
+
+    context = dict(referrer=request.headers.get('Referer'),
+                   company_name=company_info.get('company_name'))
+
+    if not context.get('referrer'):
+
+        context['referrer'] = url_for('login')
+
+    return render_template('404.html', **context), 404
 
 
 # Login Route
@@ -2642,11 +2660,6 @@ def js_add_table():
     th = Thread(target=table_adder, args=(table_name, section,
                                           number, base_url, suffix_url, timezone,))
 
-    # Checking Table duplicates
-    # if Table.query.filter_by(name=table_name).first_or_404():
-    #
-    #     return jsonify({"error": f"{table_name}已经存在，请重新输入桌子名称"})
-
     th.start()
 
     return jsonify({"success": f"已经成功创建桌子：{table_name}"})
@@ -3664,7 +3677,9 @@ def view_table(table_name):
 
                     return redirect(url_for('waiter_admin'))
 
-                except:
+                except Exception as e:
+
+                    print(str(e))
 
                     return redirect(url_for('waiter_admin'))
 
@@ -6879,6 +6894,17 @@ def mongo_guest_order(table_name, seat_number, is_kid):
              'order_by': seat_number,
              'is_kid': is_kid}
     }
+
+    # Writing remark/label for mongo buffet
+    for dish, items in details.items():
+
+        if items.get('is_kid') == 0:
+
+            items['label'] = "Erwachsen Buffet"
+
+        else:
+
+            items['label'] = "Kinder Buffet"
 
     # Check if this table is already associated with an open order
     orders = db.session.query(Order).filter(

@@ -60,3 +60,15 @@ format_decimal(round(order.totalPrice, 2),locale="de_DE")
 {{ url_for('alacarte_navigate', table_name=table_name, seat_number=seat_number) }}
 
 {{ url_for('mongo_index', table_name=table_name, seat_number=seat_number, is_kid=is_kid) }}
+
+
+<div class="text-center">
+            <div class="error mx-auto" data-text="404">404</div>
+            <p class="lead text-gray-800 mb-5">WOW!!出错啦....</p>
+            <button type="button" name="button" class="btn btn-secondary">
+
+              <a style="color: rgb(247, 249, 252)" href={{ referrer }}>返回</a>
+
+            </button>
+
+</div>

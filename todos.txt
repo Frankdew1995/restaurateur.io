@@ -51,6 +51,10 @@ shall be redirected to the corresponding page;
 36. alacarte order drinks and by categories
 30 special dishes differentiate by buffet types?
 35. Add response in the new order post route to inform client if the order was successful
+33 invoicing printing testing
+34. add event-triggered auto reload for order pages.
+31. custom 404 page
+
 
 To Dos:
 
@@ -62,9 +66,12 @@ To Dos:
 
 29. daily revenue_report printing
 
-33 invoicing printing testing
+30. multilingual buttons: NL, DE, EN, ZH
+32. Order edit and update by serial number in each order \
++ printing updates to Kitchen and bar.
 
-34. add event-triggered auto reload for order pages.
+
+
 
 
 

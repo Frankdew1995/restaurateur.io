@@ -2034,7 +2034,7 @@ def set_store():
 
             "ORDER_LIMIT": form.order_limit_per_round.data,
             "BUFFET_MODE": form.buffet_mode.data,
-            "PUBLIC_TUNNEL_URL": form.public_tunnel_url.data
+
         }]
 
         with open(str(Path(app.root_path) / 'settings' / 'config.json'), 'w') as f:
@@ -2060,7 +2060,6 @@ def set_store():
     form.order_times.data = data.get('ORDER_TIMES')
     form.order_limit_per_round.data = data.get('ORDER_LIMIT','')
     form.buffet_mode.data = data.get('BUFFET_MODE')
-    form.public_tunnel_url.data = data.get('PUBLIC_TUNNEL_URL').strip()
 
     try:
         form.business_hours_start_morning.data = data.get('BUSINESS_HOURS').get('MORNING').get('START')

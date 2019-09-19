@@ -15,12 +15,12 @@
   <link href="{{ url_for('static', filename='css/bootstrap.min.css') }}" rel="stylesheet">
 
   <!-- Custom Fonts -->
-  <link href=" {{ url_for('static', filename='fontawesome-free/css/all.min.css') }} " rel="stylesheet" type="text/css">
+  <!-- <link href=" {{ url_for('static', filename='fontawesome-free/css/all.min.css') }} " rel="stylesheet" type="text/css"> -->
   <link href="https://fonts.googleapis.com/css?family=Source+Sans+Pro:300,400,700,300italic,400italic,700italic" rel="stylesheet" type="text/css">
-  <link href="{{ url_for('static', filename='simple-line-icons/css/simple-line-icons.css') }}" rel="stylesheet">
+  <!-- <link href="{{ url_for('static', filename='simple-line-icons/css/simple-line-icons.css') }}" rel="stylesheet"> -->
 
   <!-- Custom CSS -->
-  <link href="{{ url_for('static', filename='css/stylish-portfolio.min.css') }}" rel="stylesheet">
+  <!-- <link href="{{ url_for('static', filename='css/stylish-portfolio.min.css') }}" rel="stylesheet"> -->
 
 </head>
 <style>
@@ -121,13 +121,36 @@
 
         <div class="column">
 
-              <a href="#" id="pay">
-                <img class="img1" src={{ url_for('static', filename='img/wyjz.png') }}/>
-              </a>
-            <h6>
-              <strong>Zahlen</strong>
-            </h6>
 
+          <a href="#" id="" data-toggle="modal" data-target="#exampleModal">
+            <img class="img1" src={{ url_for('static', filename='img/wyjz.png') }}/>
+          </a>
+
+          <h6>
+            <strong>Zahlen</strong>
+          </h6>
+
+        </div>
+
+        <!-- Modal -->
+        <div class="modal fade" id="exampleModal" tabindex="-1" role="dialog" aria-labelledby="exampleModalLabel" aria-hidden="true">
+          <div class="modal-dialog" role="document">
+            <div class="modal-content">
+
+              <div class="modal-body" style="color:black">
+                Woohoo, hat Ihnen das Essen geschmeckt? Und wie möchten Sie bezahlen?
+              </div>
+              <div class="modal-footer">
+
+                  <button type="button" class="btn btn-info" id="Karte">
+                      Karte
+                  </button>
+
+                  <button type="button" class="btn btn-primary" id="Bar">Bar</button>
+
+              </div>
+            </div>
+          </div>
         </div>
 
 

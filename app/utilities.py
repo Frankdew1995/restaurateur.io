@@ -471,7 +471,7 @@ def terminal_templating(context,
         return "ok"
 
 
-def call2print(table_name, seat_number, is_paying):
+def call2print(table_name, seat_number, is_paying, **kwargs):
 
     # Jinja Templating in word doc
     from docxtpl import DocxTemplate
@@ -495,6 +495,10 @@ def call2print(table_name, seat_number, is_paying):
     context = dict(table_name=table_name,
                    seat_number=seat_number,
                    now=format_datetime(now, locale="de_DE"))
+
+    if "pay_with" in kwargs.keys():
+
+        context['pay_with'] = kwargs['pay_with']
 
     doc.render(context)
     doc.save(abs_save_path)

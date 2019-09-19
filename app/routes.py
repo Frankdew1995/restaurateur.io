@@ -3419,6 +3419,8 @@ def guest_call_pay():
 
     seat_number = data.get('seatNumber')
 
+    pay_with = data.get('payWith')
+
     is_paying = True
 
     table = db.session.query(Table).filter_by(name=table_name.upper()).first_or_404()
@@ -3433,7 +3435,7 @@ def guest_call_pay():
 
     from threading import Thread
 
-    th = Thread(target=call2print, args=(table_name, seat_number, is_paying,))
+    th = Thread(target=call2print, args=(table_name, seat_number, is_paying, pay_with, ))
 
     th.start()
 

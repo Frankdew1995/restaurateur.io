@@ -456,7 +456,47 @@ def index():
                    order_counts=order_counts,
                    company_name=company_info.get('company_name'))
 
-    return render_template("analytics.html", current_user=current_user, **context)
+    with open(str(Path(app.root_path) / 'cache' / 'lan.pickle'),
+              mode="rb") as pickle_out:
+
+        data = pickle.load(pickle_out)
+
+    cur_lan = data.get('lan')
+
+    print(cur_lan)
+
+    languages = {
+
+        "Deutsch": {"lan_code": "DE",
+                    "flag_code": "de",
+                    "file_suffix": "_de"},
+
+        "English": {"lan_code": "EN",
+                    "flag_code": "us",
+                    "file_suffix": "_en"},
+
+        "Nederlands": {"lan_code": "NL",
+                       "flag_code": "nl",
+                       "file_suffix": "_nl"},
+
+        u"中文": {"lan_code": "ZH",
+                "flag_code": "cn",
+                "file_suffix": ""}
+
+    }
+
+    context['lan_code'] = languages.get(cur_lan).get('lan_code')
+    context['flag_code'] = languages.get(cur_lan).get('flag_code')
+
+    file_suffix = languages.get(cur_lan).get('file_suffix')
+
+    try:
+
+        return render_template(f"analytics{file_suffix}.html", current_user=current_user, **context)
+
+    except Exception as e:
+        print(str(e))
+        return render_template("analytics.html", current_user=current_user, **context)
 
 
 # Guest Facing Order Interface
@@ -1299,7 +1339,6 @@ def takeaway_cur_revenue():
                        order.timeCreated.date() == today and order.isPaid]
 
     cur_revenue_sum = sum([order.totalPrice for order in cur_paid_orders])
-
 
     cur_revenue_card = sum([order.totalPrice for order in cur_paid_orders if
                             json.loads(order.pay_via).get('method') == "Card"])
@@ -2584,7 +2623,15 @@ def admin_view_table(table_name):
             number_of_adults = len(set([tuple(i.items())[0][1].get('order_by')
                             for i in batches if tuple(i.items())[0][1].get('is_kid') == 0]))
 
-            section = Table.query.filter_by(name=table_name).first_or_404().section
+            section = None
+
+            try:
+
+                section = Table.query.filter_by(name=table_name).first().section
+
+            except Exception as e:
+
+                print(str(e))
 
             users = User.query.all()
 
@@ -3097,6 +3144,8 @@ def alacarte_guest_checkout():
         table_name = json_data.get('tableName').upper()
         seat_number = json_data.get('seatNumber')
 
+        section = Table.query.filter_by(name=table_name).first().section
+
         details = json_data.get('details')
 
         price_dict = {Food.query.get_or_404(int(i.get('itemId'))).name:
@@ -3143,6 +3192,7 @@ def alacarte_guest_checkout():
                     type="In",
                     table_name=table_name,
                     seat_number=seat_number,
+                    section=section,
                     isCancelled=False,
                     dishes=json.dumps([{datetime.timestamp(now): {"items": details,
                                                                   "order_id": cur_max_id + 1,
@@ -3222,6 +3272,7 @@ def alacarte_guest_checkout():
                 type="In",
                 table_name=table_name,
                 seat_number=seat_number,
+                section=section,
                 isCancelled=False,
                 dishes=json.dumps([{datetime.timestamp(now): {"items": details,
                                                               "order_id": cur_max_id + 1,
@@ -3683,7 +3734,7 @@ def view_table(table_name):
 
                     return redirect(url_for('waiter_admin'))
 
-            section = Table.query.filter_by(name=table_name).first_or_404().section
+            section = Table.query.filter_by(name=table_name).first().section
 
             users = User.query.all()
 
@@ -5117,11 +5168,37 @@ def print_x_receipt(date_time):
     return redirect(url_for('x_receipts_manage'))
 
 
+@app.route('/language/settings', methods=["POST"])
+@login_required
+def set_language():
+
+    data = request.json
+
+    with open(str(Path(app.root_path) / 'cache' / 'lan.pickle'),
+              mode="wb") as pickle_in:
+
+        pickle.dump(data, pickle_in)
+
+    try:
+
+        trigger_event(channel="filechange",
+                      event="newlanguage",
+                      response={"success": "lan setting successful!"})
+
+    except Exception as e:
+
+        print(str(e))
+
+    return {"success": "Lan setting successful!"}
+
+
 @app.route('/revenue/by/days', methods=["POST", "GET"])
 @login_required
 def revenue_by_days():
 
     today = datetime.now(tz=pytz.timezone(timezone)).date()
+
+    form = DatePickForm()
 
     referrer = request.headers.get('Referer')
 
@@ -5129,20 +5206,16 @@ def revenue_by_days():
                             Order.isPaid == True,
                             Order.type == "In").all()
 
+    inhouse_orders = Order.query.filter(Order.type == "In").all()
+
     cur_paid_alacarte_orders = [order for order in paid_alacarte_orders if
-                                order.timeCreated.date() == datetime.now(
-                                    tz=pytz.timezone(timezone)
-                                ).date()]
+                                order.timeCreated.date() == today]
 
     # Compute the current used sections from Ala Carte
-    cur_used_sections = list(set([Table.query.filter_by(name=order.table_name).first_or_404().section
-                        for order in paid_alacarte_orders if order.timeCreated.date() == today]))
+    all_sections = list(set([order.section for order in inhouse_orders]))
 
-    paid_out_orders = Order.query.filter(
-        Order.isPaid == True,
-        Order.type == "Out").all()
-
-    form = DatePickForm()
+    paid_out_orders = Order.query.filter(Order.isPaid == True,
+                                         Order.type == "Out").all()
 
     alacarte= {"Total": formatter(0),
                "Total_Card": formatter(0),
@@ -5150,153 +5223,154 @@ def revenue_by_days():
 
     if form.validate_on_submit() or request.method == "POST":
 
-        try:
+        start = form.start_date.data
 
-            start = form.start_date.data
-            end = form.end_date.data
+        end = form.end_date.data
 
-            # Accumulating for in/alacarte orders
-            alacarte_total = sum(
-                               [order.totalPrice for order in
-                                [order for order in paid_alacarte_orders
-                                 if start <= order.timeCreated.date() <= end]])
+        print(start, end)
 
-            ala_cash_total = sum(
-                               [order.totalPrice for order in
-                                [order for order in paid_alacarte_orders
-                                 if start <= order.timeCreated.date() <= end
-                                 and json.loads(order.pay_via).get('method') == "Cash"]])
+        referrer = request.headers.get('Referer')
 
-            ala_card_total = sum(
-                                [order.totalPrice for order in
-                                 [order for order in paid_alacarte_orders
-                                  if start <= order.timeCreated.date() <= end
-                                  and json.loads(order.pay_via).get('method') == "Card"]])
+        paid_alacarte_orders = Order.query.filter(
+            Order.isPaid == True,
+            Order.type == "In").all()
 
-            alacarte = {'Total': formatter(alacarte_total),
-                        'Total_Cash': formatter(ala_cash_total),
-                        'Total_Card': formatter(ala_card_total)}
+        paid_out_orders = Order.query.filter(
+            Order.isPaid == True,
+            Order.type == "Out").all()
 
-            # Filtered paid alacarte orders
-            filtered_paid_alacarte_orders = [order for order in paid_alacarte_orders
-                                             if start <= order.timeCreated.date() <= end]
+        # Accumulating for in/alacarte orders
+        alacarte_total = sum(
+            [order.totalPrice for order in
+             [order for order in paid_alacarte_orders
+              if start <= order.timeCreated.date() <= end]])
 
-            # Compute used sections during the DateRange
-            filtered_used_sections = list(set([Table.query.filter_by(name=order.table_name).first_or_404().section
-                                          for order in paid_alacarte_orders if start <= order.timeCreated.date() <= end]))
+        ala_cash_total = sum(
+            [order.totalPrice for order in
+             [order for order in paid_alacarte_orders
+              if start <= order.timeCreated.date() <= end
+              and json.loads(order.pay_via).get('method') == "Cash"]])
 
-            from collections import OrderedDict
+        ala_card_total = sum(
+            [order.totalPrice for order in
+             [order for order in paid_alacarte_orders
+              if start <= order.timeCreated.date() <= end
+              and json.loads(order.pay_via).get('method') == "Card"]])
 
-            revenue_by_sections = {section:
-                                    {"Cash": formatter(sum([order.totalPrice for order in [order for order in filtered_paid_alacarte_orders
-                                              if Table.query.filter_by(name=order.table_name).first_or_404().section == section
-                                              and json.loads(order.pay_via).get('method') == "Cash"]])),
+        alacarte = {'Total': formatter(alacarte_total),
+                    'Total_Cash': formatter(ala_cash_total),
+                    'Total_Card': formatter(ala_card_total)}
 
-                                      "Card": formatter(sum([order.totalPrice for order in [order for order in filtered_paid_alacarte_orders
-                                            if Table.query.filter_by(name=order.table_name).first_or_404().section == section
-                                            and json.loads(order.pay_via).get('method') == "Card"]])),
+        # Filtered paid alacarte orders
+        filtered_paid_alacarte_orders = [order for order in paid_alacarte_orders
+                                         if start <= order.timeCreated.date() <= end]
 
-                                      "Total": formatter(sum([order.totalPrice for order in [order for order in filtered_paid_alacarte_orders
-                                              if Table.query.filter_by(name=order.table_name).first_or_404().section == section]]))
+        from collections import OrderedDict
 
-                                          } for section in filtered_used_sections}
+        revenue_by_sections = {
+            section:
+               {"Cash": formatter(sum([order.totalPrice for order in [order for order in filtered_paid_alacarte_orders
+                        if order.section == section and json.loads(order.pay_via).get('method') == "Cash"]])),
 
-            revenue_by_sections = OrderedDict(sorted(revenue_by_sections.items(), key=lambda t: t[0]))
+                "Card": formatter(sum([order.totalPrice for order in [order for order in filtered_paid_alacarte_orders
+                        if order.section == section and json.loads(order.pay_via).get('method') == "Card"]])),
 
-            # Accumulating for out orders
-            out_total = sum([order.totalPrice for order
-                          in [order for order in paid_out_orders
-                              if start <= order.timeCreated.date() <= end]])
+                "Total": formatter(sum([order.totalPrice for order in [order for order in filtered_paid_alacarte_orders
+                        if order.section == section]]))
 
-            out_cash_total = sum([order.totalPrice for order in
-                                 [order for order in paid_out_orders
-                                  if start <= order.timeCreated.date() <= end
-                                  and json.loads(order.pay_via).get('method') == "Cash"]])
+                } for section in all_sections}
 
-            out_card_total = sum(
-                                [order.totalPrice for order in
-                                 [order for order in paid_out_orders
-                                  if start <= order.timeCreated.date() <= end
-                                  and json.loads(order.pay_via).get('method') == "Card"]])
+        revenue_by_sections = OrderedDict(sorted(revenue_by_sections.items(), key=lambda t: t[0]))
 
-            out = {'Total': formatter(out_total),
-                    'Total_Cash': formatter(out_cash_total),
-                    'Total_Card': formatter(out_card_total)}
+        # Accumulating for out orders
+        out_total = sum([order.totalPrice for order
+                         in [order for order in paid_out_orders
+                             if start <= order.timeCreated.date() <= end]])
 
-            final_card_total = out_card_total + ala_card_total
+        out_cash_total = sum([order.totalPrice for order in
+                              [order for order in paid_out_orders
+                               if start <= order.timeCreated.date() <= end
+                               and json.loads(order.pay_via).get('method') == "Cash"]])
 
-            final_cash_total = out_cash_total + ala_cash_total
+        out_card_total = sum(
+            [order.totalPrice for order in
+             [order for order in paid_out_orders
+              if start <= order.timeCreated.date() <= end
+              and json.loads(order.pay_via).get('method') == "Card"]])
 
-            final_total = final_card_total + final_cash_total
+        out = {'Total': formatter(out_total),
+               'Total_Cash': formatter(out_cash_total),
+               'Total_Card': formatter(out_card_total)}
 
-            context = dict(referrer=referrer,
-                           alacarte=alacarte,
-                           out=out,
-                           form=form,
-                           company_name=company_info.get('company_name'),
-                           revenue_by_sections=revenue_by_sections,
-                           title=u"日结",
-                           formatter=formatter,
-                           final_card_total=formatter(final_card_total),
-                           final_cash_total=formatter(final_cash_total),
-                           final_total=formatter(final_total),
-                           start=format_datetime(start, locale="de_DE"),
-                           end=format_datetime(end, locale="de_DE"))
+        final_card_total = out_card_total + ala_card_total
 
-            # Print the daily receipt
-            if form.print.data:
+        final_cash_total = out_cash_total + ala_cash_total
 
-                save_as = f"daily_revenue_report_{str(uuid4())}"
+        final_total = final_card_total + final_cash_total
 
-                th = Thread(target=daily_revenue_templating, args=(context, save_as, ))
+        context = dict(referrer=referrer,
+                       form=form,
+                       out=out,
+                       company_name=company_info.get('company_name'),
+                       revenue_by_sections=revenue_by_sections,
+                       alacarte=alacarte,
+                       title=u"日结",
+                       formatter=formatter,
+                       final_card_total=formatter(final_card_total),
+                       final_cash_total=formatter(final_cash_total),
+                       final_total=formatter(final_total),
+                       start=format_date(start, locale="de_DE"),
+                       end=format_date(end, locale="de_DE"))
 
-                th.start()
+        if form.print.data:
 
-                flash(f"日结报告正在打印，若未正常打印，请检查打印机是否正确配置或者处于打开状态")
-        except:
+            save_as = f"daily_revenue_report_{str(uuid4())}"
 
-            return redirect(url_for('revenue_by_days'))
+            th = Thread(target=daily_revenue_templating, args=(context, save_as,))
+
+            th.start()
+
+            flash(f"日结报告正在打印，若未正常打印，请检查打印机是否正确配置或者处于打开状态")
 
         return render_template('revenue_by_days.html', **context)
 
     from collections import OrderedDict
 
-    revenue_by_sections = {section: {"Cash": formatter(sum([order.totalPrice for order in [order for order in cur_paid_alacarte_orders
-                                             if Table.query.filter_by(name=order.table_name).first_or_404().section
-                                             == section and json.loads(order.pay_via).get('method') == "Cash"]])),
+    revenue_by_sections = {
+                    section:
 
-                                  "Card": formatter(sum([order.totalPrice for order in [order for order in cur_paid_alacarte_orders
-                                             if Table.query.filter_by(name=order.table_name).first_or_404().section
-                                             == section and json.loads(order.pay_via).get('method') == "Card"]])),
+                       {"Cash": formatter(sum([order.totalPrice for order in [order for order in cur_paid_alacarte_orders
+                                     if order.section == section and json.loads(order.pay_via).get('method') == "Cash"]])),
 
-                                  "Total": formatter(sum([order.totalPrice for order in [order for order in cur_paid_alacarte_orders
-                                              if Table.query.filter_by(name=order.table_name).first_or_404().section == section]]))
+                        "Card": formatter(sum([order.totalPrice for order in [order for order in cur_paid_alacarte_orders
+                                     if order.section == section and json.loads(order.pay_via).get('method') == "Card"]])),
 
-                                  } for section in cur_used_sections}
+                        "Total": formatter(sum([order.totalPrice for order in [order for order in cur_paid_alacarte_orders
+                                    if order.section == section]]))
+
+                          } for section in all_sections}
 
     revenue_by_sections = OrderedDict(sorted(revenue_by_sections.items(),
                                              key=lambda t: t[0]))
 
-    form.start_date.data = datetime.now(tz=pytz.timezone(timezone)).date()
-    form.end_date.data = datetime.now(tz=pytz.timezone(timezone)).date()
+    form.start_date.data = today
+
+    form.end_date.data = today
 
     # Aggregate today's out orders
     out_total = sum([order.totalPrice for order
                      in [order for order in paid_out_orders
-                        if order.timeCreated.date() ==
-                         datetime.now(tz=pytz.timezone(timezone)).date()]])
+                        if order.timeCreated.date() == today]])
 
     out_cash_total = sum([order.totalPrice for order in
                           [order for order in paid_out_orders
-                           if order.timeCreated.date() ==
-                           datetime.now(tz=pytz.timezone(timezone)).date()
+                           if order.timeCreated.date() == today
                            and json.loads(order.pay_via).get('method') == "Cash"]])
 
     out_card_total = sum(
         [order.totalPrice for order in
          [order for order in paid_out_orders
-          if order.timeCreated.date() == datetime.now(
-             tz=pytz.timezone(timezone)).date()
+          if order.timeCreated.date() == today
               and json.loads(order.pay_via).get('method') == "Card"]])
 
     out = {'Total': formatter(out_total),
@@ -6802,6 +6876,8 @@ def mongo_index(table_name, seat_number, is_kid):
 @app.route("/mongobuffet/interface/<string:table_name>/<string:seat_number>/<int:is_kid>")
 def mongo_guest_order(table_name, seat_number, is_kid):
 
+    section = Table.query.filter_by(name=table_name).first().section
+
     info = json_reader(str(Path.cwd() / 'app' / 'settings' / 'config.json'))
 
     hours = info.get('BUSINESS_HOURS')
@@ -6932,6 +7008,7 @@ def mongo_guest_order(table_name, seat_number, is_kid):
                 type="In",
                 table_name=table_name,
                 seat_number=seat_number,
+                section=section,
                 isCancelled=False,
                 dishes=json.dumps([{datetime.timestamp(now): {"items": details,
                                                               "order_id": cur_max_id + 1,
@@ -7022,6 +7099,7 @@ def mongo_guest_order(table_name, seat_number, is_kid):
             type="In",
             table_name=table_name,
             seat_number=seat_number,
+            section=section,
             isCancelled=False,
             dishes=json.dumps([{datetime.timestamp(now): {"items": details,
                                                           "order_id": cur_max_id + 1,
@@ -7091,6 +7169,8 @@ def mongo_order_by_category(table_name, seat_number, is_kid, cate):
 #  Mongo Order view by table name and seat number
 @app.route("/mongobuffet/interface/<string:table_name>/<string:seat_number>/<int:is_kid>/drinks")
 def mongo_order_drinks(table_name, seat_number, is_kid):
+
+    section = Table.query.filter_by(name=table_name).first().section
 
     # Only work with drinks
     info = json_reader(str(Path.cwd() / 'app' / 'settings' / 'config.json'))
@@ -7210,6 +7290,7 @@ def mongo_order_drinks(table_name, seat_number, is_kid):
                 type="In",
                 table_name=table_name,
                 seat_number=seat_number,
+                section=section,
                 isCancelled=False,
                 dishes=json.dumps([{datetime.timestamp(now): {"items": details,
                                                               "order_id": cur_max_id + 1,
@@ -7288,6 +7369,7 @@ def mongo_order_drinks(table_name, seat_number, is_kid):
             type="In",
             table_name=table_name,
             seat_number=seat_number,
+            section=section,
             isCancelled=False,
             dishes=json.dumps([{datetime.timestamp(now): {"items": details,
                                                           "order_id": cur_max_id + 1,
@@ -7354,6 +7436,8 @@ def mongo_guest_checkout():
         table_name = json_data.get('tableName').upper()
         seat_number = json_data.get('seatNumber')
 
+        section = Table.query.filter_by(name=table_name).first().section
+
         details = json_data.get('details')
 
         price_dict = {Food.query.get_or_404(int(i.get('itemId'))).name:
@@ -7401,6 +7485,7 @@ def mongo_guest_checkout():
                     type="In",
                     table_name=table_name,
                     seat_number=seat_number,
+                    section=section,
                     isCancelled=False,
                     dishes=json.dumps([{datetime.timestamp(now): {"items": details,
                                                                   "order_id": cur_max_id + 1}}]))
@@ -7473,6 +7558,7 @@ def mongo_guest_checkout():
                 type="In",
                 table_name=table_name,
                 seat_number=seat_number,
+                section=section,
                 isCancelled=False,
                 dishes=json.dumps([{datetime.timestamp(now): {"items": details,
                                                               "order_id": cur_max_id + 1}}])
@@ -7905,6 +7991,9 @@ def jpbuffet_guest_checkout():
 
         table_name = json_data.get('tableName').upper()
         seat_number = json_data.get('seatNumber')
+
+        section = Table.query.filter_by(name=table_name).first().section
+
         is_kid = int(json_data.get('isKid'))
 
         print(is_kid)
@@ -7983,6 +8072,7 @@ def jpbuffet_guest_checkout():
                     type="In",
                     table_name=table_name,
                     seat_number=seat_number,
+                    section=section,
                     isCancelled=False,
                     dishes=json.dumps([{datetime.timestamp(now): {"items": details,
                                                                   "order_id": cur_max_id + 1,
@@ -8123,6 +8213,7 @@ def jpbuffet_guest_checkout():
                 type="In",
                 table_name=table_name,
                 seat_number=seat_number,
+                section=section,
                 isCancelled=False,
                 dishes=json.dumps([{datetime.timestamp(now): {"items": details,
                                                               "order_id": cur_max_id + 1,
@@ -8338,6 +8429,9 @@ def guest_drinks_checkout():
 
         table_name = json_data.get('tableName').upper()
         seat_number = json_data.get('seatNumber')
+
+        section = Table.query.filter_by(name=table_name).first().section
+
         is_kid = int(json_data.get('isKid'))
 
         print(is_kid)
@@ -8416,6 +8510,7 @@ def guest_drinks_checkout():
                     type="In",
                     table_name=table_name,
                     seat_number=seat_number,
+                    section=section,
                     isCancelled=False,
                     dishes=json.dumps([{datetime.timestamp(now): {"items": details,
                                                                   "order_id": cur_max_id + 1,
@@ -8510,6 +8605,7 @@ def guest_drinks_checkout():
                 type="In",
                 table_name=table_name,
                 seat_number=seat_number,
+                section=section,
                 isCancelled=False,
                 dishes=json.dumps([{datetime.timestamp(now): {"items": details,
                                                               "order_id": cur_max_id + 1,
@@ -8633,8 +8729,6 @@ def jpbuffet_special_checkout():
 
     cur_week_num = int(datetime.now(tz=pytz.timezone(timezone)).strftime("%w"))
 
-    buffet_price = None
-
     # Read the printer setting data from the json file
     with open(str(Path(app.root_path) / "settings" / "buffet_price.json"),
               encoding="utf8") as file:
@@ -8651,6 +8745,7 @@ def jpbuffet_special_checkout():
 
         table_name = json_data.get('tableName').upper()
         seat_number = json_data.get('seatNumber')
+        section = Table.query.filter_by(name=table_name).first().section
         is_kid = int(json_data.get('isKid'))
 
         print(is_kid)
@@ -8730,6 +8825,7 @@ def jpbuffet_special_checkout():
                     type="In",
                     table_name=table_name,
                     seat_number=seat_number,
+                    section=section,
                     isCancelled=False,
                     dishes=json.dumps([{datetime.timestamp(now): {"items": details,
                                                                   "order_id": cur_max_id + 1,
@@ -8826,6 +8922,7 @@ def jpbuffet_special_checkout():
                 type="In",
                 table_name=table_name,
                 seat_number=seat_number,
+                section=section,
                 isCancelled=False,
                 dishes=json.dumps([{datetime.timestamp(now): {"items": details,
                                                               "order_id": cur_max_id + 1,

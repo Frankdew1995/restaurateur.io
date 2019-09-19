@@ -101,6 +101,7 @@ class Order(db.Model):
     discount_rate = db.Column(db.Float, default=0.0)
     subtype = db.Column(db.String(500))
     endTotal = db.Column(db.Float, default=totalPrice)
+    section = db.Column(db.String(500))
 
 
 class Visit(db.Model):

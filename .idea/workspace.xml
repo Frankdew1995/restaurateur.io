@@ -2,50 +2,72 @@
 <project version="4">
   <component name="ChangeListManager">
     <list default="true" id="cb37bda8-ba9a-4cc0-b82a-1fe47de77365" name="Default" comment="">
-      <change beforePath="" afterPath="$PROJECT_DIR$/.idea/vcs.xml" />
-      <change beforePath="$PROJECT_DIR$/README.md" afterPath="" />
+      <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" afterPath="$PROJECT_DIR$/.idea/workspace.xml" />
       <change beforePath="$PROJECT_DIR$/app.db" afterPath="$PROJECT_DIR$/app.db" />
       <change beforePath="$PROJECT_DIR$/app/cache/logging.csv" afterPath="$PROJECT_DIR$/app/cache/logging.csv" />
+      <change beforePath="$PROJECT_DIR$/app/models.py" afterPath="$PROJECT_DIR$/app/models.py" />
       <change beforePath="$PROJECT_DIR$/app/routes.py" afterPath="$PROJECT_DIR$/app/routes.py" />
       <change beforePath="$PROJECT_DIR$/app/settings/config.json" afterPath="$PROJECT_DIR$/app/settings/config.json" />
-      <change beforePath="$PROJECT_DIR$/app/settings/credentials.json" afterPath="$PROJECT_DIR$/app/settings/credentials.json" />
-      <change beforePath="$PROJECT_DIR$/app/static/qrcode/A1_1.png" afterPath="$PROJECT_DIR$/app/static/qrcode/A1_1.png" />
-      <change beforePath="$PROJECT_DIR$/app/static/qrcode/A1_2.png" afterPath="$PROJECT_DIR$/app/static/qrcode/A1_2.png" />
-      <change beforePath="$PROJECT_DIR$/app/static/qrcode/A1_3.png" afterPath="$PROJECT_DIR$/app/static/qrcode/A1_3.png" />
-      <change beforePath="$PROJECT_DIR$/app/static/qrcode/A1_4.png" afterPath="$PROJECT_DIR$/app/static/qrcode/A1_4.png" />
-      <change beforePath="$PROJECT_DIR$/app/static/qrcode/A1_5.png" afterPath="$PROJECT_DIR$/app/static/qrcode/A1_5.png" />
-      <change beforePath="$PROJECT_DIR$/app/static/qrcode/A1_6.png" afterPath="$PROJECT_DIR$/app/static/qrcode/A1_6.png" />
-      <change beforePath="$PROJECT_DIR$/app/static/qrcode/A1_7.png" afterPath="$PROJECT_DIR$/app/static/qrcode/A1_7.png" />
-      <change beforePath="$PROJECT_DIR$/app/static/qrcode/A2_1.png" afterPath="$PROJECT_DIR$/app/static/qrcode/A2_1.png" />
-      <change beforePath="$PROJECT_DIR$/app/static/qrcode/A2_10.png" afterPath="$PROJECT_DIR$/app/static/qrcode/A2_10.png" />
-      <change beforePath="$PROJECT_DIR$/app/static/qrcode/A2_2.png" afterPath="$PROJECT_DIR$/app/static/qrcode/A2_2.png" />
-      <change beforePath="$PROJECT_DIR$/app/static/qrcode/A2_3.png" afterPath="$PROJECT_DIR$/app/static/qrcode/A2_3.png" />
-      <change beforePath="$PROJECT_DIR$/app/static/qrcode/A2_4.png" afterPath="$PROJECT_DIR$/app/static/qrcode/A2_4.png" />
-      <change beforePath="$PROJECT_DIR$/app/static/qrcode/A2_5.png" afterPath="$PROJECT_DIR$/app/static/qrcode/A2_5.png" />
-      <change beforePath="$PROJECT_DIR$/app/static/qrcode/A2_6.png" afterPath="$PROJECT_DIR$/app/static/qrcode/A2_6.png" />
-      <change beforePath="$PROJECT_DIR$/app/static/qrcode/A2_7.png" afterPath="$PROJECT_DIR$/app/static/qrcode/A2_7.png" />
-      <change beforePath="$PROJECT_DIR$/app/static/qrcode/A2_8.png" afterPath="$PROJECT_DIR$/app/static/qrcode/A2_8.png" />
-      <change beforePath="$PROJECT_DIR$/app/static/qrcode/A2_9.png" afterPath="$PROJECT_DIR$/app/static/qrcode/A2_9.png" />
-      <change beforePath="$PROJECT_DIR$/app/static/qrcode/B1_1.png" afterPath="$PROJECT_DIR$/app/static/qrcode/B1_1.png" />
-      <change beforePath="$PROJECT_DIR$/app/static/qrcode/B1_10.png" afterPath="$PROJECT_DIR$/app/static/qrcode/B1_10.png" />
-      <change beforePath="$PROJECT_DIR$/app/static/qrcode/B1_2.png" afterPath="$PROJECT_DIR$/app/static/qrcode/B1_2.png" />
-      <change beforePath="$PROJECT_DIR$/app/static/qrcode/B1_3.png" afterPath="$PROJECT_DIR$/app/static/qrcode/B1_3.png" />
-      <change beforePath="$PROJECT_DIR$/app/static/qrcode/B1_4.png" afterPath="$PROJECT_DIR$/app/static/qrcode/B1_4.png" />
-      <change beforePath="$PROJECT_DIR$/app/static/qrcode/B1_5.png" afterPath="$PROJECT_DIR$/app/static/qrcode/B1_5.png" />
-      <change beforePath="$PROJECT_DIR$/app/static/qrcode/B1_6.png" afterPath="$PROJECT_DIR$/app/static/qrcode/B1_6.png" />
-      <change beforePath="$PROJECT_DIR$/app/static/qrcode/B1_7.png" afterPath="$PROJECT_DIR$/app/static/qrcode/B1_7.png" />
-      <change beforePath="$PROJECT_DIR$/app/static/qrcode/B1_8.png" afterPath="$PROJECT_DIR$/app/static/qrcode/B1_8.png" />
-      <change beforePath="$PROJECT_DIR$/app/static/qrcode/B1_9.png" afterPath="$PROJECT_DIR$/app/static/qrcode/B1_9.png" />
-      <change beforePath="$PROJECT_DIR$/app/static/qrcode/D1_1.png" afterPath="$PROJECT_DIR$/app/static/qrcode/D1_1.png" />
-      <change beforePath="$PROJECT_DIR$/app/static/qrcode/D1_2.png" afterPath="$PROJECT_DIR$/app/static/qrcode/D1_2.png" />
-      <change beforePath="$PROJECT_DIR$/app/static/qrcode/D1_3.png" afterPath="$PROJECT_DIR$/app/static/qrcode/D1_3.png" />
-      <change beforePath="$PROJECT_DIR$/app/static/qrcode/D1_4.png" afterPath="$PROJECT_DIR$/app/static/qrcode/D1_4.png" />
-      <change beforePath="$PROJECT_DIR$/app/static/qrcode/D1_5.png" afterPath="$PROJECT_DIR$/app/static/qrcode/D1_5.png" />
-      <change beforePath="$PROJECT_DIR$/app/templates/404.html" afterPath="$PROJECT_DIR$/app/templates/404.html" />
-      <change beforePath="$PROJECT_DIR$/app/templates/view_table_summary.html" afterPath="$PROJECT_DIR$/app/templates/view_table_summary.html" />
+      <change beforePath="$PROJECT_DIR$/app/static/AlaCarte/css/Main.css" afterPath="" />
+      <change beforePath="$PROJECT_DIR$/app/static/AlaCarte/css/app.boundle.min.css" afterPath="" />
+      <change beforePath="$PROJECT_DIR$/app/static/AlaCarte/css/htmleaf-demo.css" afterPath="" />
+      <change beforePath="$PROJECT_DIR$/app/static/AlaCarte/css/pages/Confirm.css" afterPath="" />
+      <change beforePath="$PROJECT_DIR$/app/static/AlaCarte/css/pages/MdIndex.css" afterPath="" />
+      <change beforePath="$PROJECT_DIR$/app/static/AlaCarte/css/pages/materialize.min.css" afterPath="" />
+      <change beforePath="$PROJECT_DIR$/app/static/AlaCarte/css/pages/menu.css" afterPath="" />
+      <change beforePath="$PROJECT_DIR$/app/static/AlaCarte/css/pages/payment.css" afterPath="" />
+      <change beforePath="$PROJECT_DIR$/app/static/AlaCarte/css/reset.css" afterPath="" />
+      <change beforePath="$PROJECT_DIR$/app/static/AlaCarte/css/style.css" afterPath="" />
+      <change beforePath="$PROJECT_DIR$/app/static/AlaCarte/css/style2.css" afterPath="" />
+      <change beforePath="$PROJECT_DIR$/app/static/AlaCarte/js/app.boundle.min.js" afterPath="" />
+      <change beforePath="$PROJECT_DIR$/app/static/AlaCarte/js/common/Strings.js" afterPath="" />
+      <change beforePath="$PROJECT_DIR$/app/static/AlaCarte/js/common/common.js" afterPath="" />
+      <change beforePath="$PROJECT_DIR$/app/static/AlaCarte/js/common/common1.js" afterPath="" />
+      <change beforePath="$PROJECT_DIR$/app/static/AlaCarte/js/common/countDown.js" afterPath="" />
+      <change beforePath="$PROJECT_DIR$/app/static/AlaCarte/js/css/Main.css" afterPath="" />
+      <change beforePath="$PROJECT_DIR$/app/static/AlaCarte/js/css/app.boundle.min.css" afterPath="" />
+      <change beforePath="$PROJECT_DIR$/app/static/AlaCarte/js/css/htmleaf-demo.css" afterPath="" />
+      <change beforePath="$PROJECT_DIR$/app/static/AlaCarte/js/css/reset.css" afterPath="" />
+      <change beforePath="$PROJECT_DIR$/app/static/AlaCarte/js/css/style.css" afterPath="" />
+      <change beforePath="$PROJECT_DIR$/app/static/AlaCarte/js/css/style2.css" afterPath="" />
+      <change beforePath="$PROJECT_DIR$/app/static/AlaCarte/js/http_ajax.googleapis.com_ajax_libs_jquery_1.8.0_jquery.js" afterPath="" />
+      <change beforePath="$PROJECT_DIR$/app/static/AlaCarte/js/http_raw.githubusercontent.com_hapjs_action-sheet_master_build_action-sheet.js" afterPath="" />
+      <change beforePath="$PROJECT_DIR$/app/static/AlaCarte/js/jquery-2.1.1.js" afterPath="" />
+      <change beforePath="$PROJECT_DIR$/app/static/AlaCarte/js/jquery.js" afterPath="" />
+      <change beforePath="$PROJECT_DIR$/app/static/AlaCarte/js/main.js" afterPath="" />
+      <change beforePath="$PROJECT_DIR$/app/static/AlaCarte/js/pages/Confirm.js" afterPath="" />
+      <change beforePath="$PROJECT_DIR$/app/static/AlaCarte/js/pages/index.js" afterPath="" />
+      <change beforePath="$PROJECT_DIR$/app/static/AlaCarte/js/pages/menu.js" afterPath="" />
+      <change beforePath="$PROJECT_DIR$/app/static/AlaCarte/js/pages/menu_cart.js" afterPath="" />
+      <change beforePath="$PROJECT_DIR$/app/static/AlaCarte/js/pages/newIndex.js" afterPath="" />
+      <change beforePath="$PROJECT_DIR$/app/static/AlaCarte/js/pages/ordered.js" afterPath="" />
+      <change beforePath="$PROJECT_DIR$/app/static/AlaCarte/js/pages/payment.js" afterPath="" />
+      <change beforePath="$PROJECT_DIR$/app/static/AlaCarte/js/pages/take-out.js" afterPath="" />
+      <change beforePath="$PROJECT_DIR$/app/static/AlaCarte/js/pages/thanks.js" afterPath="" />
+      <change beforePath="$PROJECT_DIR$/app/static/AlaCarte/js/pages/thanks2.js" afterPath="" />
+      <change beforePath="$PROJECT_DIR$/app/static/AlaCarte/js/reference/date.js" afterPath="" />
+      <change beforePath="$PROJECT_DIR$/app/static/AlaCarte/js/reference/flipclock.css" afterPath="" />
+      <change beforePath="$PROJECT_DIR$/app/static/AlaCarte/js/reference/flipclock.js" afterPath="" />
+      <change beforePath="$PROJECT_DIR$/app/static/AlaCarte/js/reference/flipclock.min.js" afterPath="" />
+      <change beforePath="$PROJECT_DIR$/app/static/AlaCarte/skin/Confirm.css" afterPath="" />
+      <change beforePath="$PROJECT_DIR$/app/static/AlaCarte/skin/index.css" afterPath="" />
+      <change beforePath="$PROJECT_DIR$/app/static/AlaCarte/skin/main.css" afterPath="" />
+      <change beforePath="$PROJECT_DIR$/app/static/AlaCarte/skin/main2.css" afterPath="" />
+      <change beforePath="$PROJECT_DIR$/app/templates/admin_alacarte_order_edit.html" afterPath="$PROJECT_DIR$/app/templates/admin_alacarte_order_edit.html" />
+      <change beforePath="$PROJECT_DIR$/app/templates/base.html" afterPath="$PROJECT_DIR$/app/templates/base.html" />
+      <change beforePath="$PROJECT_DIR$/app/templates/revenue_by_days.html" afterPath="$PROJECT_DIR$/app/templates/revenue_by_days.html" />
+      <change beforePath="$PROJECT_DIR$/app/templates/takeaway_view_order.html" afterPath="$PROJECT_DIR$/app/templates/takeaway_view_order.html" />
+      <change beforePath="$PROJECT_DIR$/app/templates/users_manage.html" afterPath="$PROJECT_DIR$/app/templates/users_manage.html" />
       <change beforePath="$PROJECT_DIR$/app/utilities.py" afterPath="$PROJECT_DIR$/app/utilities.py" />
+      <change beforePath="$PROJECT_DIR$/database.py" afterPath="$PROJECT_DIR$/database.py" />
       <change beforePath="$PROJECT_DIR$/installer.py" afterPath="$PROJECT_DIR$/installer.py" />
+      <change beforePath="$PROJECT_DIR$/migrations/README" afterPath="" />
+      <change beforePath="$PROJECT_DIR$/migrations/alembic.ini" afterPath="" />
+      <change beforePath="$PROJECT_DIR$/migrations/env.py" afterPath="" />
+      <change beforePath="$PROJECT_DIR$/migrations/script.py.mako" afterPath="" />
+      <change beforePath="$PROJECT_DIR$/migrations/versions/681907b6de06_sadsa.py" afterPath="" />
       <change beforePath="$PROJECT_DIR$/notepad.txt" afterPath="$PROJECT_DIR$/notepad.txt" />
+      <change beforePath="$PROJECT_DIR$/scripts.py" afterPath="$PROJECT_DIR$/scripts.py" />
       <change beforePath="$PROJECT_DIR$/todos.txt" afterPath="$PROJECT_DIR$/todos.txt" />
       <change beforePath="$PROJECT_DIR$/xstar.py" afterPath="$PROJECT_DIR$/xstar.py" />
     </list>
@@ -57,79 +79,13 @@
     <option name="LAST_RESOLUTION" value="IGNORE" />
   </component>
   <component name="FileEditorManager">
-    <leaf>
+    <leaf SIDE_TABS_SIZE_LIMIT_KEY="375">
       <file leaf-file-name="xstar.py" pinned="false" current-in-tab="false">
         <entry file="file://$PROJECT_DIR$/xstar.py">
           <provider selected="true" editor-type-id="text-editor">
-            <state relative-caret-position="48">
-              <caret line="2" column="9" lean-forward="false" selection-start-line="2" selection-start-column="0" selection-end-line="3" selection-end-column="0" />
+            <state relative-caret-position="24">
+              <caret line="1" column="0" lean-forward="false" selection-start-line="1" selection-start-column="0" selection-end-line="1" selection-end-column="0" />
               <folding />
-            </state>
-          </provider>
-        </entry>
-      </file>
-      <file leaf-file-name="routes.py" pinned="false" current-in-tab="true">
-        <entry file="file://$PROJECT_DIR$/app/routes.py">
-          <provider selected="true" editor-type-id="text-editor">
-            <state relative-caret-position="271">
-              <caret line="5347" column="0" lean-forward="true" selection-start-line="5347" selection-start-column="0" selection-end-line="5347" selection-end-column="0" />
-              <folding>
-                <element signature="e#0#131#0" expanded="true" />
-              </folding>
-            </state>
-          </provider>
-        </entry>
-      </file>
-      <file leaf-file-name="notepad.txt" pinned="false" current-in-tab="false">
-        <entry file="file://$PROJECT_DIR$/notepad.txt">
-          <provider selected="true" editor-type-id="text-editor">
-            <state relative-caret-position="530">
-              <caret line="73" column="6" lean-forward="true" selection-start-line="64" selection-start-column="0" selection-end-line="73" selection-end-column="6" />
-              <folding />
-            </state>
-          </provider>
-        </entry>
-      </file>
-      <file leaf-file-name="todos.txt" pinned="false" current-in-tab="false">
-        <entry file="file://$PROJECT_DIR$/todos.txt">
-          <provider selected="true" editor-type-id="text-editor">
-            <state relative-caret-position="390">
-              <caret line="67" column="19" lean-forward="true" selection-start-line="67" selection-start-column="19" selection-end-line="67" selection-end-column="19" />
-              <folding />
-            </state>
-          </provider>
-        </entry>
-      </file>
-      <file leaf-file-name="credentials.json" pinned="false" current-in-tab="false">
-        <entry file="file://$PROJECT_DIR$/app/settings/credentials.json">
-          <provider selected="true" editor-type-id="text-editor">
-            <state relative-caret-position="240">
-              <caret line="10" column="0" lean-forward="false" selection-start-line="10" selection-start-column="0" selection-end-line="10" selection-end-column="0" />
-              <folding />
-            </state>
-          </provider>
-        </entry>
-      </file>
-      <file leaf-file-name="server.py" pinned="false" current-in-tab="false">
-        <entry file="file://$PROJECT_DIR$/server.py">
-          <provider selected="true" editor-type-id="text-editor">
-            <state relative-caret-position="192">
-              <caret line="8" column="13" lean-forward="false" selection-start-line="8" selection-start-column="13" selection-end-line="8" selection-end-column="13" />
-              <folding>
-                <element signature="e#0#19#0" expanded="true" />
-              </folding>
-            </state>
-          </provider>
-        </entry>
-      </file>
-      <file leaf-file-name="__init__.py" pinned="false" current-in-tab="false">
-        <entry file="file://$PROJECT_DIR$/app/__init__.py">
-          <provider selected="true" editor-type-id="text-editor">
-            <state relative-caret-position="216">
-              <caret line="9" column="0" lean-forward="false" selection-start-line="9" selection-start-column="0" selection-end-line="9" selection-end-column="0" />
-              <folding>
-                <element signature="e#0#169#0" expanded="true" />
-              </folding>
             </state>
           </provider>
         </entry>
@@ -137,22 +93,54 @@
       <file leaf-file-name="utilities.py" pinned="false" current-in-tab="false">
         <entry file="file://$PROJECT_DIR$/app/utilities.py">
           <provider selected="true" editor-type-id="text-editor">
-            <state relative-caret-position="294">
-              <caret line="753" column="0" lean-forward="false" selection-start-line="753" selection-start-column="0" selection-end-line="753" selection-end-column="0" />
+            <state relative-caret-position="222">
+              <caret line="777" column="0" lean-forward="true" selection-start-line="777" selection-start-column="0" selection-end-line="777" selection-end-column="0" />
+              <folding />
+            </state>
+          </provider>
+        </entry>
+      </file>
+      <file leaf-file-name="installer.py" pinned="false" current-in-tab="true">
+        <entry file="file://$PROJECT_DIR$/installer.py">
+          <provider selected="true" editor-type-id="text-editor">
+            <state relative-caret-position="314">
+              <caret line="28" column="0" lean-forward="true" selection-start-line="28" selection-start-column="0" selection-end-line="28" selection-end-column="0" />
               <folding>
-                <element signature="e#0#11#0" expanded="true" />
+                <element signature="e#0#23#0" expanded="true" />
               </folding>
             </state>
           </provider>
         </entry>
       </file>
-      <file leaf-file-name="installer.py" pinned="false" current-in-tab="false">
-        <entry file="file://$PROJECT_DIR$/installer.py">
+      <file leaf-file-name="routes.py" pinned="false" current-in-tab="false">
+        <entry file="file://$PROJECT_DIR$/app/routes.py">
           <provider selected="true" editor-type-id="text-editor">
-            <state relative-caret-position="318">
-              <caret line="51" column="65" lean-forward="false" selection-start-line="51" selection-start-column="65" selection-end-line="51" selection-end-column="65" />
+            <state relative-caret-position="197">
+              <caret line="2104" column="0" lean-forward="true" selection-start-line="2104" selection-start-column="0" selection-end-line="2104" selection-end-column="0" />
               <folding>
-                <element signature="e#0#23#0" expanded="true" />
+                <element signature="e#0#131#0" expanded="true" />
+              </folding>
+            </state>
+          </provider>
+        </entry>
+      </file>
+      <file leaf-file-name="todos.txt" pinned="false" current-in-tab="false">
+        <entry file="file://$PROJECT_DIR$/todos.txt">
+          <provider selected="true" editor-type-id="text-editor">
+            <state relative-caret-position="1608">
+              <caret line="67" column="0" lean-forward="true" selection-start-line="67" selection-start-column="0" selection-end-line="67" selection-end-column="0" />
+              <folding />
+            </state>
+          </provider>
+        </entry>
+      </file>
+      <file leaf-file-name="database.py" pinned="false" current-in-tab="false">
+        <entry file="file://$PROJECT_DIR$/database.py">
+          <provider selected="true" editor-type-id="text-editor">
+            <state relative-caret-position="240">
+              <caret line="10" column="0" lean-forward="false" selection-start-line="10" selection-start-column="0" selection-end-line="10" selection-end-column="0" />
+              <folding>
+                <element signature="e#1#47#0" expanded="true" />
               </folding>
             </state>
           </provider>
@@ -164,6 +152,20 @@
     <findStrings>
       <find>view_table_summary</find>
       <find>jpbuffet_guest</find>
+      <find>add_table</find>
+      <find>alacarte_guest</find>
+      <find>mongo_drinks_</find>
+      <find>section=section</find>
+      <find>Table.query.filter_by(name=table_name).first_or_404().section</find>
+      <find>mongo_order</find>
+      <find>guest_drinks</find>
+      <find>alacarte_drinks</find>
+      <find>revenue_by_days</find>
+      <find>index()</find>
+      <find>credentials</find>
+      <find>guest_navigate</find>
+      <find>add_user</find>
+      <find>admin/users/manage</find>
     </findStrings>
   </component>
   <component name="Git.Settings">
@@ -172,17 +174,20 @@
   <component name="IdeDocumentHistory">
     <option name="CHANGED_PATHS">
       <list>
-        <option value="$PROJECT_DIR$/xstar.py" />
-        <option value="$PROJECT_DIR$/installer.py" />
-        <option value="$PROJECT_DIR$/app/utilities.py" />
         <option value="$PROJECT_DIR$/app/settings/credentials.json" />
         <option value="$PROJECT_DIR$/notepad.txt" />
+        <option value="$PROJECT_DIR$/app/models.py" />
+        <option value="$PROJECT_DIR$/database.py" />
+        <option value="$PROJECT_DIR$/scripts.py" />
+        <option value="$PROJECT_DIR$/xstar.py" />
+        <option value="$PROJECT_DIR$/app/utilities.py" />
         <option value="$PROJECT_DIR$/todos.txt" />
         <option value="$PROJECT_DIR$/app/routes.py" />
+        <option value="$PROJECT_DIR$/installer.py" />
       </list>
     </option>
   </component>
-  <component name="ProjectFrameBounds">
+  <component name="ProjectFrameBounds" fullScreen="true">
     <option name="y" value="23" />
     <option name="width" value="1280" />
     <option name="height" value="723" />
@@ -218,7 +223,7 @@
     </panes>
   </component>
   <component name="PropertiesComponent">
-    <property name="settings.editor.selected.configurable" value="com.jetbrains.python.configuration.PyActiveSdkModuleConfigurable" />
+    <property name="settings.editor.selected.configurable" value="preferences.sourceCode" />
   </component>
   <component name="RunDashboard">
     <option name="ruleStates">
@@ -233,6 +238,24 @@
     </option>
   </component>
   <component name="RunManager" selected="Python.installer">
+    <configuration name="database" type="PythonConfigurationType" factoryName="Python" temporary="true">
+      <option name="INTERPRETER_OPTIONS" value="" />
+      <option name="PARENT_ENVS" value="true" />
+      <envs>
+        <env name="PYTHONUNBUFFERED" value="1" />
+      </envs>
+      <option name="SDK_HOME" value="" />
+      <option name="WORKING_DIRECTORY" value="$PROJECT_DIR$" />
+      <option name="IS_MODULE_SDK" value="true" />
+      <option name="ADD_CONTENT_ROOTS" value="true" />
+      <option name="ADD_SOURCE_ROOTS" value="true" />
+      <module name="xstar" />
+      <option name="SCRIPT_NAME" value="$PROJECT_DIR$/database.py" />
+      <option name="PARAMETERS" value="" />
+      <option name="SHOW_COMMAND_LINE" value="false" />
+      <option name="EMULATE_TERMINAL" value="false" />
+      <option name="MODULE_MODE" value="false" />
+    </configuration>
     <configuration name="installer" type="PythonConfigurationType" factoryName="Python" temporary="true">
       <option name="INTERPRETER_OPTIONS" value="" />
       <option name="PARENT_ENVS" value="true" />
@@ -246,6 +269,24 @@
       <option name="ADD_SOURCE_ROOTS" value="true" />
       <module name="xstar" />
       <option name="SCRIPT_NAME" value="$PROJECT_DIR$/installer.py" />
+      <option name="PARAMETERS" value="" />
+      <option name="SHOW_COMMAND_LINE" value="false" />
+      <option name="EMULATE_TERMINAL" value="false" />
+      <option name="MODULE_MODE" value="false" />
+    </configuration>
+    <configuration name="scripts" type="PythonConfigurationType" factoryName="Python" temporary="true">
+      <option name="INTERPRETER_OPTIONS" value="" />
+      <option name="PARENT_ENVS" value="true" />
+      <envs>
+        <env name="PYTHONUNBUFFERED" value="1" />
+      </envs>
+      <option name="SDK_HOME" value="" />
+      <option name="WORKING_DIRECTORY" value="$PROJECT_DIR$" />
+      <option name="IS_MODULE_SDK" value="true" />
+      <option name="ADD_CONTENT_ROOTS" value="true" />
+      <option name="ADD_SOURCE_ROOTS" value="true" />
+      <module name="xstar" />
+      <option name="SCRIPT_NAME" value="$PROJECT_DIR$/scripts.py" />
       <option name="PARAMETERS" value="" />
       <option name="SHOW_COMMAND_LINE" value="false" />
       <option name="EMULATE_TERMINAL" value="false" />
@@ -287,16 +328,20 @@
       <option name="EMULATE_TERMINAL" value="false" />
       <option name="MODULE_MODE" value="false" />
     </configuration>
-    <list size="3">
+    <list size="5">
       <item index="0" class="java.lang.String" itemvalue="Python.xstar" />
       <item index="1" class="java.lang.String" itemvalue="Python.server" />
       <item index="2" class="java.lang.String" itemvalue="Python.installer" />
+      <item index="3" class="java.lang.String" itemvalue="Python.scripts" />
+      <item index="4" class="java.lang.String" itemvalue="Python.database" />
     </list>
     <recent_temporary>
-      <list size="3">
-        <item index="0" class="java.lang.String" itemvalue="Python.xstar" />
-        <item index="1" class="java.lang.String" itemvalue="Python.installer" />
-        <item index="2" class="java.lang.String" itemvalue="Python.server" />
+      <list size="5">
+        <item index="0" class="java.lang.String" itemvalue="Python.installer" />
+        <item index="1" class="java.lang.String" itemvalue="Python.xstar" />
+        <item index="2" class="java.lang.String" itemvalue="Python.database" />
+        <item index="3" class="java.lang.String" itemvalue="Python.scripts" />
+        <item index="4" class="java.lang.String" itemvalue="Python.server" />
       </list>
     </recent_temporary>
   </component>
@@ -317,25 +362,25 @@
     <servers />
   </component>
   <component name="ToolWindowManager">
-    <frame x="0" y="23" width="1280" height="723" extended-state="0" />
+    <frame x="0" y="0" width="1280" height="800" extended-state="0" />
     <editor active="true" />
     <layout>
       <window_info id="Project" active="false" anchor="left" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" show_stripe_button="true" weight="0.24960127" sideWeight="0.5" order="0" side_tool="false" content_ui="combo" />
       <window_info id="TODO" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" show_stripe_button="true" weight="0.33" sideWeight="0.5" order="6" side_tool="false" content_ui="tabs" />
-      <window_info id="Event Log" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" show_stripe_button="true" weight="0.33" sideWeight="0.5" order="-1" side_tool="true" content_ui="tabs" />
-      <window_info id="Run" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" show_stripe_button="true" weight="1.0" sideWeight="0.5" order="2" side_tool="false" content_ui="tabs" />
-      <window_info id="Version Control" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" show_stripe_button="true" weight="0.33" sideWeight="0.5" order="-1" side_tool="false" content_ui="tabs" />
-      <window_info id="Python Console" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" show_stripe_button="true" weight="0.33" sideWeight="0.5" order="-1" side_tool="false" content_ui="tabs" />
+      <window_info id="Event Log" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" show_stripe_button="true" weight="0.33" sideWeight="0.5" order="7" side_tool="true" content_ui="tabs" />
+      <window_info id="Run" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" show_stripe_button="true" weight="0.66997164" sideWeight="0.5" order="2" side_tool="false" content_ui="tabs" />
+      <window_info id="Version Control" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" show_stripe_button="true" weight="0.33" sideWeight="0.5" order="7" side_tool="false" content_ui="tabs" />
+      <window_info id="Python Console" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" show_stripe_button="true" weight="0.33" sideWeight="0.5" order="7" side_tool="false" content_ui="tabs" />
       <window_info id="Structure" active="false" anchor="left" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" show_stripe_button="true" weight="0.25" sideWeight="0.5" order="1" side_tool="false" content_ui="tabs" />
-      <window_info id="Terminal" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" show_stripe_button="true" weight="0.33" sideWeight="0.5" order="-1" side_tool="false" content_ui="tabs" />
+      <window_info id="Terminal" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" show_stripe_button="true" weight="0.66997164" sideWeight="0.5" order="7" side_tool="false" content_ui="tabs" />
       <window_info id="Debug" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" show_stripe_button="true" weight="0.4" sideWeight="0.5" order="3" side_tool="false" content_ui="tabs" />
-      <window_info id="Favorites" active="false" anchor="left" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" show_stripe_button="true" weight="0.33" sideWeight="0.5" order="-1" side_tool="true" content_ui="tabs" />
+      <window_info id="Favorites" active="false" anchor="left" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" show_stripe_button="true" weight="0.33" sideWeight="0.5" order="2" side_tool="true" content_ui="tabs" />
       <window_info id="Cvs" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" show_stripe_button="true" weight="0.25" sideWeight="0.5" order="4" side_tool="false" content_ui="tabs" />
-      <window_info id="Hierarchy" active="false" anchor="right" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" show_stripe_button="true" weight="0.25" sideWeight="0.5" order="2" side_tool="false" content_ui="combo" />
       <window_info id="Message" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" show_stripe_button="true" weight="0.33" sideWeight="0.5" order="0" side_tool="false" content_ui="tabs" />
       <window_info id="Commander" active="false" anchor="right" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" show_stripe_button="true" weight="0.4" sideWeight="0.5" order="0" side_tool="false" content_ui="tabs" />
-      <window_info id="Find" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" show_stripe_button="true" weight="0.33" sideWeight="0.5" order="1" side_tool="false" content_ui="tabs" />
       <window_info id="Inspection" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" show_stripe_button="true" weight="0.4" sideWeight="0.5" order="5" side_tool="false" content_ui="tabs" />
+      <window_info id="Hierarchy" active="false" anchor="right" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" show_stripe_button="true" weight="0.25" sideWeight="0.5" order="2" side_tool="false" content_ui="combo" />
+      <window_info id="Find" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" show_stripe_button="true" weight="0.33" sideWeight="0.5" order="1" side_tool="false" content_ui="tabs" />
       <window_info id="Ant Build" active="false" anchor="right" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" show_stripe_button="true" weight="0.25" sideWeight="0.5" order="1" side_tool="false" content_ui="tabs" />
     </layout>
   </component>
@@ -347,12 +392,66 @@
     <watches-manager />
   </component>
   <component name="editorHistoryManager">
+    <entry file="file://$PROJECT_DIR$/xstar.py">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="48">
+          <caret line="2" column="53" lean-forward="true" selection-start-line="2" selection-start-column="53" selection-end-line="2" selection-end-column="53" />
+          <folding />
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/scripts.py">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="336">
+          <caret line="23" column="17" lean-forward="true" selection-start-line="23" selection-start-column="17" selection-end-line="23" selection-end-column="17" />
+          <folding>
+            <element signature="e#0#55#0" expanded="false" />
+          </folding>
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/notepad.txt">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="1776">
+          <caret line="74" column="0" lean-forward="true" selection-start-line="74" selection-start-column="0" selection-end-line="74" selection-end-column="0" />
+          <folding />
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/todos.txt">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="1608">
+          <caret line="67" column="0" lean-forward="false" selection-start-line="67" selection-start-column="0" selection-end-line="67" selection-end-column="0" />
+          <folding />
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/server.py">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="120">
+          <caret line="7" column="0" lean-forward="true" selection-start-line="7" selection-start-column="0" selection-end-line="7" selection-end-column="0" />
+          <folding>
+            <element signature="e#0#19#0" expanded="false" />
+          </folding>
+        </state>
+      </provider>
+    </entry>
     <entry file="file://$PROJECT_DIR$/app/__init__.py">
       <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="216">
+        <state relative-caret-position="24">
           <caret line="9" column="0" lean-forward="false" selection-start-line="9" selection-start-column="0" selection-end-line="9" selection-end-column="0" />
           <folding>
-            <element signature="e#0#169#0" expanded="true" />
+            <element signature="e#0#169#0" expanded="false" />
+          </folding>
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/app/routes.py">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="128736">
+          <caret line="5364" column="0" lean-forward="true" selection-start-line="5364" selection-start-column="0" selection-end-line="5364" selection-end-column="0" />
+          <folding>
+            <element signature="e#0#131#0" expanded="true" />
           </folding>
         </state>
       </provider>
@@ -365,9 +464,63 @@
         </state>
       </provider>
     </entry>
+    <entry file="file://$PROJECT_DIR$/notepad.txt">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="1752">
+          <caret line="73" column="6" lean-forward="true" selection-start-line="64" selection-start-column="0" selection-end-line="73" selection-end-column="6" />
+          <folding />
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/todos.txt">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="1608">
+          <caret line="67" column="0" lean-forward="true" selection-start-line="67" selection-start-column="0" selection-end-line="67" selection-end-column="0" />
+          <folding />
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/app/settings/credentials.json">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="240">
+          <caret line="10" column="0" lean-forward="false" selection-start-line="10" selection-start-column="0" selection-end-line="10" selection-end-column="0" />
+          <folding />
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/server.py">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="144">
+          <caret line="8" column="13" lean-forward="false" selection-start-line="8" selection-start-column="13" selection-end-line="8" selection-end-column="13" />
+          <folding>
+            <element signature="e#0#19#0" expanded="false" />
+          </folding>
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/app/__init__.py">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="24">
+          <caret line="9" column="0" lean-forward="false" selection-start-line="9" selection-start-column="0" selection-end-line="9" selection-end-column="0" />
+          <folding>
+            <element signature="e#0#169#0" expanded="false" />
+          </folding>
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/app/utilities.py">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="17520">
+          <caret line="753" column="0" lean-forward="false" selection-start-line="753" selection-start-column="0" selection-end-line="753" selection-end-column="0" />
+          <folding>
+            <element signature="e#0#11#0" expanded="false" />
+          </folding>
+        </state>
+      </provider>
+    </entry>
     <entry file="file://$PROJECT_DIR$/installer.py">
       <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="318">
+        <state relative-caret-position="1104">
           <caret line="51" column="65" lean-forward="false" selection-start-line="51" selection-start-column="65" selection-end-line="51" selection-end-column="65" />
           <folding>
             <element signature="e#0#23#0" expanded="true" />
@@ -375,13 +528,87 @@
         </state>
       </provider>
     </entry>
+    <entry file="file://$PROJECT_DIR$/app/routes.py">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="128328">
+          <caret line="5347" column="0" lean-forward="true" selection-start-line="5347" selection-start-column="0" selection-end-line="5347" selection-end-column="0" />
+          <folding>
+            <element signature="e#0#131#0" expanded="true" />
+          </folding>
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/../Work_Space/envs/xstar1/lib/python3.6/site-packages/flask/app.py">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="57672">
+          <caret line="2462" column="0" lean-forward="false" selection-start-line="2462" selection-start-column="0" selection-end-line="2462" selection-end-column="0" />
+          <folding />
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/notepad.txt">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="219">
+          <caret line="74" column="0" lean-forward="true" selection-start-line="74" selection-start-column="0" selection-end-line="74" selection-end-column="0" />
+          <folding />
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/app/__init__.py">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="216">
+          <caret line="9" column="0" lean-forward="false" selection-start-line="9" selection-start-column="0" selection-end-line="9" selection-end-column="0" />
+          <folding>
+            <element signature="e#0#169#0" expanded="false" />
+          </folding>
+        </state>
+      </provider>
+    </entry>
     <entry file="file://$PROJECT_DIR$/server.py">
       <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="192">
-          <caret line="8" column="13" lean-forward="false" selection-start-line="8" selection-start-column="13" selection-end-line="8" selection-end-column="13" />
+        <state relative-caret-position="144">
+          <caret line="6" column="26" lean-forward="true" selection-start-line="6" selection-start-column="26" selection-end-line="6" selection-end-column="26" />
           <folding>
-            <element signature="e#0#19#0" expanded="true" />
+            <element signature="e#0#19#0" expanded="false" />
           </folding>
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/app/models.py">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="406">
+          <caret line="107" column="0" lean-forward="true" selection-start-line="107" selection-start-column="0" selection-end-line="107" selection-end-column="0" />
+          <folding>
+            <element signature="e#0#25#0" expanded="false" />
+          </folding>
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/scripts.py">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="240">
+          <caret line="10" column="0" lean-forward="false" selection-start-line="10" selection-start-column="0" selection-end-line="10" selection-end-column="0" />
+          <folding>
+            <element signature="e#0#55#0" expanded="false" />
+          </folding>
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/database.py">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="240">
+          <caret line="10" column="0" lean-forward="false" selection-start-line="10" selection-start-column="0" selection-end-line="10" selection-end-column="0" />
+          <folding>
+            <element signature="e#1#47#0" expanded="true" />
+          </folding>
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/app/settings/config.json">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="0">
+          <caret line="0" column="0" lean-forward="false" selection-start-line="0" selection-start-column="0" selection-end-line="0" selection-end-column="0" />
+          <folding />
         </state>
       </provider>
     </entry>
@@ -395,36 +622,44 @@
     </entry>
     <entry file="file://$PROJECT_DIR$/app/utilities.py">
       <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="294">
-          <caret line="753" column="0" lean-forward="false" selection-start-line="753" selection-start-column="0" selection-end-line="753" selection-end-column="0" />
-          <folding>
-            <element signature="e#0#11#0" expanded="true" />
-          </folding>
+        <state relative-caret-position="222">
+          <caret line="777" column="0" lean-forward="true" selection-start-line="777" selection-start-column="0" selection-end-line="777" selection-end-column="0" />
+          <folding />
         </state>
       </provider>
     </entry>
-    <entry file="file://$PROJECT_DIR$/notepad.txt">
+    <entry file="file://$PROJECT_DIR$/xstar.py">
       <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="530">
-          <caret line="73" column="6" lean-forward="true" selection-start-line="64" selection-start-column="0" selection-end-line="73" selection-end-column="6" />
+        <state relative-caret-position="24">
+          <caret line="1" column="0" lean-forward="false" selection-start-line="1" selection-start-column="0" selection-end-line="1" selection-end-column="0" />
           <folding />
         </state>
       </provider>
     </entry>
     <entry file="file://$PROJECT_DIR$/todos.txt">
       <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="390">
-          <caret line="67" column="19" lean-forward="true" selection-start-line="67" selection-start-column="19" selection-end-line="67" selection-end-column="19" />
+        <state relative-caret-position="1608">
+          <caret line="67" column="0" lean-forward="true" selection-start-line="67" selection-start-column="0" selection-end-line="67" selection-end-column="0" />
           <folding />
         </state>
       </provider>
     </entry>
     <entry file="file://$PROJECT_DIR$/app/routes.py">
       <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="271">
-          <caret line="5347" column="0" lean-forward="true" selection-start-line="5347" selection-start-column="0" selection-end-line="5347" selection-end-column="0" />
+        <state relative-caret-position="197">
+          <caret line="2104" column="0" lean-forward="true" selection-start-line="2104" selection-start-column="0" selection-end-line="2104" selection-end-column="0" />
           <folding>
             <element signature="e#0#131#0" expanded="true" />
+          </folding>
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/installer.py">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="314">
+          <caret line="28" column="0" lean-forward="true" selection-start-line="28" selection-start-column="0" selection-end-line="28" selection-end-column="0" />
+          <folding>
+            <element signature="e#0#23#0" expanded="true" />
           </folding>
         </state>
       </provider>

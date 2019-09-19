@@ -72,3 +72,12 @@ format_decimal(round(order.totalPrice, 2),locale="de_DE")
             </button>
 
 </div>
+
+
+save_as = f"daily_revenue_report_{str(uuid4())}"
+
+th = Thread(target=daily_revenue_templating, args=(context, save_as, ))
+
+th.start()
+
+flash(f"日结报告正在打印，若未正常打印，请检查打印机是否正确配置或者处于打开状态")

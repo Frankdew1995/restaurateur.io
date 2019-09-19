@@ -778,7 +778,7 @@ def start_ngrok(port):
 
     executable = str(Path(app.root_path) / 'utils' / 'ngrok' / 'ngrok')
 
-    ngrok = subprocess.Popen([executable, 'http', '-region=eu', str(port)])
+    # ngrok = subprocess.Popen([executable, 'http', '-region=eu', str(port)])
 
     localhost_url = "http://localhost:4040/api/tunnels"  # Url with tunnel details
     time.sleep(1)

@@ -1,7 +1,7 @@
 [
   {
     "STORE_NAME": "Maxmann GmbH",
-    "CITY": "Koeln",
+    "CITY": "Moers",
     "STREET": "Maxmann Strasse",
     "STREET NO.": "555",
     "COUNTRY": "DE",
@@ -25,7 +25,7 @@
       }
     },
     "ORDER_LIMIT": 5,
-    "BUFFET_MODE": "mongo",
+    "BUFFET_MODE": "jpbuffet",
     "PUBLIC_TUNNEL_URL": "http://ffee826e.eu.ngrok.io"
   }
 ]

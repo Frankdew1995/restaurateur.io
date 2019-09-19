@@ -1,0 +1,298 @@
+{% extends "base_en.html" %}
+
+
+
+{% block title %}
+<h1 class="h3 mb-2 text-gray-800">{{title}}</h1>
+{% endblock %}
+
+
+{% block css %}
+<style>
+    .column {
+      float: left;
+      width: 22%;
+      margin-left: 15px;
+    }
+
+    /* Clear floats after the columns */
+    .row:after {
+      content: "";
+      display: table;
+      clear: both;}
+
+
+    .card {
+
+
+      margin-top: 10px
+    }
+
+    .a {color: rgb(247, 249, 252)
+
+    }
+
+    .btn-info {
+      background-color: #26a69a;
+      border-color: #26a69a;
+    }
+
+
+</style>
+{% endblock %}
+
+
+<!-- start of content -->
+{% block content %}
+
+<div class="container">
+
+  <div class="row">
+
+    <!-- column 1 -->
+    <div class="column">
+
+          <div class="card">
+              <div class="card-header">
+                今日访问量
+              </div>
+              <ul class="list-group list-group-flush">
+                <li class="list-group-item">
+                  <p>
+
+                    {{ cur_visits }}
+                  </p>
+                  <span>
+                    比昨天增长 {{ daily_visit_up_rate  }}
+                  </span>
+                </li>
+            </ul>
+        </div>
+
+    </div>
+    <!--  end of column1 -->
+
+
+
+    <!-- column 2 -->
+    <div class="column">
+
+          <div class="card">
+              <div class="card-header">
+                今日顾客量
+              </div>
+              <ul class="list-group list-group-flush">
+                <li class="list-group-item">
+                  <p>
+
+                    {{ cur_guests }}
+
+                  </p>
+                  <span>
+                    比昨天增长 {{ daily_guests_up_rate }}
+                  </span>
+                </li>
+            </ul>
+        </div>
+
+    </div>
+    <!--  end of column2 -->
+
+
+
+    <!-- column 3 -->
+    <div class="column">
+
+          <div class="card">
+              <div class="card-header">
+                总营业额
+              </div>
+              <ul class="list-group list-group-flush">
+                <li class="list-group-item">
+                  <p>
+
+                    {{ cur_revenue }}
+
+                  </p>
+                  <span>
+                    比昨天增长 {{ daily_revenue_up_rate }}
+                  </span>
+                </li>
+            </ul>
+        </div>
+
+    </div>
+    <!--  end of column3 -->
+
+
+
+    <!-- column 4 -->
+    <div class="column">
+
+          <div class="card">
+              <div class="card-header">
+                本月总收入
+              </div>
+              <ul class="list-group list-group-flush">
+                <li class="list-group-item">
+                  <p>
+
+                    {{ cur_mon_revenue }}
+
+                  </p>
+                  <span>
+                    比上月增长 {{ monthly_revenue_up_rate }}
+                  </span>
+                </li>
+            </ul>
+        </div>
+
+    </div>
+    <!--  end of column4 -->
+
+
+  </div>
+
+
+  <br>
+
+
+
+
+  <div id="lineChart">
+
+
+
+  </div>
+
+
+  <br>
+
+
+
+<!-- Viz Part -->
+<div class="container">
+
+
+
+  <div class="row">
+
+    <!-- weekly and monthly chart -->
+    <div class="chart" id="weeklyChart" style="width:49%">
+
+    </div>
+    <!-- end of weekly and monthy chart  -->
+
+
+
+    <div class="chart" id="monthlyChart" style="width:49%">
+
+    </div>
+
+
+
+
+
+
+  </div>
+
+
+
+
+</div>
+
+
+
+<!-- end of viz  -->
+
+</div>
+
+
+<!-- start of order stats by times -->
+<br>
+
+<h6 class="h3 mb-2 text-gray-800">最受欢迎的菜品</h6>
+
+<br>
+
+
+<div class="row">
+
+
+  <div class="col-sm-12">
+
+
+    <table id="example" class="table table-striped table-bordered">
+
+      <thead>
+        <tr>
+          <th>菜品名称</th>
+          <th>图片</th>
+          <th>点菜次数</th>
+          <th>操作</th>
+        </tr>
+      </thead>
+      <tbody>
+
+        <!-- start of for loop -->
+
+        {% for dish, items in order_counts.items() %}
+
+        <tr>
+            <td>{{ dish }}</td>
+            <td>
+              <img src={{ url_for('static', filename="img/"+items.get('Img')) }} alt="" height="42" width="42">
+            </td>
+            <td>{{ items.get('counts') }}</td>
+            <td style="text-align:center">
+              <span>
+                <button type="button" class="btn btn-info" style="border-color:#26a69a; background-color:#26a69a;"><a style="color: rgb(247, 249, 252)" href="{{ url_for('edit_dish', dish_id=items.get('ID')) }}">查看</a></button>
+              </span>
+            </td>
+        </tr>
+        {% endfor %}
+        <!-- end of for loop -->
+
+      </tbody>
+    </table>
+
+    </div>
+
+</div>
+
+<!-- end of stats -->
+
+
+{% endblock %}
+
+
+
+
+{% block scripts %}
+
+<!-- Plotly js graphing -->
+<script src="https://cdn.plot.ly/plotly-latest.min.js"></script>
+
+<script src={{ url_for('static',filename="js/graphing.js") }} charset="utf-8"></script>
+
+
+
+
+<!-- DataTable JSs -->
+<script>
+
+// sort the time column in desc order
+    $(document).ready(function() {
+    $('#example').DataTable({
+      'order': [[2, "desc"]]
+    });
+  });
+</script>
+
+
+<script type="text/javascript" charset="utf8" src="https://cdn.datatables.net/1.10.19/js/dataTables.bootstrap4.min.js"></script>
+<script type="text/javascript" charset="utf8" src="https://code.jquery.com/jquery-3.3.1.js"></script>
+<script type="text/javascript" charset="utf8" src="https://cdn.datatables.net/1.10.19/js/jquery.dataTables.min.js"></script>
+
+
+{% endblock %}

@@ -54,7 +54,8 @@ shall be redirected to the corresponding page;
 33 invoicing printing testing
 34. add event-triggered auto reload for order pages.
 31. custom 404 page
-
+29. daily revenue_report printing
+30. multilingual buttons: NL, DE, EN, ZH
 
 To Dos:
 
@@ -64,9 +65,7 @@ To Dos:
 19. License Key to redirect to register page
 26. User Avatar >> Default
 
-29. daily revenue_report printing
 
-30. multilingual buttons: NL, DE, EN, ZH
 32. Order edit and update by serial number in each order \
 + printing updates to Kitchen and bar.
 

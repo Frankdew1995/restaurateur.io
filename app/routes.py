@@ -346,7 +346,7 @@ def index():
 
     today = datetime.now(pytz.timezone(timezone)).date()
     yesterday = datetime.now(pytz.timezone(timezone)).date() - timedelta(days=1)
-    paid_orders = Order.query.filter(Order.isPaid==True).all()
+    paid_orders = Order.query.filter(Order.isPaid == True).all()
 
     # Visits part
     visits = Visit.query.all()
@@ -388,8 +388,13 @@ def index():
     last_revenue = sum([order.totalPrice
                        for order in paid_orders
                        if order.timeCreated.date() <= yesterday])
+    try:
+        daily_revenue_up_rate = str(round(((cur_revenue - last_revenue) / last_revenue) * 100, 2)) + "%"
 
-    daily_revenue_up_rate = str(round(((cur_revenue - last_revenue) / last_revenue) * 100, 2)) + "%"
+    except Exception as e:
+
+        print(str(e))
+        daily_revenue_up_rate = ""
 
     from calendar import monthrange
 
@@ -531,7 +536,7 @@ def takeaway_checkout():
         unique_food = list(set(food))
 
         details = {dish: {'quantity': food.count(dish),
-                          'price': Food.query.filter_by(name=dish).first_or_404().price_gross}
+                          'price': Food.query.filter_by(name=dish).first().price_gross}
                    for dish in unique_food}
 
         total_price = sum([i[1].get('quantity') * i[1].get('price')
@@ -550,11 +555,13 @@ def takeaway_checkout():
 
         # Order Terminal Order Printing
         details = {key: {'quantity': items.get('quantity'),
+                         "price": items.get("price"),
                          'total': items.get('quantity') * items.get('price')}
                    for key, items in details.items()}
 
         vat = round((order.totalPrice / (1 + tax_rate_out)) * tax_rate_out, 2)
 
+        net = order.totalPrice / (1 + tax_rate_out)
         context = {"details": details,
                    "company_name": company_info.get('company_name', ''),
                    "address": company_info.get('address'),
@@ -562,7 +569,8 @@ def takeaway_checkout():
                    "tax_id": company_info.get('tax_id'),
                    "wait_number": order.id,
                    "total": formatter(order.totalPrice),
-                   "VAT": formatter(vat)}
+                   "VAT": formatter(vat),
+                   "NET": formatter(net)}
 
         temp_file = str(Path(app.root_path) / 'static' / 'docx' / 'terminal_temp_out.docx')
         save_as = f"wait_receipt_{order.id}"
@@ -4640,7 +4648,7 @@ def view_z_receipt(timestamp):
                    now=format_datetime(now, locale="de_DE"),
                    now_timestamp=datetime.timestamp(now),
                    gross_revenue1=formatter(gross_revenue1),
-                   net_revenue1=net_revenue1,
+                   net_revenue1=formatter(net_revenue1),
                    vat1=formatter(vat1),
                    gross_revenue2=formatter(gross_revenue2),
                    net_revenue2=formatter(net_revenue2),

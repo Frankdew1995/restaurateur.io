@@ -2,7 +2,7 @@ from app import app
 from pyfladesk import init_gui
 from pathlib import Path
 
-icon = str(Path(app.root_path) / 'static' / 'img' / 'logo.png')
+icon = str(Path(app.root_path) / 'static' / 'img' / 'logo.ico')
 
 if __name__ == "__main__":
 

@@ -1,5 +1,5 @@
 from app import app, db
-from app.utilities import void_pickle_dumper, formatter
+from app.utilities import void_pickle_dumper, json_reader
 from pathlib import Path
 import subprocess
 import os
@@ -7,7 +7,8 @@ from glob import glob
 import json
 import random
 import string
-
+from uuid import uuid4
+import time
 
 def random_user_string(length):
 
@@ -22,7 +23,15 @@ def random_password_string(length):
     return ''.join(random.choice(password_characters) for i in range(length))
 
 
-def ngrok_init():
+def ngrok_init(bit_version):
+
+    settings = json_reader(str(Path(app.root_path) / 'settings' / 'credentials.json'))
+
+    auth = settings.get('NGROK_AUTH')
+
+    executable = str(Path(app.root_path) / 'utils' / 'ngrok' / str(bit_version) / 'ngrok')
+
+    subprocess.call([executable, 'authtoken', auth])
 
     print("ngrok authentification complete")
 
@@ -72,6 +81,7 @@ def remove_docx():
 def install_packages():
 
     subprocess.call(["pip", "install", "-r", "requirements.txt"])
+    print("All packages installed", "全部依赖包完成安装")
 
 
 def create_superuser():
@@ -106,5 +116,12 @@ if __name__ == '__main__':
 
     remove_qrcodes()
     remove_docx()
-    # install_packages()
+    install_packages()
+    # ngrok_init(bit_version=32)
+    void_pickle_dumper(r_type="Z")
+    void_pickle_dumper(r_type="X")
+    db_init()
+    print("Z,X cache data cleared!!", "Z单，X单缓存数据清理完成!")
     print("Init finished", "所有初始化完成")
+    create_superuser()
+    time.sleep(3600)

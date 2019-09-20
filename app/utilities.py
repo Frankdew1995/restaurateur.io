@@ -549,7 +549,7 @@ def pay2print(table_name, seat_number, is_paying, pay_with):
 
         temp_file = str(Path(app.root_path) / 'static' / 'docx' / 'info.docx')
 
-    abs_save_path = str(Path(app.root_path) / 'static' / 'out' / f'info_{table_name}.docx')
+    abs_save_path = str(Path(app.root_path) / 'static' / 'out' / f'info_{pay_with}_{table_name}.docx')
 
     now = datetime.now(tz=pytz.timezone("Europe/Berlin"))
 
@@ -564,7 +564,7 @@ def pay2print(table_name, seat_number, is_paying, pay_with):
     doc.save(abs_save_path)
 
     # Docx to PDF Conversion
-    out_save_path = str(Path(app.root_path) / 'static' / 'out' / f'info_{table_name}.pdf')
+    out_save_path = str(Path(app.root_path) / 'static' / 'out' / f'info_{pay_with}_{table_name}.pdf')
 
     # if the pdf info file doesn't exist
     if not Path(out_save_path).is_file():
@@ -602,6 +602,8 @@ def void_pickle_dumper(r_type):
     '''
 
     import pickle
+
+    r_type = r_type.lower()
 
     with open(str(Path(app.root_path) / 'cache' / f'{r_type}_bon_settings.pickle'),
               mode="wb") as pickle_in:
@@ -838,9 +840,9 @@ def trigger_event(channel, event, response):
     channels_client.trigger(channel, event, response)
 
 
-def start_ngrok(port):
+def start_ngrok(port, bit_version):
 
-    executable = str(Path(app.root_path) / 'utils' / 'ngrok' / 'ngrok')
+    executable = str(Path(app.root_path) / 'utils' / 'ngrok' / str(bit_version) / 'ngrok')
 
     # ngrok = subprocess.Popen([executable, 'http', '-region=eu', str(port)])
 
@@ -850,4 +852,17 @@ def start_ngrok(port):
     j = json.loads(tunnel_url)
     tunnel_url = j['tunnels'][0]['public_url']  # Do the parsing of the get
     tunnel_url = tunnel_url.replace("https", "http")
+
+    # Read the creds data from the config
+    settings = json_reader(str(Path(app.root_path) / 'settings' / 'credentials.json'))
+
+    # Writing the new public tunnel url to config file
+    settings.update({"PUBLIC_TUNNEL_URL": tunnel_url})
+
+    data = [settings]
+
+    with open(str(Path(app.root_path) / 'settings' / "credentials.json"), 'w', encoding="utf8") as file:
+
+        json.dump(data, file, indent=2)
+
     return tunnel_url

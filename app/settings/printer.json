@@ -17,6 +17,6 @@
   "terminal": {
     "printer": "Star TSP100 Cutter (TSP143)",
     "cn_key": "\u5916\u5356\u7ec8\u7aef",
-    "is_on": false
+    "is_on": true
   }
 }

@@ -1,4 +1,4 @@
 import subprocess
 
-subprocess.call(["python", "server.py"], shell=False)
+subprocess.call(["python", "server.py"])
 

@@ -81,3 +81,44 @@ th = Thread(target=daily_revenue_templating, args=(context, save_as, ))
 th.start()
 
 flash(f"日结报告正在打印，若未正常打印，请检查打印机是否正确配置或者处于打开状态")
+
+
+
+# Order first time
+details["jp_buffet_" + seat_number] = {'quantity': 1,
+                                       'price': buffet_price,
+                                       'class_name': None,
+                                       'order_by': seat_number,
+                                       'is_kid': is_kid}
+
+if is_kid == 0:
+
+    details["jp_buffet_" + seat_number]['label'] = "Erwachsen Buffet"
+
+else:
+
+    details["jp_buffet_" + seat_number]['label'] = "Kinder Buffet"
+
+total_price = sum([i[1].get('quantity') * i[1].get('price')
+                   for i in details.items()])
+
+
+
+if "jp_buffet_" + seat_number not in cur_dishes:
+
+    # Order first time
+    cur_items["jp_buffet_" + seat_number] = {'quantity': 1,
+                                             'price': buffet_price,
+                                             'class_name': None,
+                                             'order_by': seat_number,
+                                             'is_kid': is_kid}
+    if is_kid == 0:
+
+        cur_items["jp_buffet_" + seat_number]['label'] = "Erwachsen Buffet"
+
+    else:
+
+        cur_items["jp_buffet_" + seat_number]['label'] = "Kinder Buffet"
+
+total_price = sum([i[1].get('quantity') * i[1].get('price')
+                   for i in details.items()])

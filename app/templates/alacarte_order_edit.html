@@ -72,7 +72,7 @@
       <input type="number" value={{ details.get('quantity')  }} min="1">
     </div>
     <div class="product-removal">
-      <button class="remove-product">
+      <button class="remove-product" style="border-color:#26a69a; background-color:#26a69a;">
         移除
       </button>
     </div>
@@ -112,6 +112,17 @@
       确定更新
     </a>
   </button>
+
+
+  {% if is_buffet %}
+
+    <button type="button" class="btn btn-info">
+      <a href={{ url_for('admin_edit_buffet_order', order_id=order.id) }} style="color: rgb(247, 249, 252)">
+        修改自助餐
+      </a>
+    </button>
+
+  {% endif %}
 
   <button id="update" class="btn btn-secondary">
     <a style="color: rgb(247, 249, 252)" href={{ referrer }}>

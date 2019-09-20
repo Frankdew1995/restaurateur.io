@@ -1,0 +1,97 @@
+
+
+{% extends "base.html" if current_user.permissions >= 2 else "waiter_admin.html" %}
+
+{% block css %}
+
+
+  <style media="screen">
+
+
+    #back {
+      margin-left: 700px;
+      margin-bottom:20px;
+    }
+
+  </style>
+
+{% endblock %}
+
+
+{% block title %}
+
+
+<h1 class="h3 mb-2 text-gray-800">{{title}}</h1>
+
+
+{% endblock %}
+
+
+{% block content %}
+
+<h5>当前明细:</h5>
+
+{% for i in buffet_details %}
+
+<p>
+
+  <span>座位号：{{i.get('seat')}}</span><br>
+  <span>类型：{{i.get('label')}}</span>
+
+</p>
+
+{% endfor %}
+
+<br>
+
+<form action='' method="POST" enctype="multipart/form-data">
+
+
+    {{ form.hidden_tag() }}
+
+    <div class='form-group'>
+
+
+        <p>
+            {{ form.seats.label }} <br>
+            {{ form.seats(
+              class='form-control',
+              style="width: 50%") }}
+        </p>
+
+
+        <p>
+
+          {{ form.buffet_types.label }}<br>
+          {{ form.buffet_types(
+              class='form-control',
+              style="width: 50%") }}
+
+        </p>
+
+        <p>
+
+            {{ form.submit(class='btn btn-info', style="border-color:#26a69a; background-color:#26a69a;")}}
+            <button type="button" class="btn btn-secondary">
+              <a href={{ referrer }} style="color: rgb(247, 249, 252)">
+                取消
+              </a>
+            </button>
+        </p>
+
+
+
+    </div>
+
+</form>
+<br>
+
+
+<button type="button" class="btn btn-secondary" id="back">
+  <a href={{ referrer }} style="color: rgb(247, 249, 252)">
+    返回
+  </a>
+</button>
+
+
+{% endblock %}

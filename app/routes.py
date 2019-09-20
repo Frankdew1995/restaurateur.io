@@ -16,7 +16,7 @@ from .forms import (AddDishForm, StoreSettingForm,
                     EditPrinterForm, EditBuffetPriceForm,
                     AddHolidayForm, EditHolidayForm,
                     AddCategoryForm, EditCategoryForm,
-                    AuthForm)
+                    AuthForm, EditBuffetForm)
 
 from .utilities import (json_reader, store_picture,
                         generate_qrcode, activity_logger,
@@ -1123,7 +1123,27 @@ def admin_alacarte_order_edit(order_id):
 
     order = Order.query.get_or_404(int(order_id))
 
+    title = None
+
+    if order.isPaid or order.isCancelled:
+
+        title = u"订单查看"
+
+    else:
+
+        title = u"订单修改"
+
     ordered_items = json.loads(order.items)
+
+    def is_buffet():
+
+        return any(["jp_buffet" or "mongo_buffet"
+                    in key for key in ordered_items.keys()])
+
+    buffet_details = [{"seat":  i[1].get('order_by'),
+                       'is_kid': i[1].get('is_kid'),
+                       "label": i[1].get('label')}
+                      for i in ordered_items.items() if i[1].get('label')]
 
     referrer = request.headers.get('Referer')
 
@@ -1131,12 +1151,180 @@ def admin_alacarte_order_edit(order_id):
                    ordered_items=ordered_items,
                    referrer=referrer,
                    str_referrer=str(referrer),
-                   title=u"订单修改/查看",
+                   title=title,
                    datetime_format=datetime_format,
                    company_name=company_info.get('company_name'),
-                   formatter=formatter)
+                   formatter=formatter,
+                   is_buffet=is_buffet(),
+                   buffet_details=buffet_details)
 
     return render_template('admin_alacarte_order_edit.html', **context)
+
+
+@app.route('/admin/edit/buffet/<string:order_id>',
+           methods=["GET", "POST"])
+@login_required
+def admin_edit_buffet_order(order_id):
+
+    order_id = int(order_id)
+
+    form = EditBuffetForm()
+
+    order = db.session.query(Order).get(order_id)
+
+    ordered_items = json.loads(order.items)
+
+    buffet_details = [{"seat": i[1].get('order_by'),
+                       'is_kid': i[1].get('is_kid'),
+                       "label": i[1].get('label')}
+                      for i in ordered_items.items() if i[1].get('label')]
+
+    seats = [i.get('seat') for i in buffet_details]
+
+    form.seats.choices.extend([(i, i) for i in seats])
+
+    if request.method == "POST" or form.validate_on_submit():
+
+        info = json_reader(str(Path.cwd() / 'app' / 'settings' / 'config.json'))
+
+        hours = info.get('BUSINESS_HOURS')
+
+        am_start = hours.get('MORNING', '').get('START', '').split(":")
+        am_end = hours.get('MORNING', '').get('END', '').split(":")
+
+        pm_start = hours.get('EVENING', '').get('START', '').split(":")
+        pm_end = hours.get('EVENING', '').get('END', '').split(":")
+
+        morning_start = time(int(am_start[0]), int(am_start[1]))
+
+        morning_end = time(int(am_end[0]), int(am_end[1]))
+
+        evening_start = time(int(pm_start[0]), int(pm_start[1]))
+
+        evening_end = time(int(pm_end[0]), int(pm_end[1]))
+
+        from string import ascii_uppercase
+
+        letters = list(ascii_uppercase)[:8]
+
+        weekday2letter = dict(zip(list(range(1, 7)), letters))
+
+        # Add the index alphabet for Sunday
+        weekday2letter[0] = "G"
+
+        cur_week_num = int(datetime.now(tz=pytz.timezone(timezone)).strftime("%w"))
+
+        buffet_price_kid = None
+
+        buffet_price_adult = None
+
+        # Read the printer setting data from the json file
+        with open(str(Path(app.root_path) / "settings" / "buffet_price.json"),
+                  encoding="utf8") as file:
+            data = file.read()
+
+        data = json.loads(data)
+
+        price_info = data.get(weekday2letter.get(cur_week_num))
+
+        if morning_start <= datetime.now(tz=pytz.timezone(timezone)).time() <= morning_end:
+
+            buffet_price_kid = price_info.get('kid').get('noon')
+
+            buffet_price_adult = price_info.get('adult').get('noon')
+
+        elif evening_start <= datetime.now(tz=pytz.timezone(timezone)).time() <= evening_end:
+
+            buffet_price_kid = price_info.get('kid').get('after')
+
+            buffet_price_adult = price_info.get('adult').get('after')
+
+        seat_number = form.seats.data
+        buffet_type = int(form.buffet_types.data)
+
+        ordered_items = json.loads(order.items)
+
+        if buffet_type == 0:
+
+            try:
+                new = {f"jp_buffet_{seat_number}":
+                           {"quantity": 1,
+                            "price": buffet_price_adult,
+                            "class_name": None,
+                            "order_by": seat_number,
+                            "is_kid": buffet_type,
+                            "label": "Erwachsen Buffet"}
+                       }
+
+                ordered_items.update(new)
+
+            except Exception as e:
+
+                print(str(e))
+
+                new = {f"mongo_buffet_{seat_number}":
+                           {"quantity": 1,
+                            "price": buffet_price_adult,
+                            "class_name": None,
+                            "order_by": seat_number,
+                            "is_kid": buffet_type,
+                            "label": "Erwachsen Buffet"}
+                       }
+
+                ordered_items.update(new)
+        else:
+
+            try:
+
+                new = {f"jp_buffet_{seat_number}":
+                           {"quantity": 1,
+                            "price": buffet_price_kid,
+                            "class_name": None,
+                            "order_by": seat_number,
+                            "is_kid": buffet_type,
+                            "label": "Kinder Buffet"}
+                       }
+
+                ordered_items.update(new)
+
+            except Exception as e:
+
+                print(str(e))
+
+                new = {f"mongo_buffet_{seat_number}":
+                           {"quantity": 1,
+                            "price": buffet_price_kid,
+                            "class_name": None,
+                            "order_by": seat_number,
+                            "is_kid": buffet_type,
+                            "label": "Kinder Buffet"}
+                       }
+
+                ordered_items.update(new)
+
+        order.items = json.dumps(ordered_items)
+
+        total_price = sum([i[1].get('quantity')*i[1].get('price')
+                           for i in ordered_items.items()])
+
+        order.totalPrice = order.endTotal = total_price
+
+        db.session.commit()
+
+        flash(f"订单{order.id}座位号{seat_number}的自助餐类型已经修改")
+
+        if current_user.permissions < 2:
+
+            return redirect(url_for('alacarte_order_edit', order_id=order_id))
+
+        return redirect(url_for('admin_alacarte_order_edit', order_id=order_id))
+
+    context = dict(form=form,
+                   title=u"修改订单自助餐类型",
+                   referrer=request.headers.get('Referer'),
+                   buffet_details=buffet_details)
+
+    return render_template("admin_edit_buffet_order.html", **context)
 
 
 @app.route('/admin/alacarte/orders/update', methods=["GET", "POST"])
@@ -2614,13 +2802,23 @@ def admin_view_table(table_name):
             cuisines = {"mongo": u"蒙古餐",
                         "jpbuffet": u"日本餐"}
 
+            # Check if an order is an buffte order or assiciated with a buffet order
+            def is_buffet():
+
+                return any(["jp_buffet" or "mongo_buffet"
+                            in key for key in dishes.keys()])
+
             batches = json.loads(order.dishes)
 
-            number_of_kids = len(set([tuple(i.items())[0][1].get('order_by')
-                            for i in batches if tuple(i.items())[0][1].get('is_kid') == 1]))
+            kids_seats = [i for i in dishes.items()
+                          if i[1].get('label') and i[1].get('is_kid') == 1]
 
-            number_of_adults = len(set([tuple(i.items())[0][1].get('order_by')
-                            for i in batches if tuple(i.items())[0][1].get('is_kid') == 0]))
+            adults_seats = [i for i in dishes.items()
+                          if i[1].get('label') and i[1].get('is_kid') == 0]
+
+            number_of_kids = len(kids_seats)
+
+            number_of_adults = len(adults_seats)
 
             section = None
 
@@ -2639,6 +2837,7 @@ def admin_view_table(table_name):
                             and section in json.loads(user.container).get('section')}
 
             waiter_name = "Unbekannt"
+
             try:
 
                 waiter_name = section2user.get(section).alias
@@ -2659,7 +2858,8 @@ def admin_view_table(table_name):
                            subtype=subtype,
                            number_of_kids=number_of_kids,
                            number_of_adults=number_of_adults,
-                           formatter=formatter)
+                           formatter=formatter,
+                           is_buffet=is_buffet())
 
             return render_template('admin_view_table_summary.html', **context)
 
@@ -3744,14 +3944,21 @@ def view_table(table_name):
             cuisines = {"mongo": u"蒙古餐",
                         "jpbuffet": u"日本餐"}
 
-            batches = json.loads(order.dishes)
+            # Check if an order is an buffte order or assiciated with a buffet order
+            def is_buffet():
 
-            number_of_kids = len(set([tuple(i.items())[0][1].get('order_by')
-                              for i in batches if tuple(i.items())[0][1].get('is_kid') == 1]))
+                return any(["jp_buffet" or "mongo_buffet"
+                            in key for key in dishes.keys()])
 
-            number_of_adults = len(set([tuple(i.items())[0][1].get('order_by')
-                                for i in batches if tuple(i.items())[0][1].get('is_kid') == 0]))
+            kids_seats = [i for i in dishes.items()
+                          if i[1].get('label') and i[1].get('is_kid') == 1]
 
+            adults_seats = [i for i in dishes.items()
+                            if i[1].get('label') and i[1].get('is_kid') == 0]
+
+            number_of_kids = len(kids_seats)
+
+            number_of_adults = len(adults_seats)
             # Exclude the super user/ boss account
             section2user = {section: user for user in users if user.permissions != 100
                             and section in json.loads(user.container).get('section')}
@@ -3778,7 +3985,8 @@ def view_table(table_name):
                            cuisines=cuisines,
                            number_of_adults=number_of_adults,
                            number_of_kids=number_of_kids,
-                           formatter=formatter)
+                           formatter=formatter,
+                           is_buffet=is_buffet())
 
             # Else just render page as get method
             return render_template('view_table_summary.html', **context)
@@ -3832,14 +4040,19 @@ def alacarte_order_edit(order_id):
 
     ordered_items = json.loads(order.items)
 
+    def is_buffet():
+
+        return any(["jp_buffet" or "mongo_buffet"
+                    in key for key in ordered_items.keys()])
+
     context = dict(title=title,
                    order=order,
                    ordered_items=ordered_items,
                    company_name=company_info.get('company_name'),
                    referrer=request.headers.get('Referer'),
                    datetime_format=datetime_format,
-                   formatter=formatter
-                   )
+                   formatter=formatter,
+                   is_buffet=is_buffet())
 
     return render_template('alacarte_order_edit.html', **context)
 
@@ -8063,10 +8276,27 @@ def jpbuffet_guest_checkout():
 
                 cur_max_id = max([order.id for order in Order.query.all()])
 
+                # Order first time
+                details["jp_buffet_" + seat_number] = {'quantity': 1,
+                                                       'price': buffet_price,
+                                                       'class_name': None,
+                                                       'order_by': seat_number,
+                                                       'is_kid': is_kid}
+                if is_kid == 0:
+
+                    details["jp_buffet_" + seat_number]['label'] = "Erwachsen Buffet"
+
+                else:
+
+                    details["jp_buffet_" + seat_number]['label'] = "Kinder Buffet"
+
+                total_price = sum([i[1].get('quantity') * i[1].get('price')
+                                   for i in details.items()])
+
                 # Create a new order for this table
                 order = Order(
-                    totalPrice=total_price + buffet_price,
-                    endTotal=total_price + buffet_price,
+                    totalPrice=total_price,
+                    endTotal=total_price,
                     orderNumber=str(uuid4().int),
                     items=json.dumps(details),
                     timeCreated=now,
@@ -8176,18 +8406,29 @@ def jpbuffet_guest_checkout():
 
                         cur_items[dish] = items
 
+                # Check if this seat has a buffet order >  Order first time
+
+                if "jp_buffet_" + seat_number not in cur_items.keys():
+
+                    cur_items["jp_buffet_" + seat_number] = {'quantity': 1,
+                                                             'price': buffet_price,
+                                                             'class_name': None,
+                                                             'order_by': seat_number,
+                                                             'is_kid': is_kid}
+                    if is_kid == 0:
+
+                        cur_items["jp_buffet_" + seat_number]['label'] = "Erwachsen Buffet"
+
+                    else:
+
+                        cur_items["jp_buffet_" + seat_number]['label'] = "Kinder Buffet"
+
+                total_price = sum([i[1].get('quantity') * i[1].get('price')
+                                   for i in cur_items.items()])
+
                 order.items = json.dumps(cur_items)
 
-                if seat_number in buffet_seats:
-
-                    order.totalPrice = len(buffet_seats) * buffet_price + \
-                                       sum([i[1].get('quantity') * i[1].get('price') \
-                                            for i in cur_items.items()])
-                else:
-
-                    order.totalPrice = len(buffet_seats) * buffet_price + \
-                                       sum([i[1].get('quantity') * i[1].get('price') \
-                                            for i in cur_items.items()]) + buffet_price
+                order.totalPrice = total_price
 
                 db.session.commit()
 
@@ -8204,10 +8445,27 @@ def jpbuffet_guest_checkout():
 
             cur_max_id = max([order.id for order in Order.query.all()])
 
+            # Order first time
+            details["jp_buffet_" + seat_number] = {'quantity': 1,
+                                                   'price': buffet_price,
+                                                   'class_name': None,
+                                                   'order_by': seat_number,
+                                                   'is_kid': is_kid}
+            if is_kid == 0:
+
+                details["jp_buffet_" + seat_number]['label'] = "Erwachsen Buffet"
+
+            else:
+
+                details["jp_buffet_" + seat_number]['label'] = "Kinder Buffet"
+
+            total_price = sum([i[1].get('quantity') * i[1].get('price')
+                               for i in details.items()])
+
             # Create a new order for this table
             order = Order(
-                totalPrice=total_price + buffet_price,
-                endTotal=total_price + buffet_price,
+                totalPrice=total_price,
+                endTotal=total_price,
                 orderNumber=str(uuid4().int),
                 items=json.dumps(details),
                 timeCreated=now,
@@ -8501,10 +8759,27 @@ def guest_drinks_checkout():
 
                 cur_max_id = max([order.id for order in Order.query.all()])
 
+                # Order first time
+                details["jp_buffet_" + seat_number] = {'quantity': 1,
+                                                       'price': buffet_price,
+                                                       'class_name': None,
+                                                       'order_by': seat_number,
+                                                       'is_kid': is_kid}
+                if is_kid == 0:
+
+                    details["jp_buffet_" + seat_number]['label'] = "Erwachsen Buffet"
+
+                else:
+
+                    details["jp_buffet_" + seat_number]['label'] = "Kinder Buffet"
+
+                total_price = sum([i[1].get('quantity') * i[1].get('price')
+                                   for i in details.items()])
+
                 # Create a new order for this table
                 order = Order(
-                    totalPrice=total_price + buffet_price,
-                    endTotal=total_price + buffet_price,
+                    totalPrice=total_price,
+                    endTotal=total_price,
                     orderNumber=str(uuid4().int),
                     items=json.dumps(details),
                     timeCreated=now,
@@ -8569,18 +8844,30 @@ def guest_drinks_checkout():
 
                         cur_items[dish] = items
 
+                # Check if this seat has already a order
+                if "jp_buffet_" + seat_number not in cur_dishes:
+
+                    # Order first time
+
+                    cur_items["jp_buffet_" + seat_number] = {'quantity': 1,
+                                                             'price': buffet_price,
+                                                             'class_name': None,
+                                                             'order_by': seat_number,
+                                                             'is_kid': is_kid}
+                    if is_kid == 0:
+
+                        cur_items["jp_buffet_" + seat_number]['label'] = "Erwachsen Buffet"
+
+                    else:
+
+                        cur_items["jp_buffet_" + seat_number]['label'] = "Kinder Buffet"
+
+                total_price = sum([i[1].get('quantity') * i[1].get('price')
+                                   for i in cur_items.items()])
+
                 order.items = json.dumps(cur_items)
 
-                if seat_number in buffet_seats:
-
-                    order.totalPrice = len(buffet_seats) * buffet_price + \
-                                       sum([i[1].get('quantity') * i[1].get('price') \
-                                            for i in cur_items.items()])
-                else:
-
-                    order.totalPrice = len(buffet_seats) * buffet_price + \
-                                       sum([i[1].get('quantity') * i[1].get('price') \
-                                            for i in cur_items.items()]) + buffet_price
+                order.totalPrice = total_price
 
                 db.session.commit()
 
@@ -8596,10 +8883,27 @@ def guest_drinks_checkout():
 
             cur_max_id = max([order.id for order in Order.query.all()])
 
+            # Order first time
+            details["jp_buffet_" + seat_number] = {'quantity': 1,
+                                                   'price': buffet_price,
+                                                   'class_name': None,
+                                                   'order_by': seat_number,
+                                                   'is_kid': is_kid}
+            if is_kid == 0:
+
+                details["jp_buffet_" + seat_number]['label'] = "Erwachsen Buffet"
+
+            else:
+
+                details["jp_buffet_" + seat_number]['label'] = "Kinder Buffet"
+
+            total_price = sum([i[1].get('quantity') * i[1].get('price')
+                               for i in details.items()])
+
             # Create a new order for this table
             order = Order(
-                totalPrice=total_price + buffet_price,
-                endTotal=total_price + buffet_price,
+                totalPrice=total_price,
+                endTotal=total_price,
                 orderNumber=str(uuid4().int),
                 items=json.dumps(details),
                 timeCreated=now,
@@ -8816,10 +9120,27 @@ def jpbuffet_special_checkout():
 
                 cur_max_id = max([order.id for order in Order.query.all()])
 
+                # Order first time
+                details["jp_buffet_" + seat_number] = {'quantity': 1,
+                                                       'price': buffet_price,
+                                                       'class_name': None,
+                                                       'order_by': seat_number,
+                                                       'is_kid': is_kid}
+                if is_kid == 0:
+
+                    details["jp_buffet_" + seat_number]['label'] = "Erwachsen Buffet"
+
+                else:
+
+                    details["jp_buffet_" + seat_number]['label'] = "Kinder Buffet"
+
+                total_price = sum([i[1].get('quantity') * i[1].get('price')
+                                   for i in details.items()])
+
                 # Create a new order for this table
                 order = Order(
-                    totalPrice=total_price + buffet_price,
-                    endTotal=total_price + buffet_price,
+                    totalPrice=total_price,
+                    endTotal=total_price,
                     orderNumber=str(uuid4().int),
                     items=json.dumps(details),
                     timeCreated=now,
@@ -8885,18 +9206,28 @@ def jpbuffet_special_checkout():
 
                         cur_items[dish] = items
 
+                if "jp_buffet_" + seat_number not in cur_dishes:
+
+                    # Order first time
+                    cur_items["jp_buffet_" + seat_number] = {'quantity': 1,
+                                                             'price': buffet_price,
+                                                             'class_name': None,
+                                                             'order_by': seat_number,
+                                                             'is_kid': is_kid}
+                    if is_kid == 0:
+
+                        cur_items["jp_buffet_" + seat_number]['label'] = "Erwachsen Buffet"
+
+                    else:
+
+                        cur_items["jp_buffet_" + seat_number]['label'] = "Kinder Buffet"
+
+                total_price = sum([i[1].get('quantity') * i[1].get('price')
+                                   for i in cur_items.items()])
+
                 order.items = json.dumps(cur_items)
 
-                if seat_number in buffet_seats:
-
-                    order.totalPrice = len(buffet_seats) * buffet_price + \
-                                       sum([i[1].get('quantity') * i[1].get('price') \
-                                            for i in cur_items.items()])
-                else:
-
-                    order.totalPrice = len(buffet_seats) * buffet_price + \
-                                       sum([i[1].get('quantity') * i[1].get('price') \
-                                            for i in cur_items.items()]) + buffet_price
+                order.totalPrice = total_price
 
                 db.session.commit()
 
@@ -8913,7 +9244,26 @@ def jpbuffet_special_checkout():
 
             cur_max_id = max([order.id for order in Order.query.all()])
 
+            # Order first time
+            details["jp_buffet_" + seat_number] = {'quantity': 1,
+                                                   'price': buffet_price,
+                                                   'class_name': None,
+                                                   'order_by': seat_number,
+                                                   'is_kid': is_kid}
+
+            if is_kid == 0:
+
+                details["jp_buffet_" + seat_number]['label'] = "Erwachsen Buffet"
+
+            else:
+
+                details["jp_buffet_" + seat_number]['label'] = "Kinder Buffet"
+
+            total_price = sum([i[1].get('quantity') * i[1].get('price')
+                               for i in details.items()])
+
             # Create a new order for this table
+
             order = Order(
                 totalPrice=total_price + buffet_price,
                 endTotal=total_price + buffet_price,

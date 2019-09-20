@@ -227,6 +227,11 @@
 <!-- Pusher JS Client -->
 <script src="https://js.pusher.com/5.0/pusher.min.js"></script>
 
+<!-- listen to new orders to a table -->
 <script src={{ url_for('static', filename="js/listen_table_updates.js") }} charset="utf-8"></script>
+
+<!-- Update Buffet type and qty -->
+<script src={{ url_for('static', filename="js/buffet_quantity_update.js") }} charset="utf-8"></script>
+
 
 {% endblock %}

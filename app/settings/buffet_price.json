@@ -52,13 +52,15 @@
   "E": {
     "adult": {
       "noon": 15,
-      "after": 20
+      "after": 15
     },
     "kid": {
       "noon": 15,
-      "after": 20
+      "after": 10
     },
-    "label": "\u661f\u671f\u4e94"
+    "label": "\u661f\u671f\u4e94",
+    "lastUpdate": "2019.09.20 16:27:40",
+    "note": ""
   },
   "F": {
     "adult": {

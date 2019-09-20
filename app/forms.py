@@ -23,6 +23,7 @@ class LoginForm(FlaskForm):
     remember_me = BooleanField(u'记住我')
     submit = SubmitField(u'登陆')
 
+
 class AuthForm(FlaskForm):
 
     username = StringField('用户名', validators=[DataRequired()])
@@ -353,7 +354,7 @@ class EditBuffetPriceForm(FlaskForm):
 
     price_for_kid_noon = IntegerField(u"中午儿童价格")
 
-    price_for_kid_after = IntegerField(u"中午儿童价格")
+    price_for_kid_after = IntegerField(u"下午儿童价格")
 
     note = StringField(u"备注")
 
@@ -381,3 +382,16 @@ class EditHolidayForm(FlaskForm):
 
     submit = SubmitField(u'确定更新')
 
+
+class EditBuffetForm(FlaskForm):
+
+    seats = SelectField(u'选择座位',
+                              choices=[(None, "选择座位")],
+                              validators=[DataRequired()])
+
+    buffet_types = SelectField(u'选择类型',
+                              choices=[(0, "Erwachsen Buffet"),
+                                       (1, "Kinder Buffet")],
+                              validators=[DataRequired()])
+
+    submit = SubmitField(u"确认更新")

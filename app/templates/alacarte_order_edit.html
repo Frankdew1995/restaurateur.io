@@ -61,6 +61,8 @@
     <label class="product-line-price">Total</label>
   </div>
   {% for item, details in ordered_items.items() %}
+
+  {% if condition_key not in item %}
   <div class="product">
 
     <div class="product-details">
@@ -83,6 +85,7 @@
     {% endif %}
     <div class="product-line-price">{{ formatter(details.get('price') * details.get('quantity')) }}</div>
   </div>
+  {% endif %}
   {% endfor %}
 
 

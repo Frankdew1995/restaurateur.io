@@ -534,6 +534,66 @@ def call2print(table_name, seat_number, is_paying, **kwargs):
     return "ok"
 
 
+def pay2print(table_name, seat_number, is_paying, pay_with):
+
+    # Jinja Templating in word doc
+    from docxtpl import DocxTemplate
+
+    temp_file = None
+
+    if is_paying:
+
+        temp_file = str(Path(app.root_path) / 'static' / 'docx' / 'pay.docx')
+
+    else:
+
+        temp_file = str(Path(app.root_path) / 'static' / 'docx' / 'info.docx')
+
+    abs_save_path = str(Path(app.root_path) / 'static' / 'out' / f'info_{table_name}.docx')
+
+    now = datetime.now(tz=pytz.timezone("Europe/Berlin"))
+
+    doc = DocxTemplate(temp_file)
+
+    context = dict(table_name=table_name,
+                   seat_number=seat_number,
+                   now=format_datetime(now, locale="de_DE"),
+                   pay_with=pay_with)
+
+    doc.render(context)
+    doc.save(abs_save_path)
+
+    # Docx to PDF Conversion
+    out_save_path = str(Path(app.root_path) / 'static' / 'out' / f'info_{table_name}.pdf')
+
+    # if the pdf info file doesn't exist
+    if not Path(out_save_path).is_file():
+
+        docx2pdf(doc_in=abs_save_path,
+                 pdf_out=out_save_path)
+
+    # Print the PDF info from the thermal printer
+    printer_path = str(Path(app.root_path) / 'utils' / 'printer' / 'PDFtoPrinter')
+
+    printer_name = "Star TSP100 Cutter (TSP143) eco"
+
+    import subprocess
+    # call the command to print the pdf file
+    wait_start = time.time()
+    while True:
+        if not Path(out_save_path).exists():
+            time.sleep(0.5)
+            wait_end = time.time()
+
+            if wait_end - wait_start > 30:
+                break
+        else:
+            subprocess.Popen(f'{printer_path} {out_save_path} "{printer_name}"', shell=True)
+            break
+
+    return "ok"
+
+
 def void_pickle_dumper(r_type):
 
     '''

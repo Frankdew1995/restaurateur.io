@@ -24,7 +24,7 @@ from .utilities import (json_reader, store_picture,
                         bar_templating, kitchen_templating,
                         terminal_templating, x_z_receipt_templating,
                         table_adder, formatter, is_business_hours,
-                        daily_revenue_templating, trigger_event)
+                        daily_revenue_templating, trigger_event, pay2print)
 
 from pathlib import Path
 import json
@@ -1145,6 +1145,13 @@ def admin_alacarte_order_edit(order_id):
                        "label": i[1].get('label')}
                       for i in ordered_items.items() if i[1].get('label')]
 
+    subtype = order.subtype
+
+    cuisines = {"mongo": "mongo_buffet",
+                "jpbuffet": "jp_buffet"}
+
+    condition_key = cuisines.get(subtype)
+
     referrer = request.headers.get('Referer')
 
     context = dict(order=order,
@@ -1156,7 +1163,8 @@ def admin_alacarte_order_edit(order_id):
                    company_name=company_info.get('company_name'),
                    formatter=formatter,
                    is_buffet=is_buffet(),
-                   buffet_details=buffet_details)
+                   buffet_details=buffet_details,
+                   condition_key=condition_key)
 
     return render_template('admin_alacarte_order_edit.html', **context)
 
@@ -1240,14 +1248,22 @@ def admin_edit_buffet_order(order_id):
             buffet_price_adult = price_info.get('adult').get('after')
 
         seat_number = form.seats.data
+
         buffet_type = int(form.buffet_types.data)
 
         ordered_items = json.loads(order.items)
 
+        subtype = order.subtype
+
+        cuisines = {"mongo": "mongo_buffet",
+                    "jpbuffet": "jp_buffet"}
+
+        update_key = cuisines.get(subtype)
+
         if buffet_type == 0:
 
             try:
-                new = {f"jp_buffet_{seat_number}":
+                new = {f"{update_key}_{seat_number}":
                            {"quantity": 1,
                             "price": buffet_price_adult,
                             "class_name": None,
@@ -1262,7 +1278,7 @@ def admin_edit_buffet_order(order_id):
 
                 print(str(e))
 
-                new = {f"mongo_buffet_{seat_number}":
+                new = {f"{update_key}_{seat_number}":
                            {"quantity": 1,
                             "price": buffet_price_adult,
                             "class_name": None,
@@ -1276,7 +1292,7 @@ def admin_edit_buffet_order(order_id):
 
             try:
 
-                new = {f"jp_buffet_{seat_number}":
+                new = {f"{update_key}_{seat_number}":
                            {"quantity": 1,
                             "price": buffet_price_kid,
                             "class_name": None,
@@ -1291,7 +1307,7 @@ def admin_edit_buffet_order(order_id):
 
                 print(str(e))
 
-                new = {f"mongo_buffet_{seat_number}":
+                new = {f"{update_key}_{seat_number}":
                            {"quantity": 1,
                             "price": buffet_price_kid,
                             "class_name": None,
@@ -3635,7 +3651,7 @@ def guest_call_pay():
 
     from threading import Thread
 
-    th = Thread(target=call2print, args=(table_name, seat_number, is_paying, pay_with, ))
+    th = Thread(target=pay2print, args=(table_name, seat_number, is_paying, pay_with, ))
 
     th.start()
 
@@ -4045,6 +4061,13 @@ def alacarte_order_edit(order_id):
         return any(["jp_buffet" or "mongo_buffet"
                     in key for key in ordered_items.keys()])
 
+    subtype = order.subtype
+
+    cuisines = {"mongo": "mongo_buffet",
+                "jpbuffet": "jp_buffet"}
+
+    condition_key = cuisines.get(subtype)
+
     context = dict(title=title,
                    order=order,
                    ordered_items=ordered_items,
@@ -4052,7 +4075,8 @@ def alacarte_order_edit(order_id):
                    referrer=request.headers.get('Referer'),
                    datetime_format=datetime_format,
                    formatter=formatter,
-                   is_buffet=is_buffet())
+                   is_buffet=is_buffet(),
+                   condition_key=condition_key)
 
     return render_template('alacarte_order_edit.html', **context)
 

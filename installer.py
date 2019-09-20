@@ -120,7 +120,7 @@ if __name__ == '__main__':
     # ngrok_init(bit_version=32)
     void_pickle_dumper(r_type="Z")
     void_pickle_dumper(r_type="X")
-    db_init()
+    # db_init()
     print("Z,X cache data cleared!!", "Z单，X单缓存数据清理完成!")
     print("Init finished", "所有初始化完成")
     create_superuser()

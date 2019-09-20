@@ -2,360 +2,9 @@
 <project version="4">
   <component name="ChangeListManager">
     <list default="true" id="cb37bda8-ba9a-4cc0-b82a-1fe47de77365" name="Default" comment="">
-      <change beforePath="" afterPath="$PROJECT_DIR$/.idea/inspectionProfiles/Project_Default.xml" />
-      <change beforePath="" afterPath="$PROJECT_DIR$/init.py" />
-      <change beforePath="$PROJECT_DIR$/.gitignore" afterPath="$PROJECT_DIR$/.gitignore" />
-      <change beforePath="$PROJECT_DIR$/.idea/misc.xml" afterPath="$PROJECT_DIR$/.idea/misc.xml" />
-      <change beforePath="$PROJECT_DIR$/.idea/modules.xml" afterPath="$PROJECT_DIR$/.idea/modules.xml" />
-      <change beforePath="$PROJECT_DIR$/.idea/vcs.xml" afterPath="$PROJECT_DIR$/.idea/vcs.xml" />
-      <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" afterPath="$PROJECT_DIR$/.idea/workspace.xml" />
-      <change beforePath="$PROJECT_DIR$/.idea/xstar.iml" afterPath="$PROJECT_DIR$/.idea/xstar.iml" />
-      <change beforePath="$PROJECT_DIR$/app.db" afterPath="" />
       <change beforePath="$PROJECT_DIR$/app/__init__.py" afterPath="$PROJECT_DIR$/app/__init__.py" />
-      <change beforePath="$PROJECT_DIR$/app/cache/logging.csv" afterPath="$PROJECT_DIR$/app/cache/logging.csv" />
-      <change beforePath="$PROJECT_DIR$/app/cache/qrcode.xlsx" afterPath="$PROJECT_DIR$/app/cache/qrcode.xlsx" />
-      <change beforePath="$PROJECT_DIR$/app/cache/x_bon_settings.pickle" afterPath="$PROJECT_DIR$/app/cache/x_bon_settings.pickle" />
-      <change beforePath="$PROJECT_DIR$/app/cache/z_bon_settings.pickle" afterPath="$PROJECT_DIR$/app/cache/z_bon_settings.pickle" />
-      <change beforePath="$PROJECT_DIR$/app/forms.py" afterPath="$PROJECT_DIR$/app/forms.py" />
-      <change beforePath="$PROJECT_DIR$/app/models.py" afterPath="$PROJECT_DIR$/app/models.py" />
-      <change beforePath="$PROJECT_DIR$/app/routes.py" afterPath="$PROJECT_DIR$/app/routes.py" />
-      <change beforePath="$PROJECT_DIR$/app/settings/buffet_price.json" afterPath="$PROJECT_DIR$/app/settings/buffet_price.json" />
-      <change beforePath="$PROJECT_DIR$/app/settings/categories.json" afterPath="$PROJECT_DIR$/app/settings/categories.json" />
-      <change beforePath="$PROJECT_DIR$/app/settings/config.json" afterPath="$PROJECT_DIR$/app/settings/config.json" />
-      <change beforePath="$PROJECT_DIR$/app/settings/credentials.json" afterPath="$PROJECT_DIR$/app/settings/credentials.json" />
-      <change beforePath="$PROJECT_DIR$/app/settings/printer.json" afterPath="$PROJECT_DIR$/app/settings/printer.json" />
-      <change beforePath="$PROJECT_DIR$/app/settings/table_section.json" afterPath="$PROJECT_DIR$/app/settings/table_section.json" />
-      <change beforePath="$PROJECT_DIR$/app/static/alacarte_cart/css/quantity_modifier.css" afterPath="$PROJECT_DIR$/app/static/alacarte_cart/css/quantity_modifier.css" />
-      <change beforePath="$PROJECT_DIR$/app/static/alacarte_cart/css/sticky.css" afterPath="$PROJECT_DIR$/app/static/alacarte_cart/css/sticky.css" />
-      <change beforePath="$PROJECT_DIR$/app/static/alacarte_cart/css/style.css" afterPath="$PROJECT_DIR$/app/static/alacarte_cart/css/style.css" />
-      <change beforePath="$PROJECT_DIR$/app/static/alacarte_cart/css/style.scss" afterPath="$PROJECT_DIR$/app/static/alacarte_cart/css/style.scss" />
-      <change beforePath="$PROJECT_DIR$/app/static/alacarte_cart/img/cd-icon-arrow-next.svg" afterPath="$PROJECT_DIR$/app/static/alacarte_cart/img/cd-icon-arrow-next.svg" />
-      <change beforePath="$PROJECT_DIR$/app/static/alacarte_cart/img/cd-icon-select.svg" afterPath="$PROJECT_DIR$/app/static/alacarte_cart/img/cd-icon-select.svg" />
-      <change beforePath="$PROJECT_DIR$/app/static/alacarte_cart/img/cd-icons-cart-close.svg" afterPath="$PROJECT_DIR$/app/static/alacarte_cart/img/cd-icons-cart-close.svg" />
-      <change beforePath="$PROJECT_DIR$/app/static/alacarte_cart/js/cart.js" afterPath="$PROJECT_DIR$/app/static/alacarte_cart/js/cart.js" />
-      <change beforePath="$PROJECT_DIR$/app/static/alacarte_cart/js/guest_checkout.js" afterPath="$PROJECT_DIR$/app/static/alacarte_cart/js/guest_checkout.js" />
-      <change beforePath="$PROJECT_DIR$/app/static/alacarte_cart/js/main.js" afterPath="$PROJECT_DIR$/app/static/alacarte_cart/js/main.js" />
-      <change beforePath="$PROJECT_DIR$/app/static/alacarte_cart/js/quantity_modifier.js" afterPath="$PROJECT_DIR$/app/static/alacarte_cart/js/quantity_modifier.js" />
-      <change beforePath="$PROJECT_DIR$/app/static/alacarte_cart/js/util.js" afterPath="$PROJECT_DIR$/app/static/alacarte_cart/js/util.js" />
-      <change beforePath="$PROJECT_DIR$/app/static/alacarte_cart/js2/cart.js" afterPath="$PROJECT_DIR$/app/static/alacarte_cart/js2/cart.js" />
-      <change beforePath="$PROJECT_DIR$/app/static/alacarte_cart/js2/guest_checkout.js" afterPath="$PROJECT_DIR$/app/static/alacarte_cart/js2/guest_checkout.js" />
-      <change beforePath="$PROJECT_DIR$/app/static/alacarte_cart/js2/jp_buffet.js" afterPath="$PROJECT_DIR$/app/static/alacarte_cart/js2/jp_buffet.js" />
-      <change beforePath="$PROJECT_DIR$/app/static/alacarte_cart/js2/jp_buffet_drinks.js" afterPath="$PROJECT_DIR$/app/static/alacarte_cart/js2/jp_buffet_drinks.js" />
-      <change beforePath="$PROJECT_DIR$/app/static/alacarte_cart/js2/jp_buffet_special.js" afterPath="$PROJECT_DIR$/app/static/alacarte_cart/js2/jp_buffet_special.js" />
-      <change beforePath="$PROJECT_DIR$/app/static/alacarte_cart/js2/main.js" afterPath="$PROJECT_DIR$/app/static/alacarte_cart/js2/main.js" />
-      <change beforePath="$PROJECT_DIR$/app/static/alacarte_cart/js2/mongo.js" afterPath="$PROJECT_DIR$/app/static/alacarte_cart/js2/mongo.js" />
-      <change beforePath="$PROJECT_DIR$/app/static/alacarte_cart/js2/quantity_modifier.js" afterPath="$PROJECT_DIR$/app/static/alacarte_cart/js2/quantity_modifier.js" />
-      <change beforePath="$PROJECT_DIR$/app/static/alacarte_cart/js2/test2.js" afterPath="$PROJECT_DIR$/app/static/alacarte_cart/js2/test2.js" />
-      <change beforePath="$PROJECT_DIR$/app/static/alacarte_cart/js2/util.js" afterPath="$PROJECT_DIR$/app/static/alacarte_cart/js2/util.js" />
-      <change beforePath="$PROJECT_DIR$/app/static/bootstrap/bootstrap-grid.css" afterPath="$PROJECT_DIR$/app/static/bootstrap/bootstrap-grid.css" />
-      <change beforePath="$PROJECT_DIR$/app/static/bootstrap/bootstrap-grid.min.css" afterPath="$PROJECT_DIR$/app/static/bootstrap/bootstrap-grid.min.css" />
-      <change beforePath="$PROJECT_DIR$/app/static/bootstrap/bootstrap-reboot.css" afterPath="$PROJECT_DIR$/app/static/bootstrap/bootstrap-reboot.css" />
-      <change beforePath="$PROJECT_DIR$/app/static/bootstrap/bootstrap-reboot.min.css" afterPath="$PROJECT_DIR$/app/static/bootstrap/bootstrap-reboot.min.css" />
-      <change beforePath="$PROJECT_DIR$/app/static/bootstrap/bootstrap.css" afterPath="$PROJECT_DIR$/app/static/bootstrap/bootstrap.css" />
-      <change beforePath="$PROJECT_DIR$/app/static/bootstrap/bootstrap.min.css" afterPath="$PROJECT_DIR$/app/static/bootstrap/bootstrap.min.css" />
-      <change beforePath="$PROJECT_DIR$/app/static/css/alacarte_order_edit.css" afterPath="$PROJECT_DIR$/app/static/css/alacarte_order_edit.css" />
-      <change beforePath="$PROJECT_DIR$/app/static/css/auth_error.css" afterPath="$PROJECT_DIR$/app/static/css/auth_error.css" />
-      <change beforePath="$PROJECT_DIR$/app/static/css/bootstrap.min.css" afterPath="$PROJECT_DIR$/app/static/css/bootstrap.min.css" />
-      <change beforePath="$PROJECT_DIR$/app/static/css/dataTables.bootstrap4.min.css" afterPath="$PROJECT_DIR$/app/static/css/dataTables.bootstrap4.min.css" />
-      <change beforePath="$PROJECT_DIR$/app/static/css/sb-admin-2.min.css" afterPath="$PROJECT_DIR$/app/static/css/sb-admin-2.min.css" />
-      <change beforePath="$PROJECT_DIR$/app/static/css/shop-homepage.css" afterPath="$PROJECT_DIR$/app/static/css/shop-homepage.css" />
-      <change beforePath="$PROJECT_DIR$/app/static/css/stylish-portfolio.min.css" afterPath="$PROJECT_DIR$/app/static/css/stylish-portfolio.min.css" />
-      <change beforePath="$PROJECT_DIR$/app/static/css/table_switch.css" afterPath="$PROJECT_DIR$/app/static/css/table_switch.css" />
-      <change beforePath="$PROJECT_DIR$/app/static/css/takeaway_order_update.css" afterPath="$PROJECT_DIR$/app/static/css/takeaway_order_update.css" />
-      <change beforePath="$PROJECT_DIR$/app/static/datatables/datatableinit.js" afterPath="$PROJECT_DIR$/app/static/datatables/datatableinit.js" />
-      <change beforePath="$PROJECT_DIR$/app/static/docx/bar.docx" afterPath="$PROJECT_DIR$/app/static/docx/bar.docx" />
-      <change beforePath="$PROJECT_DIR$/app/static/docx/bar_alacarte.docx" afterPath="$PROJECT_DIR$/app/static/docx/bar_alacarte.docx" />
-      <change beforePath="$PROJECT_DIR$/app/static/docx/kitchen.docx" afterPath="$PROJECT_DIR$/app/static/docx/kitchen.docx" />
-      <change beforePath="$PROJECT_DIR$/app/static/docx/kitchen_alacarte.docx" afterPath="$PROJECT_DIR$/app/static/docx/kitchen_alacarte.docx" />
-      <change beforePath="$PROJECT_DIR$/app/static/docx/receipt_temp_inhouse.docx" afterPath="$PROJECT_DIR$/app/static/docx/receipt_temp_inhouse.docx" />
-      <change beforePath="$PROJECT_DIR$/app/static/docx/receipt_temp_out.docx" afterPath="$PROJECT_DIR$/app/static/docx/receipt_temp_out.docx" />
-      <change beforePath="$PROJECT_DIR$/app/static/docx/terminal_temp_out.docx" afterPath="$PROJECT_DIR$/app/static/docx/terminal_temp_out.docx" />
-      <change beforePath="$PROJECT_DIR$/app/static/fontawesome-free/LICENSE.txt" afterPath="$PROJECT_DIR$/app/static/fontawesome-free/LICENSE.txt" />
-      <change beforePath="$PROJECT_DIR$/app/static/fontawesome-free/css/all.css" afterPath="$PROJECT_DIR$/app/static/fontawesome-free/css/all.css" />
-      <change beforePath="$PROJECT_DIR$/app/static/fontawesome-free/css/all.min.css" afterPath="$PROJECT_DIR$/app/static/fontawesome-free/css/all.min.css" />
-      <change beforePath="$PROJECT_DIR$/app/static/fontawesome-free/css/brands.css" afterPath="$PROJECT_DIR$/app/static/fontawesome-free/css/brands.css" />
-      <change beforePath="$PROJECT_DIR$/app/static/fontawesome-free/css/brands.min.css" afterPath="$PROJECT_DIR$/app/static/fontawesome-free/css/brands.min.css" />
-      <change beforePath="$PROJECT_DIR$/app/static/fontawesome-free/css/fontawesome.css" afterPath="$PROJECT_DIR$/app/static/fontawesome-free/css/fontawesome.css" />
-      <change beforePath="$PROJECT_DIR$/app/static/fontawesome-free/css/fontawesome.min.css" afterPath="$PROJECT_DIR$/app/static/fontawesome-free/css/fontawesome.min.css" />
-      <change beforePath="$PROJECT_DIR$/app/static/fontawesome-free/css/regular.css" afterPath="$PROJECT_DIR$/app/static/fontawesome-free/css/regular.css" />
-      <change beforePath="$PROJECT_DIR$/app/static/fontawesome-free/css/regular.min.css" afterPath="$PROJECT_DIR$/app/static/fontawesome-free/css/regular.min.css" />
-      <change beforePath="$PROJECT_DIR$/app/static/fontawesome-free/css/solid.css" afterPath="$PROJECT_DIR$/app/static/fontawesome-free/css/solid.css" />
-      <change beforePath="$PROJECT_DIR$/app/static/fontawesome-free/css/solid.min.css" afterPath="$PROJECT_DIR$/app/static/fontawesome-free/css/solid.min.css" />
-      <change beforePath="$PROJECT_DIR$/app/static/fontawesome-free/css/svg-with-js.css" afterPath="$PROJECT_DIR$/app/static/fontawesome-free/css/svg-with-js.css" />
-      <change beforePath="$PROJECT_DIR$/app/static/fontawesome-free/css/svg-with-js.min.css" afterPath="$PROJECT_DIR$/app/static/fontawesome-free/css/svg-with-js.min.css" />
-      <change beforePath="$PROJECT_DIR$/app/static/fontawesome-free/css/v4-shims.css" afterPath="$PROJECT_DIR$/app/static/fontawesome-free/css/v4-shims.css" />
-      <change beforePath="$PROJECT_DIR$/app/static/fontawesome-free/css/v4-shims.min.css" afterPath="$PROJECT_DIR$/app/static/fontawesome-free/css/v4-shims.min.css" />
-      <change beforePath="$PROJECT_DIR$/app/static/fontawesome-free/js/all.js" afterPath="$PROJECT_DIR$/app/static/fontawesome-free/js/all.js" />
-      <change beforePath="$PROJECT_DIR$/app/static/fontawesome-free/js/all.min.js" afterPath="$PROJECT_DIR$/app/static/fontawesome-free/js/all.min.js" />
-      <change beforePath="$PROJECT_DIR$/app/static/fontawesome-free/js/brands.js" afterPath="$PROJECT_DIR$/app/static/fontawesome-free/js/brands.js" />
-      <change beforePath="$PROJECT_DIR$/app/static/fontawesome-free/js/brands.min.js" afterPath="$PROJECT_DIR$/app/static/fontawesome-free/js/brands.min.js" />
-      <change beforePath="$PROJECT_DIR$/app/static/fontawesome-free/js/fontawesome.js" afterPath="$PROJECT_DIR$/app/static/fontawesome-free/js/fontawesome.js" />
-      <change beforePath="$PROJECT_DIR$/app/static/fontawesome-free/js/fontawesome.min.js" afterPath="$PROJECT_DIR$/app/static/fontawesome-free/js/fontawesome.min.js" />
-      <change beforePath="$PROJECT_DIR$/app/static/fontawesome-free/js/regular.js" afterPath="$PROJECT_DIR$/app/static/fontawesome-free/js/regular.js" />
-      <change beforePath="$PROJECT_DIR$/app/static/fontawesome-free/js/regular.min.js" afterPath="$PROJECT_DIR$/app/static/fontawesome-free/js/regular.min.js" />
-      <change beforePath="$PROJECT_DIR$/app/static/fontawesome-free/js/solid.js" afterPath="$PROJECT_DIR$/app/static/fontawesome-free/js/solid.js" />
-      <change beforePath="$PROJECT_DIR$/app/static/fontawesome-free/js/solid.min.js" afterPath="$PROJECT_DIR$/app/static/fontawesome-free/js/solid.min.js" />
-      <change beforePath="$PROJECT_DIR$/app/static/fontawesome-free/js/v4-shims.js" afterPath="$PROJECT_DIR$/app/static/fontawesome-free/js/v4-shims.js" />
-      <change beforePath="$PROJECT_DIR$/app/static/fontawesome-free/js/v4-shims.min.js" afterPath="$PROJECT_DIR$/app/static/fontawesome-free/js/v4-shims.min.js" />
-      <change beforePath="$PROJECT_DIR$/app/static/fontawesome-free/less/_animated.less" afterPath="$PROJECT_DIR$/app/static/fontawesome-free/less/_animated.less" />
-      <change beforePath="$PROJECT_DIR$/app/static/fontawesome-free/less/_bordered-pulled.less" afterPath="$PROJECT_DIR$/app/static/fontawesome-free/less/_bordered-pulled.less" />
-      <change beforePath="$PROJECT_DIR$/app/static/fontawesome-free/less/_core.less" afterPath="$PROJECT_DIR$/app/static/fontawesome-free/less/_core.less" />
-      <change beforePath="$PROJECT_DIR$/app/static/fontawesome-free/less/_fixed-width.less" afterPath="$PROJECT_DIR$/app/static/fontawesome-free/less/_fixed-width.less" />
-      <change beforePath="$PROJECT_DIR$/app/static/fontawesome-free/less/_icons.less" afterPath="$PROJECT_DIR$/app/static/fontawesome-free/less/_icons.less" />
-      <change beforePath="$PROJECT_DIR$/app/static/fontawesome-free/less/_larger.less" afterPath="$PROJECT_DIR$/app/static/fontawesome-free/less/_larger.less" />
-      <change beforePath="$PROJECT_DIR$/app/static/fontawesome-free/less/_list.less" afterPath="$PROJECT_DIR$/app/static/fontawesome-free/less/_list.less" />
-      <change beforePath="$PROJECT_DIR$/app/static/fontawesome-free/less/_mixins.less" afterPath="$PROJECT_DIR$/app/static/fontawesome-free/less/_mixins.less" />
-      <change beforePath="$PROJECT_DIR$/app/static/fontawesome-free/less/_rotated-flipped.less" afterPath="$PROJECT_DIR$/app/static/fontawesome-free/less/_rotated-flipped.less" />
-      <change beforePath="$PROJECT_DIR$/app/static/fontawesome-free/less/_screen-reader.less" afterPath="$PROJECT_DIR$/app/static/fontawesome-free/less/_screen-reader.less" />
-      <change beforePath="$PROJECT_DIR$/app/static/fontawesome-free/less/_shims.less" afterPath="$PROJECT_DIR$/app/static/fontawesome-free/less/_shims.less" />
-      <change beforePath="$PROJECT_DIR$/app/static/fontawesome-free/less/_stacked.less" afterPath="$PROJECT_DIR$/app/static/fontawesome-free/less/_stacked.less" />
-      <change beforePath="$PROJECT_DIR$/app/static/fontawesome-free/less/_variables.less" afterPath="$PROJECT_DIR$/app/static/fontawesome-free/less/_variables.less" />
-      <change beforePath="$PROJECT_DIR$/app/static/fontawesome-free/less/brands.less" afterPath="$PROJECT_DIR$/app/static/fontawesome-free/less/brands.less" />
-      <change beforePath="$PROJECT_DIR$/app/static/fontawesome-free/less/fontawesome.less" afterPath="$PROJECT_DIR$/app/static/fontawesome-free/less/fontawesome.less" />
-      <change beforePath="$PROJECT_DIR$/app/static/fontawesome-free/less/regular.less" afterPath="$PROJECT_DIR$/app/static/fontawesome-free/less/regular.less" />
-      <change beforePath="$PROJECT_DIR$/app/static/fontawesome-free/less/solid.less" afterPath="$PROJECT_DIR$/app/static/fontawesome-free/less/solid.less" />
-      <change beforePath="$PROJECT_DIR$/app/static/fontawesome-free/less/v4-shims.less" afterPath="$PROJECT_DIR$/app/static/fontawesome-free/less/v4-shims.less" />
-      <change beforePath="$PROJECT_DIR$/app/static/fontawesome-free/package.json" afterPath="$PROJECT_DIR$/app/static/fontawesome-free/package.json" />
-      <change beforePath="$PROJECT_DIR$/app/static/fontawesome-free/scss/_animated.scss" afterPath="$PROJECT_DIR$/app/static/fontawesome-free/scss/_animated.scss" />
-      <change beforePath="$PROJECT_DIR$/app/static/fontawesome-free/scss/_bordered-pulled.scss" afterPath="$PROJECT_DIR$/app/static/fontawesome-free/scss/_bordered-pulled.scss" />
-      <change beforePath="$PROJECT_DIR$/app/static/fontawesome-free/scss/_core.scss" afterPath="$PROJECT_DIR$/app/static/fontawesome-free/scss/_core.scss" />
-      <change beforePath="$PROJECT_DIR$/app/static/fontawesome-free/scss/_fixed-width.scss" afterPath="$PROJECT_DIR$/app/static/fontawesome-free/scss/_fixed-width.scss" />
-      <change beforePath="$PROJECT_DIR$/app/static/fontawesome-free/scss/_icons.scss" afterPath="$PROJECT_DIR$/app/static/fontawesome-free/scss/_icons.scss" />
-      <change beforePath="$PROJECT_DIR$/app/static/fontawesome-free/scss/_larger.scss" afterPath="$PROJECT_DIR$/app/static/fontawesome-free/scss/_larger.scss" />
-      <change beforePath="$PROJECT_DIR$/app/static/fontawesome-free/scss/_list.scss" afterPath="$PROJECT_DIR$/app/static/fontawesome-free/scss/_list.scss" />
-      <change beforePath="$PROJECT_DIR$/app/static/fontawesome-free/scss/_mixins.scss" afterPath="$PROJECT_DIR$/app/static/fontawesome-free/scss/_mixins.scss" />
-      <change beforePath="$PROJECT_DIR$/app/static/fontawesome-free/scss/_rotated-flipped.scss" afterPath="$PROJECT_DIR$/app/static/fontawesome-free/scss/_rotated-flipped.scss" />
-      <change beforePath="$PROJECT_DIR$/app/static/fontawesome-free/scss/_screen-reader.scss" afterPath="$PROJECT_DIR$/app/static/fontawesome-free/scss/_screen-reader.scss" />
-      <change beforePath="$PROJECT_DIR$/app/static/fontawesome-free/scss/_shims.scss" afterPath="$PROJECT_DIR$/app/static/fontawesome-free/scss/_shims.scss" />
-      <change beforePath="$PROJECT_DIR$/app/static/fontawesome-free/scss/_stacked.scss" afterPath="$PROJECT_DIR$/app/static/fontawesome-free/scss/_stacked.scss" />
-      <change beforePath="$PROJECT_DIR$/app/static/fontawesome-free/scss/_variables.scss" afterPath="$PROJECT_DIR$/app/static/fontawesome-free/scss/_variables.scss" />
-      <change beforePath="$PROJECT_DIR$/app/static/fontawesome-free/scss/brands.scss" afterPath="$PROJECT_DIR$/app/static/fontawesome-free/scss/brands.scss" />
-      <change beforePath="$PROJECT_DIR$/app/static/fontawesome-free/scss/fontawesome.scss" afterPath="$PROJECT_DIR$/app/static/fontawesome-free/scss/fontawesome.scss" />
-      <change beforePath="$PROJECT_DIR$/app/static/fontawesome-free/scss/regular.scss" afterPath="$PROJECT_DIR$/app/static/fontawesome-free/scss/regular.scss" />
-      <change beforePath="$PROJECT_DIR$/app/static/fontawesome-free/scss/solid.scss" afterPath="$PROJECT_DIR$/app/static/fontawesome-free/scss/solid.scss" />
-      <change beforePath="$PROJECT_DIR$/app/static/fontawesome-free/scss/v4-shims.scss" afterPath="$PROJECT_DIR$/app/static/fontawesome-free/scss/v4-shims.scss" />
-      <change beforePath="$PROJECT_DIR$/app/static/fontawesome-free/sprites/brands.svg" afterPath="$PROJECT_DIR$/app/static/fontawesome-free/sprites/brands.svg" />
-      <change beforePath="$PROJECT_DIR$/app/static/fontawesome-free/sprites/regular.svg" afterPath="$PROJECT_DIR$/app/static/fontawesome-free/sprites/regular.svg" />
-      <change beforePath="$PROJECT_DIR$/app/static/fontawesome-free/sprites/solid.svg" afterPath="$PROJECT_DIR$/app/static/fontawesome-free/sprites/solid.svg" />
-      <change beforePath="$PROJECT_DIR$/app/static/fontawesome-free/webfonts/fa-brands-400.svg" afterPath="$PROJECT_DIR$/app/static/fontawesome-free/webfonts/fa-brands-400.svg" />
-      <change beforePath="$PROJECT_DIR$/app/static/fontawesome-free/webfonts/fa-regular-400.svg" afterPath="$PROJECT_DIR$/app/static/fontawesome-free/webfonts/fa-regular-400.svg" />
-      <change beforePath="$PROJECT_DIR$/app/static/fontawesome-free/webfonts/fa-solid-900.svg" afterPath="$PROJECT_DIR$/app/static/fontawesome-free/webfonts/fa-solid-900.svg" />
-      <change beforePath="$PROJECT_DIR$/app/static/front_end_css/all.css" afterPath="$PROJECT_DIR$/app/static/front_end_css/all.css" />
-      <change beforePath="$PROJECT_DIR$/app/static/front_end_css/style.css" afterPath="$PROJECT_DIR$/app/static/front_end_css/style.css" />
-      <change beforePath="$PROJECT_DIR$/app/static/front_end_js/app.js" afterPath="$PROJECT_DIR$/app/static/front_end_js/app.js" />
-      <change beforePath="$PROJECT_DIR$/app/static/front_end_js/clear_cart.js" afterPath="$PROJECT_DIR$/app/static/front_end_js/clear_cart.js" />
-      <change beforePath="$PROJECT_DIR$/app/static/front_end_js/mark_done_order.js" afterPath="$PROJECT_DIR$/app/static/front_end_js/mark_done_order.js" />
-      <change beforePath="$PROJECT_DIR$/app/static/front_end_js/send_json.js" afterPath="$PROJECT_DIR$/app/static/front_end_js/send_json.js" />
-      <change beforePath="$PROJECT_DIR$/app/static/front_end_js/takeaway_order_edit.js" afterPath="$PROJECT_DIR$/app/static/front_end_js/takeaway_order_edit.js" />
-      <change beforePath="$PROJECT_DIR$/app/static/js/add_table.js" afterPath="$PROJECT_DIR$/app/static/js/add_table.js" />
-      <change beforePath="$PROJECT_DIR$/app/static/js/alacarte_order_edit.js" afterPath="$PROJECT_DIR$/app/static/js/alacarte_order_edit.js" />
-      <change beforePath="$PROJECT_DIR$/app/static/js/alacarte_service_call.js" afterPath="$PROJECT_DIR$/app/static/js/alacarte_service_call.js" />
-      <change beforePath="$PROJECT_DIR$/app/static/js/bootstrap/bootstrap.bundle.min.js" afterPath="$PROJECT_DIR$/app/static/js/bootstrap/bootstrap.bundle.min.js" />
-      <change beforePath="$PROJECT_DIR$/app/static/js/bootstrap/bootstrap.js" afterPath="$PROJECT_DIR$/app/static/js/bootstrap/bootstrap.js" />
-      <change beforePath="$PROJECT_DIR$/app/static/js/bootstrap/bootstrap.min.js" afterPath="$PROJECT_DIR$/app/static/js/bootstrap/bootstrap.min.js" />
-      <change beforePath="$PROJECT_DIR$/app/static/js/boss_toggle_user.js" afterPath="$PROJECT_DIR$/app/static/js/boss_toggle_user.js" />
-      <change beforePath="$PROJECT_DIR$/app/static/js/chart.js/Chart.bundle.min.js" afterPath="$PROJECT_DIR$/app/static/js/chart.js/Chart.bundle.min.js" />
-      <change beforePath="$PROJECT_DIR$/app/static/js/chart.js/Chart.min.js" afterPath="$PROJECT_DIR$/app/static/js/chart.js/Chart.min.js" />
-      <change beforePath="$PROJECT_DIR$/app/static/js/demo/chart-area-demo.js" afterPath="$PROJECT_DIR$/app/static/js/demo/chart-area-demo.js" />
-      <change beforePath="$PROJECT_DIR$/app/static/js/demo/chart-bar-demo.js" afterPath="$PROJECT_DIR$/app/static/js/demo/chart-bar-demo.js" />
-      <change beforePath="$PROJECT_DIR$/app/static/js/demo/chart-pie-demo.js" afterPath="$PROJECT_DIR$/app/static/js/demo/chart-pie-demo.js" />
-      <change beforePath="$PROJECT_DIR$/app/static/js/demo/datatables-demo.js" afterPath="$PROJECT_DIR$/app/static/js/demo/datatables-demo.js" />
-      <change beforePath="$PROJECT_DIR$/app/static/js/graphing.js" afterPath="$PROJECT_DIR$/app/static/js/graphing.js" />
-      <change beforePath="$PROJECT_DIR$/app/static/js/jp_buffet_countdown.js" afterPath="$PROJECT_DIR$/app/static/js/jp_buffet_countdown.js" />
-      <change beforePath="$PROJECT_DIR$/app/static/js/jp_buffet_index.js" afterPath="$PROJECT_DIR$/app/static/js/jp_buffet_index.js" />
-      <change beforePath="$PROJECT_DIR$/app/static/js/jquery/jquery.min.js" afterPath="$PROJECT_DIR$/app/static/js/jquery/jquery.min.js" />
-      <change beforePath="$PROJECT_DIR$/app/static/js/listen_new_language.js" afterPath="$PROJECT_DIR$/app/static/js/listen_new_language.js" />
-      <change beforePath="$PROJECT_DIR$/app/static/js/listen_orders.js" afterPath="$PROJECT_DIR$/app/static/js/listen_orders.js" />
-      <change beforePath="$PROJECT_DIR$/app/static/js/listen_table_updates.js" afterPath="$PROJECT_DIR$/app/static/js/listen_table_updates.js" />
-      <change beforePath="$PROJECT_DIR$/app/static/js/mongo_service_call.js" afterPath="$PROJECT_DIR$/app/static/js/mongo_service_call.js" />
-      <change beforePath="$PROJECT_DIR$/app/static/js/parse_table_status.js" afterPath="$PROJECT_DIR$/app/static/js/parse_table_status.js" />
-      <change beforePath="$PROJECT_DIR$/app/static/js/quantifier.js" afterPath="$PROJECT_DIR$/app/static/js/quantifier.js" />
-      <change beforePath="$PROJECT_DIR$/app/static/js/revenue_by_days.js" afterPath="$PROJECT_DIR$/app/static/js/revenue_by_days.js" />
-      <change beforePath="$PROJECT_DIR$/app/static/js/sb-admin-2.min.js" afterPath="$PROJECT_DIR$/app/static/js/sb-admin-2.min.js" />
-      <change beforePath="$PROJECT_DIR$/app/static/js/service_call.js" afterPath="$PROJECT_DIR$/app/static/js/service_call.js" />
-      <change beforePath="$PROJECT_DIR$/app/static/js/stylish-portfolio.min.js" afterPath="$PROJECT_DIR$/app/static/js/stylish-portfolio.min.js" />
-      <change beforePath="$PROJECT_DIR$/app/static/js/switch_lan.js" afterPath="$PROJECT_DIR$/app/static/js/switch_lan.js" />
-      <change beforePath="$PROJECT_DIR$/app/static/js/switch_printer.js" afterPath="$PROJECT_DIR$/app/static/js/switch_printer.js" />
-      <change beforePath="$PROJECT_DIR$/app/static/js/takeaway_checkout_admin.js" afterPath="$PROJECT_DIR$/app/static/js/takeaway_checkout_admin.js" />
-      <change beforePath="$PROJECT_DIR$/app/static/js/takeaway_order_update.js" afterPath="$PROJECT_DIR$/app/static/js/takeaway_order_update.js" />
-      <change beforePath="$PROJECT_DIR$/app/static/js/toggle_dish.js" afterPath="$PROJECT_DIR$/app/static/js/toggle_dish.js" />
-      <change beforePath="$PROJECT_DIR$/app/static/js/toggle_holiday.js" afterPath="$PROJECT_DIR$/app/static/js/toggle_holiday.js" />
-      <change beforePath="$PROJECT_DIR$/app/static/js/toggle_table.js" afterPath="$PROJECT_DIR$/app/static/js/toggle_table.js" />
-      <change beforePath="$PROJECT_DIR$/app/static/js/toggle_user.js" afterPath="$PROJECT_DIR$/app/static/js/toggle_user.js" />
-      <change beforePath="$PROJECT_DIR$/app/static/js/update_order.js" afterPath="$PROJECT_DIR$/app/static/js/update_order.js" />
-      <change beforePath="$PROJECT_DIR$/app/static/out/info_A1.docx" afterPath="$PROJECT_DIR$/app/static/out/info_A1.docx" />
-      <change beforePath="$PROJECT_DIR$/app/static/simple-line-icons/css/simple-line-icons.css" afterPath="$PROJECT_DIR$/app/static/simple-line-icons/css/simple-line-icons.css" />
-      <change beforePath="$PROJECT_DIR$/app/static/simple-line-icons/fonts/Simple-Line-Icons.svg" afterPath="$PROJECT_DIR$/app/static/simple-line-icons/fonts/Simple-Line-Icons.svg" />
-      <change beforePath="$PROJECT_DIR$/app/static/takeaway_guest/css/quantity_modifier.css" afterPath="$PROJECT_DIR$/app/static/takeaway_guest/css/quantity_modifier.css" />
-      <change beforePath="$PROJECT_DIR$/app/static/takeaway_guest/css/sticky.css" afterPath="$PROJECT_DIR$/app/static/takeaway_guest/css/sticky.css" />
-      <change beforePath="$PROJECT_DIR$/app/static/takeaway_guest/css/style.css" afterPath="$PROJECT_DIR$/app/static/takeaway_guest/css/style.css" />
-      <change beforePath="$PROJECT_DIR$/app/static/takeaway_guest/css/style.scss" afterPath="$PROJECT_DIR$/app/static/takeaway_guest/css/style.scss" />
-      <change beforePath="$PROJECT_DIR$/app/static/takeaway_guest/img/cd-icon-arrow-next.svg" afterPath="$PROJECT_DIR$/app/static/takeaway_guest/img/cd-icon-arrow-next.svg" />
-      <change beforePath="$PROJECT_DIR$/app/static/takeaway_guest/img/cd-icon-select.svg" afterPath="$PROJECT_DIR$/app/static/takeaway_guest/img/cd-icon-select.svg" />
-      <change beforePath="$PROJECT_DIR$/app/static/takeaway_guest/img/cd-icons-cart-close.svg" afterPath="$PROJECT_DIR$/app/static/takeaway_guest/img/cd-icons-cart-close.svg" />
-      <change beforePath="$PROJECT_DIR$/app/static/takeaway_guest/js/cart.js" afterPath="$PROJECT_DIR$/app/static/takeaway_guest/js/cart.js" />
-      <change beforePath="$PROJECT_DIR$/app/static/takeaway_guest/js/guest_checkout.js" afterPath="$PROJECT_DIR$/app/static/takeaway_guest/js/guest_checkout.js" />
-      <change beforePath="$PROJECT_DIR$/app/static/takeaway_guest/js/main.js" afterPath="$PROJECT_DIR$/app/static/takeaway_guest/js/main.js" />
-      <change beforePath="$PROJECT_DIR$/app/static/takeaway_guest/js/quantity_modifier.js" afterPath="$PROJECT_DIR$/app/static/takeaway_guest/js/quantity_modifier.js" />
-      <change beforePath="$PROJECT_DIR$/app/static/takeaway_guest/js/test2.js" afterPath="$PROJECT_DIR$/app/static/takeaway_guest/js/test2.js" />
-      <change beforePath="$PROJECT_DIR$/app/static/takeaway_guest/js/util.js" afterPath="$PROJECT_DIR$/app/static/takeaway_guest/js/util.js" />
-      <change beforePath="$PROJECT_DIR$/app/templates/404.html" afterPath="$PROJECT_DIR$/app/templates/404.html" />
-      <change beforePath="$PROJECT_DIR$/app/templates/TakeawayAdmin.html" afterPath="$PROJECT_DIR$/app/templates/TakeawayAdmin.html" />
-      <change beforePath="$PROJECT_DIR$/app/templates/active_alacarte_tables.html" afterPath="$PROJECT_DIR$/app/templates/active_alacarte_tables.html" />
-      <change beforePath="$PROJECT_DIR$/app/templates/add_category.html" afterPath="$PROJECT_DIR$/app/templates/add_category.html" />
-      <change beforePath="$PROJECT_DIR$/app/templates/add_dish.html" afterPath="$PROJECT_DIR$/app/templates/add_dish.html" />
-      <change beforePath="$PROJECT_DIR$/app/templates/add_holiday.html" afterPath="$PROJECT_DIR$/app/templates/add_holiday.html" />
-      <change beforePath="$PROJECT_DIR$/app/templates/add_printer.html" afterPath="$PROJECT_DIR$/app/templates/add_printer.html" />
-      <change beforePath="$PROJECT_DIR$/app/templates/add_table.html" afterPath="$PROJECT_DIR$/app/templates/add_table.html" />
-      <change beforePath="$PROJECT_DIR$/app/templates/add_table_test.html" afterPath="$PROJECT_DIR$/app/templates/add_table_test.html" />
-      <change beforePath="$PROJECT_DIR$/app/templates/add_table_via_js.html" afterPath="$PROJECT_DIR$/app/templates/add_table_via_js.html" />
-      <change beforePath="$PROJECT_DIR$/app/templates/add_user.html" afterPath="$PROJECT_DIR$/app/templates/add_user.html" />
-      <change beforePath="$PROJECT_DIR$/app/templates/admin_active_tables.html" afterPath="$PROJECT_DIR$/app/templates/admin_active_tables.html" />
-      <change beforePath="$PROJECT_DIR$/app/templates/admin_alacarte_order_edit.html" afterPath="$PROJECT_DIR$/app/templates/admin_alacarte_order_edit.html" />
-      <change beforePath="$PROJECT_DIR$/app/templates/admin_cancel_alacarte_order.html" afterPath="$PROJECT_DIR$/app/templates/admin_cancel_alacarte_order.html" />
-      <change beforePath="$PROJECT_DIR$/app/templates/admin_edit_buffet_order.html" afterPath="$PROJECT_DIR$/app/templates/admin_edit_buffet_order.html" />
-      <change beforePath="$PROJECT_DIR$/app/templates/admin_transfer_table.html" afterPath="$PROJECT_DIR$/app/templates/admin_transfer_table.html" />
-      <change beforePath="$PROJECT_DIR$/app/templates/admin_view_alalcarte_open_orders.html" afterPath="$PROJECT_DIR$/app/templates/admin_view_alalcarte_open_orders.html" />
-      <change beforePath="$PROJECT_DIR$/app/templates/admin_view_paid_alacarte_orders.html" afterPath="$PROJECT_DIR$/app/templates/admin_view_paid_alacarte_orders.html" />
-      <change beforePath="$PROJECT_DIR$/app/templates/admin_view_table_summary.html" afterPath="$PROJECT_DIR$/app/templates/admin_view_table_summary.html" />
-      <change beforePath="$PROJECT_DIR$/app/templates/alacarte.html" afterPath="$PROJECT_DIR$/app/templates/alacarte.html" />
-      <change beforePath="$PROJECT_DIR$/app/templates/alacarte2.html" afterPath="$PROJECT_DIR$/app/templates/alacarte2.html" />
-      <change beforePath="$PROJECT_DIR$/app/templates/alacarte_cart.html" afterPath="$PROJECT_DIR$/app/templates/alacarte_cart.html" />
-      <change beforePath="$PROJECT_DIR$/app/templates/alacarte_drinks.html" afterPath="$PROJECT_DIR$/app/templates/alacarte_drinks.html" />
-      <change beforePath="$PROJECT_DIR$/app/templates/alacarte_order_edit.html" afterPath="$PROJECT_DIR$/app/templates/alacarte_order_edit.html" />
-      <change beforePath="$PROJECT_DIR$/app/templates/alacarte_orders_admin.html" afterPath="$PROJECT_DIR$/app/templates/alacarte_orders_admin.html" />
-      <change beforePath="$PROJECT_DIR$/app/templates/alacarte_revenue_by_waiter.html" afterPath="$PROJECT_DIR$/app/templates/alacarte_revenue_by_waiter.html" />
-      <change beforePath="$PROJECT_DIR$/app/templates/alacarte_tables_view.html" afterPath="$PROJECT_DIR$/app/templates/alacarte_tables_view.html" />
-      <change beforePath="$PROJECT_DIR$/app/templates/alacarteindex.html" afterPath="$PROJECT_DIR$/app/templates/alacarteindex.html" />
-      <change beforePath="$PROJECT_DIR$/app/templates/all_categories.html" afterPath="$PROJECT_DIR$/app/templates/all_categories.html" />
-      <change beforePath="$PROJECT_DIR$/app/templates/all_dishes.html" afterPath="$PROJECT_DIR$/app/templates/all_dishes.html" />
-      <change beforePath="$PROJECT_DIR$/app/templates/all_out_orders.html" afterPath="$PROJECT_DIR$/app/templates/all_out_orders.html" />
-      <change beforePath="$PROJECT_DIR$/app/templates/analytics.html" afterPath="$PROJECT_DIR$/app/templates/analytics.html" />
-      <change beforePath="$PROJECT_DIR$/app/templates/analytics_de.html" afterPath="$PROJECT_DIR$/app/templates/analytics_de.html" />
-      <change beforePath="$PROJECT_DIR$/app/templates/analytics_en.html" afterPath="$PROJECT_DIR$/app/templates/analytics_en.html" />
-      <change beforePath="$PROJECT_DIR$/app/templates/auth_error.html" afterPath="$PROJECT_DIR$/app/templates/auth_error.html" />
-      <change beforePath="$PROJECT_DIR$/app/templates/base.html" afterPath="$PROJECT_DIR$/app/templates/base.html" />
-      <change beforePath="$PROJECT_DIR$/app/templates/base_de.html" afterPath="$PROJECT_DIR$/app/templates/base_de.html" />
-      <change beforePath="$PROJECT_DIR$/app/templates/base_en.html" afterPath="$PROJECT_DIR$/app/templates/base_en.html" />
-      <change beforePath="$PROJECT_DIR$/app/templates/base_nl.html" afterPath="$PROJECT_DIR$/app/templates/base_nl.html" />
-      <change beforePath="$PROJECT_DIR$/app/templates/blank.html" afterPath="$PROJECT_DIR$/app/templates/blank.html" />
-      <change beforePath="$PROJECT_DIR$/app/templates/boss.html" afterPath="$PROJECT_DIR$/app/templates/boss.html" />
-      <change beforePath="$PROJECT_DIR$/app/templates/boss_active_tables.html" afterPath="$PROJECT_DIR$/app/templates/boss_active_tables.html" />
-      <change beforePath="$PROJECT_DIR$/app/templates/boss_add_user.html" afterPath="$PROJECT_DIR$/app/templates/boss_add_user.html" />
-      <change beforePath="$PROJECT_DIR$/app/templates/boss_alacarte_order_edit.html" afterPath="$PROJECT_DIR$/app/templates/boss_alacarte_order_edit.html" />
-      <change beforePath="$PROJECT_DIR$/app/templates/boss_all_out_orders.html" afterPath="$PROJECT_DIR$/app/templates/boss_all_out_orders.html" />
-      <change beforePath="$PROJECT_DIR$/app/templates/boss_edit_user.html" afterPath="$PROJECT_DIR$/app/templates/boss_edit_user.html" />
-      <change beforePath="$PROJECT_DIR$/app/templates/boss_remove_user.html" afterPath="$PROJECT_DIR$/app/templates/boss_remove_user.html" />
-      <change beforePath="$PROJECT_DIR$/app/templates/boss_takeaway_view_order.html" afterPath="$PROJECT_DIR$/app/templates/boss_takeaway_view_order.html" />
-      <change beforePath="$PROJECT_DIR$/app/templates/boss_transfer_table.html" afterPath="$PROJECT_DIR$/app/templates/boss_transfer_table.html" />
-      <change beforePath="$PROJECT_DIR$/app/templates/boss_update_password.html" afterPath="$PROJECT_DIR$/app/templates/boss_update_password.html" />
-      <change beforePath="$PROJECT_DIR$/app/templates/boss_users_manage.html" afterPath="$PROJECT_DIR$/app/templates/boss_users_manage.html" />
-      <change beforePath="$PROJECT_DIR$/app/templates/boss_view_alalcarte_open_orders.html" afterPath="$PROJECT_DIR$/app/templates/boss_view_alalcarte_open_orders.html" />
-      <change beforePath="$PROJECT_DIR$/app/templates/boss_view_paid_alacarte_orders.html" afterPath="$PROJECT_DIR$/app/templates/boss_view_paid_alacarte_orders.html" />
-      <change beforePath="$PROJECT_DIR$/app/templates/boss_view_table_summary.html" afterPath="$PROJECT_DIR$/app/templates/boss_view_table_summary.html" />
-      <change beforePath="$PROJECT_DIR$/app/templates/buffet_price_setting.html" afterPath="$PROJECT_DIR$/app/templates/buffet_price_setting.html" />
-      <change beforePath="$PROJECT_DIR$/app/templates/buffet_price_setting_auth.html" afterPath="$PROJECT_DIR$/app/templates/buffet_price_setting_auth.html" />
-      <change beforePath="$PROJECT_DIR$/app/templates/buttons.html" afterPath="$PROJECT_DIR$/app/templates/buttons.html" />
-      <change beforePath="$PROJECT_DIR$/app/templates/cancel_alacarte_order.html" afterPath="$PROJECT_DIR$/app/templates/cancel_alacarte_order.html" />
-      <change beforePath="$PROJECT_DIR$/app/templates/cards.html" afterPath="$PROJECT_DIR$/app/templates/cards.html" />
-      <change beforePath="$PROJECT_DIR$/app/templates/charts.html" afterPath="$PROJECT_DIR$/app/templates/charts.html" />
-      <change beforePath="$PROJECT_DIR$/app/templates/cur_alacarte_revenue.html" afterPath="$PROJECT_DIR$/app/templates/cur_alacarte_revenue.html" />
-      <change beforePath="$PROJECT_DIR$/app/templates/current_out_revenue.html" afterPath="$PROJECT_DIR$/app/templates/current_out_revenue.html" />
-      <change beforePath="$PROJECT_DIR$/app/templates/daily_revenue_boss.html" afterPath="$PROJECT_DIR$/app/templates/daily_revenue_boss.html" />
-      <change beforePath="$PROJECT_DIR$/app/templates/edit_buffet_price.html" afterPath="$PROJECT_DIR$/app/templates/edit_buffet_price.html" />
-      <change beforePath="$PROJECT_DIR$/app/templates/edit_category.html" afterPath="$PROJECT_DIR$/app/templates/edit_category.html" />
-      <change beforePath="$PROJECT_DIR$/app/templates/edit_dish.html" afterPath="$PROJECT_DIR$/app/templates/edit_dish.html" />
-      <change beforePath="$PROJECT_DIR$/app/templates/edit_holiday.html" afterPath="$PROJECT_DIR$/app/templates/edit_holiday.html" />
-      <change beforePath="$PROJECT_DIR$/app/templates/edit_printer.html" afterPath="$PROJECT_DIR$/app/templates/edit_printer.html" />
-      <change beforePath="$PROJECT_DIR$/app/templates/edit_table.html" afterPath="$PROJECT_DIR$/app/templates/edit_table.html" />
-      <change beforePath="$PROJECT_DIR$/app/templates/edit_user.html" afterPath="$PROJECT_DIR$/app/templates/edit_user.html" />
-      <change beforePath="$PROJECT_DIR$/app/templates/foodfrontview.html" afterPath="$PROJECT_DIR$/app/templates/foodfrontview.html" />
-      <change beforePath="$PROJECT_DIR$/app/templates/foodfrontview1.html" afterPath="$PROJECT_DIR$/app/templates/foodfrontview1.html" />
-      <change beforePath="$PROJECT_DIR$/app/templates/forgot-password.html" afterPath="$PROJECT_DIR$/app/templates/forgot-password.html" />
-      <change beforePath="$PROJECT_DIR$/app/templates/guest_drinks.html" afterPath="$PROJECT_DIR$/app/templates/guest_drinks.html" />
-      <change beforePath="$PROJECT_DIR$/app/templates/guest_index.html" afterPath="$PROJECT_DIR$/app/templates/guest_index.html" />
-      <change beforePath="$PROJECT_DIR$/app/templates/holiday_manage.html" afterPath="$PROJECT_DIR$/app/templates/holiday_manage.html" />
-      <change beforePath="$PROJECT_DIR$/app/templates/index.html" afterPath="$PROJECT_DIR$/app/templates/index.html" />
-      <change beforePath="$PROJECT_DIR$/app/templates/info_receipt.html" afterPath="$PROJECT_DIR$/app/templates/info_receipt.html" />
-      <change beforePath="$PROJECT_DIR$/app/templates/jp_buffet.html" afterPath="$PROJECT_DIR$/app/templates/jp_buffet.html" />
-      <change beforePath="$PROJECT_DIR$/app/templates/jp_buffet_index.html" afterPath="$PROJECT_DIR$/app/templates/jp_buffet_index.html" />
-      <change beforePath="$PROJECT_DIR$/app/templates/jp_buffet_special.html" afterPath="$PROJECT_DIR$/app/templates/jp_buffet_special.html" />
-      <change beforePath="$PROJECT_DIR$/app/templates/login.html" afterPath="$PROJECT_DIR$/app/templates/login.html" />
-      <change beforePath="$PROJECT_DIR$/app/templates/mongo.html" afterPath="$PROJECT_DIR$/app/templates/mongo.html" />
-      <change beforePath="$PROJECT_DIR$/app/templates/mongo_drinks.html" afterPath="$PROJECT_DIR$/app/templates/mongo_drinks.html" />
-      <change beforePath="$PROJECT_DIR$/app/templates/mongo_index.html" afterPath="$PROJECT_DIR$/app/templates/mongo_index.html" />
-      <change beforePath="$PROJECT_DIR$/app/templates/navigation.html" afterPath="$PROJECT_DIR$/app/templates/navigation.html" />
-      <change beforePath="$PROJECT_DIR$/app/templates/print.html" afterPath="$PROJECT_DIR$/app/templates/print.html" />
-      <change beforePath="$PROJECT_DIR$/app/templates/print_z_receipt_confirm.html" afterPath="$PROJECT_DIR$/app/templates/print_z_receipt_confirm.html" />
-      <change beforePath="$PROJECT_DIR$/app/templates/printer_manage.html" afterPath="$PROJECT_DIR$/app/templates/printer_manage.html" />
-      <change beforePath="$PROJECT_DIR$/app/templates/qrcode.html" afterPath="$PROJECT_DIR$/app/templates/qrcode.html" />
-      <change beforePath="$PROJECT_DIR$/app/templates/receipt.html" afterPath="$PROJECT_DIR$/app/templates/receipt.html" />
-      <change beforePath="$PROJECT_DIR$/app/templates/register.html" afterPath="$PROJECT_DIR$/app/templates/register.html" />
-      <change beforePath="$PROJECT_DIR$/app/templates/remove_category.html" afterPath="$PROJECT_DIR$/app/templates/remove_category.html" />
-      <change beforePath="$PROJECT_DIR$/app/templates/remove_dish.html" afterPath="$PROJECT_DIR$/app/templates/remove_dish.html" />
-      <change beforePath="$PROJECT_DIR$/app/templates/remove_holiday.html" afterPath="$PROJECT_DIR$/app/templates/remove_holiday.html" />
-      <change beforePath="$PROJECT_DIR$/app/templates/remove_table.html" afterPath="$PROJECT_DIR$/app/templates/remove_table.html" />
-      <change beforePath="$PROJECT_DIR$/app/templates/remove_user.html" afterPath="$PROJECT_DIR$/app/templates/remove_user.html" />
-      <change beforePath="$PROJECT_DIR$/app/templates/revenue_by_days.html" afterPath="$PROJECT_DIR$/app/templates/revenue_by_days.html" />
-      <change beforePath="$PROJECT_DIR$/app/templates/revenue_by_days_via_js.html" afterPath="$PROJECT_DIR$/app/templates/revenue_by_days_via_js.html" />
-      <change beforePath="$PROJECT_DIR$/app/templates/revenue_by_month.html" afterPath="$PROJECT_DIR$/app/templates/revenue_by_month.html" />
-      <change beforePath="$PROJECT_DIR$/app/templates/revenue_by_section.html" afterPath="$PROJECT_DIR$/app/templates/revenue_by_section.html" />
-      <change beforePath="$PROJECT_DIR$/app/templates/revenue_by_week.html" afterPath="$PROJECT_DIR$/app/templates/revenue_by_week.html" />
-      <change beforePath="$PROJECT_DIR$/app/templates/revenue_by_year.html" afterPath="$PROJECT_DIR$/app/templates/revenue_by_year.html" />
-      <change beforePath="$PROJECT_DIR$/app/templates/revenue_view_auth.html" afterPath="$PROJECT_DIR$/app/templates/revenue_view_auth.html" />
-      <change beforePath="$PROJECT_DIR$/app/templates/settings.html" afterPath="$PROJECT_DIR$/app/templates/settings.html" />
-      <change beforePath="$PROJECT_DIR$/app/templates/super.html" afterPath="$PROJECT_DIR$/app/templates/super.html" />
-      <change beforePath="$PROJECT_DIR$/app/templates/suspension_error.html" afterPath="$PROJECT_DIR$/app/templates/suspension_error.html" />
-      <change beforePath="$PROJECT_DIR$/app/templates/table404.html" afterPath="$PROJECT_DIR$/app/templates/table404.html" />
-      <change beforePath="$PROJECT_DIR$/app/templates/table_interface.html" afterPath="$PROJECT_DIR$/app/templates/table_interface.html" />
-      <change beforePath="$PROJECT_DIR$/app/templates/table_views.html" afterPath="$PROJECT_DIR$/app/templates/table_views.html" />
-      <change beforePath="$PROJECT_DIR$/app/templates/takeaway_checkout_admin.html" afterPath="$PROJECT_DIR$/app/templates/takeaway_checkout_admin.html" />
-      <change beforePath="$PROJECT_DIR$/app/templates/takeaway_order_edit.html" afterPath="$PROJECT_DIR$/app/templates/takeaway_order_edit.html" />
-      <change beforePath="$PROJECT_DIR$/app/templates/takeaway_order_update.html" afterPath="$PROJECT_DIR$/app/templates/takeaway_order_update.html" />
-      <change beforePath="$PROJECT_DIR$/app/templates/takeaway_orders_admin.html" afterPath="$PROJECT_DIR$/app/templates/takeaway_orders_admin.html" />
-      <change beforePath="$PROJECT_DIR$/app/templates/takeaway_orders_view.html" afterPath="$PROJECT_DIR$/app/templates/takeaway_orders_view.html" />
-      <change beforePath="$PROJECT_DIR$/app/templates/takeaway_status.html" afterPath="$PROJECT_DIR$/app/templates/takeaway_status.html" />
-      <change beforePath="$PROJECT_DIR$/app/templates/takeaway_view_order.html" afterPath="$PROJECT_DIR$/app/templates/takeaway_view_order.html" />
-      <change beforePath="$PROJECT_DIR$/app/templates/transfer_table.html" afterPath="$PROJECT_DIR$/app/templates/transfer_table.html" />
-      <change beforePath="$PROJECT_DIR$/app/templates/update_password.html" afterPath="$PROJECT_DIR$/app/templates/update_password.html" />
-      <change beforePath="$PROJECT_DIR$/app/templates/users_manage.html" afterPath="$PROJECT_DIR$/app/templates/users_manage.html" />
-      <change beforePath="$PROJECT_DIR$/app/templates/utilities-animation.html" afterPath="$PROJECT_DIR$/app/templates/utilities-animation.html" />
-      <change beforePath="$PROJECT_DIR$/app/templates/utilities-border.html" afterPath="$PROJECT_DIR$/app/templates/utilities-border.html" />
-      <change beforePath="$PROJECT_DIR$/app/templates/utilities-color.html" afterPath="$PROJECT_DIR$/app/templates/utilities-color.html" />
-      <change beforePath="$PROJECT_DIR$/app/templates/utilities-other.html" afterPath="$PROJECT_DIR$/app/templates/utilities-other.html" />
-      <change beforePath="$PROJECT_DIR$/app/templates/view_log.html" afterPath="$PROJECT_DIR$/app/templates/view_log.html" />
-      <change beforePath="$PROJECT_DIR$/app/templates/view_logs.html" afterPath="$PROJECT_DIR$/app/templates/view_logs.html" />
-      <change beforePath="$PROJECT_DIR$/app/templates/view_meallist.html" afterPath="$PROJECT_DIR$/app/templates/view_meallist.html" />
-      <change beforePath="$PROJECT_DIR$/app/templates/view_meallists.html" afterPath="$PROJECT_DIR$/app/templates/view_meallists.html" />
-      <change beforePath="$PROJECT_DIR$/app/templates/view_printed_z_receipt.html" afterPath="$PROJECT_DIR$/app/templates/view_printed_z_receipt.html" />
-      <change beforePath="$PROJECT_DIR$/app/templates/view_qrcode.html" afterPath="$PROJECT_DIR$/app/templates/view_qrcode.html" />
-      <change beforePath="$PROJECT_DIR$/app/templates/view_qrcodes.html" afterPath="$PROJECT_DIR$/app/templates/view_qrcodes.html" />
-      <change beforePath="$PROJECT_DIR$/app/templates/view_receipt.html" afterPath="$PROJECT_DIR$/app/templates/view_receipt.html" />
-      <change beforePath="$PROJECT_DIR$/app/templates/view_receipts.html" afterPath="$PROJECT_DIR$/app/templates/view_receipts.html" />
-      <change beforePath="$PROJECT_DIR$/app/templates/view_receipts_void.html" afterPath="$PROJECT_DIR$/app/templates/view_receipts_void.html" />
-      <change beforePath="$PROJECT_DIR$/app/templates/view_table_summary.html" afterPath="$PROJECT_DIR$/app/templates/view_table_summary.html" />
-      <change beforePath="$PROJECT_DIR$/app/templates/view_void_x_receipts.html" afterPath="$PROJECT_DIR$/app/templates/view_void_x_receipts.html" />
-      <change beforePath="$PROJECT_DIR$/app/templates/view_void_z_receipts.html" afterPath="$PROJECT_DIR$/app/templates/view_void_z_receipts.html" />
-      <change beforePath="$PROJECT_DIR$/app/templates/view_x_receipt.html" afterPath="$PROJECT_DIR$/app/templates/view_x_receipt.html" />
-      <change beforePath="$PROJECT_DIR$/app/templates/view_x_receipts.html" afterPath="$PROJECT_DIR$/app/templates/view_x_receipts.html" />
-      <change beforePath="$PROJECT_DIR$/app/templates/view_z_receipt.html" afterPath="$PROJECT_DIR$/app/templates/view_z_receipt.html" />
-      <change beforePath="$PROJECT_DIR$/app/templates/view_z_receipts.html" afterPath="$PROJECT_DIR$/app/templates/view_z_receipts.html" />
-      <change beforePath="$PROJECT_DIR$/app/templates/waiter_admin.html" afterPath="$PROJECT_DIR$/app/templates/waiter_admin.html" />
-      <change beforePath="$PROJECT_DIR$/app/utilities.py" afterPath="$PROJECT_DIR$/app/utilities.py" />
       <change beforePath="$PROJECT_DIR$/config.py" afterPath="$PROJECT_DIR$/config.py" />
-      <change beforePath="$PROJECT_DIR$/database.py" afterPath="$PROJECT_DIR$/database.py" />
       <change beforePath="$PROJECT_DIR$/installer.py" afterPath="$PROJECT_DIR$/installer.py" />
-      <change beforePath="$PROJECT_DIR$/migrations/README" afterPath="" />
-      <change beforePath="$PROJECT_DIR$/migrations/alembic.ini" afterPath="" />
-      <change beforePath="$PROJECT_DIR$/migrations/env.py" afterPath="" />
-      <change beforePath="$PROJECT_DIR$/migrations/script.py.mako" afterPath="" />
-      <change beforePath="$PROJECT_DIR$/migrations/versions/218854541ae7_added_section_to_order.py" afterPath="" />
-      <change beforePath="$PROJECT_DIR$/notepad.txt" afterPath="$PROJECT_DIR$/notepad.txt" />
-      <change beforePath="$PROJECT_DIR$/requirements.txt" afterPath="$PROJECT_DIR$/requirements.txt" />
-      <change beforePath="$PROJECT_DIR$/scripts.py" afterPath="$PROJECT_DIR$/scripts.py" />
-      <change beforePath="$PROJECT_DIR$/server.py" afterPath="$PROJECT_DIR$/server.py" />
-      <change beforePath="$PROJECT_DIR$/todos.txt" afterPath="$PROJECT_DIR$/todos.txt" />
-      <change beforePath="$PROJECT_DIR$/xstar.py" afterPath="$PROJECT_DIR$/xstar.py" />
     </list>
     <option name="EXCLUDED_CONVERTED_TO_IGNORED" value="true" />
     <option name="TRACKING_ENABLED" value="true" />
@@ -366,12 +15,36 @@
   </component>
   <component name="FileEditorManager">
     <leaf SIDE_TABS_SIZE_LIMIT_KEY="375">
-      <file leaf-file-name="xstar.py" pinned="false" current-in-tab="false">
+      <file leaf-file-name="xstar.py" pinned="false" current-in-tab="true">
         <entry file="file://$PROJECT_DIR$/xstar.py">
           <provider selected="true" editor-type-id="text-editor">
-            <state relative-caret-position="48">
-              <caret line="2" column="40" lean-forward="true" selection-start-line="2" selection-start-column="40" selection-end-line="2" selection-end-column="40" />
+            <state relative-caret-position="24">
+              <caret line="1" column="0" lean-forward="true" selection-start-line="1" selection-start-column="0" selection-end-line="1" selection-end-column="0" />
               <folding />
+            </state>
+          </provider>
+        </entry>
+      </file>
+      <file leaf-file-name="__init__.py" pinned="false" current-in-tab="false">
+        <entry file="file://$PROJECT_DIR$/app/__init__.py">
+          <provider selected="true" editor-type-id="text-editor">
+            <state relative-caret-position="422">
+              <caret line="23" column="0" lean-forward="false" selection-start-line="23" selection-start-column="0" selection-end-line="23" selection-end-column="0" />
+              <folding>
+                <element signature="e#0#169#0" expanded="true" />
+              </folding>
+            </state>
+          </provider>
+        </entry>
+      </file>
+      <file leaf-file-name="server.py" pinned="false" current-in-tab="false">
+        <entry file="file://$PROJECT_DIR$/server.py">
+          <provider selected="true" editor-type-id="text-editor">
+            <state relative-caret-position="192">
+              <caret line="8" column="13" lean-forward="false" selection-start-line="8" selection-start-column="13" selection-end-line="8" selection-end-column="13" />
+              <folding>
+                <element signature="e#0#19#0" expanded="true" />
+              </folding>
             </state>
           </provider>
         </entry>
@@ -379,18 +52,18 @@
       <file leaf-file-name="config.py" pinned="false" current-in-tab="false">
         <entry file="file://$PROJECT_DIR$/config.py">
           <provider selected="true" editor-type-id="text-editor">
-            <state relative-caret-position="336">
-              <caret line="14" column="0" lean-forward="true" selection-start-line="14" selection-start-column="0" selection-end-line="14" selection-end-column="0" />
+            <state relative-caret-position="384">
+              <caret line="16" column="0" lean-forward="true" selection-start-line="16" selection-start-column="0" selection-end-line="16" selection-end-column="0" />
               <folding />
             </state>
           </provider>
         </entry>
       </file>
-      <file leaf-file-name="installer.py" pinned="false" current-in-tab="true">
+      <file leaf-file-name="installer.py" pinned="false" current-in-tab="false">
         <entry file="file://$PROJECT_DIR$/installer.py">
           <provider selected="true" editor-type-id="text-editor">
-            <state relative-caret-position="363">
-              <caret line="120" column="32" lean-forward="true" selection-start-line="120" selection-start-column="32" selection-end-line="120" selection-end-column="32" />
+            <state relative-caret-position="435">
+              <caret line="125" column="22" lean-forward="true" selection-start-line="125" selection-start-column="22" selection-end-line="125" selection-end-column="22" />
               <folding>
                 <element signature="e#0#23#0" expanded="true" />
               </folding>
@@ -460,8 +133,9 @@
         <option value="$PROJECT_DIR$/app/utilities.py" />
         <option value="$PROJECT_DIR$/server.py" />
         <option value="$PROJECT_DIR$/xstar.py" />
-        <option value="$PROJECT_DIR$/config.py" />
         <option value="$PROJECT_DIR$/app/routes.py" />
+        <option value="$PROJECT_DIR$/app/__init__.py" />
+        <option value="$PROJECT_DIR$/config.py" />
         <option value="$PROJECT_DIR$/installer.py" />
       </list>
     </option>
@@ -486,7 +160,6 @@
       <foldersAlwaysOnTop value="true" />
     </navigator>
     <panes>
-      <pane id="Scratches" />
       <pane id="ProjectPane">
         <subPane>
           <expand>
@@ -498,6 +171,7 @@
           <select />
         </subPane>
       </pane>
+      <pane id="Scratches" />
       <pane id="Scope" />
     </panes>
   </component>
@@ -648,12 +322,11 @@
       <window_info id="Project" active="false" anchor="left" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" show_stripe_button="true" weight="0.24960127" sideWeight="0.5" order="0" side_tool="false" content_ui="combo" />
       <window_info id="TODO" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" show_stripe_button="true" weight="0.33" sideWeight="0.5" order="6" side_tool="false" content_ui="tabs" />
       <window_info id="Event Log" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" show_stripe_button="true" weight="0.33" sideWeight="0.5" order="7" side_tool="true" content_ui="tabs" />
-      <window_info id="Find" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" show_stripe_button="true" weight="0.32784185" sideWeight="0.5" order="1" side_tool="false" content_ui="tabs" />
       <window_info id="Run" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" show_stripe_button="true" weight="0.66886324" sideWeight="0.5" order="2" side_tool="false" content_ui="tabs" />
       <window_info id="Version Control" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" show_stripe_button="true" weight="0.33" sideWeight="0.5" order="7" side_tool="false" content_ui="tabs" />
       <window_info id="Python Console" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" show_stripe_button="true" weight="0.3294893" sideWeight="0.5" order="7" side_tool="false" content_ui="tabs" />
       <window_info id="Structure" active="false" anchor="left" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" show_stripe_button="true" weight="0.25" sideWeight="0.5" order="1" side_tool="false" content_ui="tabs" />
-      <window_info id="Terminal" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" show_stripe_button="true" weight="0.6671388" sideWeight="0.5" order="7" side_tool="false" content_ui="tabs" />
+      <window_info id="Terminal" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" show_stripe_button="true" weight="0.66556835" sideWeight="0.5" order="7" side_tool="false" content_ui="tabs" />
       <window_info id="Debug" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" show_stripe_button="true" weight="0.3970346" sideWeight="0.5" order="3" side_tool="false" content_ui="tabs" />
       <window_info id="Favorites" active="false" anchor="left" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" show_stripe_button="true" weight="0.33" sideWeight="0.5" order="2" side_tool="true" content_ui="tabs" />
       <window_info id="Cvs" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" show_stripe_button="true" weight="0.25" sideWeight="0.5" order="4" side_tool="false" content_ui="tabs" />
@@ -661,6 +334,7 @@
       <window_info id="Commander" active="false" anchor="right" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" show_stripe_button="true" weight="0.4" sideWeight="0.5" order="0" side_tool="false" content_ui="tabs" />
       <window_info id="Inspection" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" show_stripe_button="true" weight="0.4" sideWeight="0.5" order="5" side_tool="false" content_ui="tabs" />
       <window_info id="Hierarchy" active="false" anchor="right" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" show_stripe_button="true" weight="0.25" sideWeight="0.5" order="2" side_tool="false" content_ui="combo" />
+      <window_info id="Find" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" show_stripe_button="true" weight="0.32784185" sideWeight="0.5" order="1" side_tool="false" content_ui="tabs" />
       <window_info id="Ant Build" active="false" anchor="right" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" show_stripe_button="true" weight="0.25" sideWeight="0.5" order="1" side_tool="false" content_ui="tabs" />
     </layout>
   </component>
@@ -689,7 +363,6 @@
       <provider selected="true" editor-type-id="text-editor">
         <state relative-caret-position="224832">
           <caret line="9368" column="0" lean-forward="true" selection-start-line="9368" selection-start-column="0" selection-end-line="9368" selection-end-column="0" />
-          <folding />
         </state>
       </provider>
     </entry>
@@ -726,7 +399,6 @@
       <provider selected="true" editor-type-id="text-editor">
         <state relative-caret-position="82416">
           <caret line="3434" column="0" lean-forward="true" selection-start-line="3434" selection-start-column="0" selection-end-line="3434" selection-end-column="0" />
-          <folding />
         </state>
       </provider>
     </entry>
@@ -763,7 +435,6 @@
       <provider selected="true" editor-type-id="text-editor">
         <state relative-caret-position="46128">
           <caret line="1922" column="0" lean-forward="true" selection-start-line="1922" selection-start-column="0" selection-end-line="1922" selection-end-column="0" />
-          <folding />
         </state>
       </provider>
     </entry>
@@ -793,7 +464,6 @@
       <provider selected="true" editor-type-id="text-editor">
         <state relative-caret-position="50496">
           <caret line="2104" column="0" lean-forward="false" selection-start-line="2104" selection-start-column="0" selection-end-line="2104" selection-end-column="0" />
-          <folding />
         </state>
       </provider>
     </entry>
@@ -851,7 +521,6 @@
       <provider selected="true" editor-type-id="text-editor">
         <state relative-caret-position="128736">
           <caret line="5364" column="0" lean-forward="true" selection-start-line="5364" selection-start-column="0" selection-end-line="5364" selection-end-column="0" />
-          <folding />
         </state>
       </provider>
     </entry>
@@ -916,7 +585,6 @@
       <provider selected="true" editor-type-id="text-editor">
         <state relative-caret-position="128328">
           <caret line="5347" column="0" lean-forward="true" selection-start-line="5347" selection-start-column="0" selection-end-line="5347" selection-end-column="0" />
-          <folding />
         </state>
       </provider>
     </entry>
@@ -969,13 +637,6 @@
         </state>
       </provider>
     </entry>
-    <entry file="file://$PROJECT_DIR$/app/__init__.py">
-      <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="112">
-          <caret line="23" column="0" lean-forward="false" selection-start-line="23" selection-start-column="0" selection-end-line="23" selection-end-column="0" />
-        </state>
-      </provider>
-    </entry>
     <entry file="file://$PROJECT_DIR$/app/forms.py">
       <provider selected="true" editor-type-id="text-editor">
         <state relative-caret-position="180">
@@ -1015,43 +676,52 @@
       <provider selected="true" editor-type-id="text-editor">
         <state relative-caret-position="177">
           <caret line="394" column="0" lean-forward="true" selection-start-line="394" selection-start-column="0" selection-end-line="394" selection-end-column="0" />
-          <folding />
-        </state>
-      </provider>
-    </entry>
-    <entry file="file://$PROJECT_DIR$/server.py">
-      <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="192">
-          <caret line="8" column="13" lean-forward="true" selection-start-line="8" selection-start-column="13" selection-end-line="8" selection-end-column="13" />
-          <folding>
-            <element signature="e#0#19#0" expanded="true" />
-          </folding>
-        </state>
-      </provider>
-    </entry>
-    <entry file="file://$PROJECT_DIR$/xstar.py">
-      <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="48">
-          <caret line="2" column="40" lean-forward="true" selection-start-line="2" selection-start-column="40" selection-end-line="2" selection-end-column="40" />
-          <folding />
         </state>
       </provider>
     </entry>
     <entry file="file://$PROJECT_DIR$/config.py">
       <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="336">
-          <caret line="14" column="0" lean-forward="true" selection-start-line="14" selection-start-column="0" selection-end-line="14" selection-end-column="0" />
+        <state relative-caret-position="384">
+          <caret line="16" column="0" lean-forward="true" selection-start-line="16" selection-start-column="0" selection-end-line="16" selection-end-column="0" />
           <folding />
         </state>
       </provider>
     </entry>
     <entry file="file://$PROJECT_DIR$/installer.py">
       <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="363">
-          <caret line="120" column="32" lean-forward="true" selection-start-line="120" selection-start-column="32" selection-end-line="120" selection-end-column="32" />
+        <state relative-caret-position="435">
+          <caret line="125" column="22" lean-forward="true" selection-start-line="125" selection-start-column="22" selection-end-line="125" selection-end-column="22" />
           <folding>
             <element signature="e#0#23#0" expanded="true" />
           </folding>
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/server.py">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="192">
+          <caret line="8" column="13" lean-forward="false" selection-start-line="8" selection-start-column="13" selection-end-line="8" selection-end-column="13" />
+          <folding>
+            <element signature="e#0#19#0" expanded="true" />
+          </folding>
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/app/__init__.py">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="422">
+          <caret line="23" column="0" lean-forward="false" selection-start-line="23" selection-start-column="0" selection-end-line="23" selection-end-column="0" />
+          <folding>
+            <element signature="e#0#169#0" expanded="true" />
+          </folding>
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/xstar.py">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="24">
+          <caret line="1" column="0" lean-forward="true" selection-start-line="1" selection-start-column="0" selection-end-line="1" selection-end-column="0" />
+          <folding />
         </state>
       </provider>
     </entry>

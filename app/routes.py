@@ -1160,6 +1160,10 @@ def admin_alacarte_order_edit(order_id):
 
     condition_key = cuisines.get(subtype)
 
+    if condition_key is None:
+
+        condition_key = "alacarte"
+
     referrer = request.headers.get('Referer')
 
     context = dict(order=order,
@@ -4075,6 +4079,10 @@ def alacarte_order_edit(order_id):
                 "jpbuffet": "jp_buffet"}
 
     condition_key = cuisines.get(subtype)
+
+    if condition_key is None:
+
+        condition_key = "alacarte"
 
     context = dict(title=title,
                    order=order,
@@ -7224,7 +7232,7 @@ def mongo_guest_order(table_name, seat_number, is_kid):
 
             items['label'] = "Erwachsen Buffet"
 
-        else:
+        elif items.get('is_kid') == 1:
 
             items['label'] = "Kinder Buffet"
 

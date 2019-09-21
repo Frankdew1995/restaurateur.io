@@ -866,3 +866,5 @@ def start_ngrok(port, bit_version):
         json.dump(data, file, indent=2)
 
     return tunnel_url
+
+# print(start_ngrok(port=5000, bit_version=32))

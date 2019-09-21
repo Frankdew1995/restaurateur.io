@@ -25,7 +25,7 @@
       }
     },
     "ORDER_LIMIT": 5,
-    "BUFFET_MODE": "jpbuffet",
+    "BUFFET_MODE": "mongo",
     "PUBLIC_TUNNEL_URL": "http://ffee826e.eu.ngrok.io"
   }
 ]

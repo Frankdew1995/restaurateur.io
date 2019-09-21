@@ -174,7 +174,7 @@
           <tbody>
             {% for dish, details in dishes.items() %}
             <tr>
-              <th scope="row">{{details.get('class_name')}}</th>
+              <th scope="row">{{details.get('class_name', "")}}</th>
               <td>{{ details.get('label') if details.get('label') else dish }}</td>
               <td>{{details.get('quantity')}}</td>
               <td>{{ formatter(details.get('price')) }}</td>

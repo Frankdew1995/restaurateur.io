@@ -1278,7 +1278,7 @@ def admin_edit_buffet_order(order_id):
                 new = {f"{update_key}_{seat_number}":
                            {"quantity": 1,
                             "price": buffet_price_adult,
-                            "class_name": None,
+                            "class_name": "Buffet",
                             "order_by": seat_number,
                             "is_kid": buffet_type,
                             "label": "Erwachsen Buffet"}
@@ -1293,7 +1293,7 @@ def admin_edit_buffet_order(order_id):
                 new = {f"{update_key}_{seat_number}":
                            {"quantity": 1,
                             "price": buffet_price_adult,
-                            "class_name": None,
+                            "class_name": "Buffet",
                             "order_by": seat_number,
                             "is_kid": buffet_type,
                             "label": "Erwachsen Buffet"}
@@ -1307,7 +1307,7 @@ def admin_edit_buffet_order(order_id):
                 new = {f"{update_key}_{seat_number}":
                            {"quantity": 1,
                             "price": buffet_price_kid,
-                            "class_name": None,
+                            "class_name": "Buffet",
                             "order_by": seat_number,
                             "is_kid": buffet_type,
                             "label": "Kinder Buffet"}
@@ -1322,7 +1322,7 @@ def admin_edit_buffet_order(order_id):
                 new = {f"{update_key}_{seat_number}":
                            {"quantity": 1,
                             "price": buffet_price_kid,
-                            "class_name": None,
+                            "class_name": "Buffet",
                             "order_by": seat_number,
                             "is_kid": buffet_type,
                             "label": "Kinder Buffet"}
@@ -3167,15 +3167,6 @@ def alacarte_navigate(table_name, seat_number):
 
     # Query Tables
     table = Table.query.filter_by(name=table_name).first_or_404()
-
-    if not is_business_hours():
-
-        context = dict(title="Gastnavigation",
-                       table_name=table_name,
-                       seat_number=seat_number,
-                       is_business_hours=is_business_hours())
-
-        return render_template("guest_index.html", **context)
 
     # if table existing and table is on
     if table and table.is_on:
@@ -7220,7 +7211,7 @@ def mongo_guest_order(table_name, seat_number, is_kid):
         "mongo_buffet_"+seat_number:
             {'quantity': 1,
              'price': buffet_price,
-             'class_name': "Food",
+             'class_name': "Buffet",
              'order_by': seat_number,
              'is_kid': is_kid}
     }
@@ -7240,7 +7231,8 @@ def mongo_guest_order(table_name, seat_number, is_kid):
     orders = db.session.query(Order).filter(
         Order.type == "In",
         Order.isPaid == False,
-        Order.table_name == table_name).order_by(Order.timeCreated.desc()).all()
+        Order.table_name == table_name,
+        Order.isCancelled == False).order_by(Order.timeCreated.desc()).all()
 
     if len(orders) > 0:
 
@@ -7292,50 +7284,50 @@ def mongo_guest_order(table_name, seat_number, is_kid):
 
             cur_items = json.loads(order.items)
 
-            if "mongo_buffet" + seat_number not in cur_items.keys():
+            # if "mongo_buffet_" + seat_number not in cur_items.keys():
 
-                dishes = order.dishes
+            dishes = order.dishes
 
-                if not dishes:
+            if not dishes:
 
-                    dishes = []
+                dishes = []
 
-                else:
+            else:
 
-                    dishes = json.loads(order.dishes)
+                dishes = json.loads(order.dishes)
 
-                dishes.append({datetime.timestamp(now): {"items": details,
-                                                         "order_id": order.id,
-                                                         "order_by": seat_number,
-                                                         "is_kid": is_kid,
-                                                         "subtype":"mongo"
-                                                         }})
+            dishes.append({datetime.timestamp(now): {"items": details,
+                                                     "order_id": order.id,
+                                                     "order_by": seat_number,
+                                                     "is_kid": is_kid,
+                                                     "subtype":"mongo"
+                                                     }})
 
-                order.dishes = json.dumps(dishes)
+            order.dishes = json.dumps(dishes)
 
-                cur_dishes = cur_items.keys()
+            cur_dishes = cur_items.keys()
 
-                for dish, items in details.items():
+            for dish, items in details.items():
 
-                    if dish in cur_dishes:
+                if dish not in cur_dishes:
 
-                        # Buffet qty can only be 1
-                        cur_items[dish]['quantity'] = 1
+                    # Buffet qty can only be 1
+                    cur_items[dish] = items
 
-                    else:
+                # else:
+                #
+                #     cur_items[dish] = items
 
-                        cur_items[dish] = items
+            order.items = json.dumps(cur_items)
 
-                order.items = json.dumps(cur_items)
+            order.totalPrice = sum([i[1].get('quantity') * i[1].get('price')
+                                    for i in cur_items.items()])
 
-                order.totalPrice = sum([i[1].get('quantity') * i[1].get('price')
-                                        for i in cur_items.items()])
+            db.session.commit()
 
-                db.session.commit()
+            order.endTotal = order.totalPrice
 
-                order.endTotal = order.totalPrice
-
-                db.session.commit()
+            db.session.commit()
 
     else:
 
@@ -7359,7 +7351,7 @@ def mongo_guest_order(table_name, seat_number, is_kid):
                                                           "order_id": cur_max_id + 1,
                                                           "order_by": seat_number,
                                                           "is_kid": is_kid,
-                                                          "subtype":"mongo"
+                                                          "subtype": "mongo"
                                                           }}]),
             subtype="mongo"
         )
@@ -7513,16 +7505,28 @@ def mongo_order_drinks(table_name, seat_number, is_kid):
         "mongo_buffet_"+seat_number:
             {'quantity': 1,
              'price': buffet_price,
-             'class_name': "Food",
+             'class_name': "Buffet",
              'order_by': seat_number,
              'is_kid': is_kid}
     }
+
+    # Writing remark/label for mongo buffet
+    for dish, items in details.items():
+
+        if items.get('is_kid') == 0:
+
+            items['label'] = "Erwachsen Buffet"
+
+        elif items.get('is_kid') == 1:
+
+            items['label'] = "Kinder Buffet"
 
     # Check if this table is already associated with an open order
     orders = db.session.query(Order).filter(
         Order.type == "In",
         Order.isPaid == False,
-        Order.table_name == table_name).order_by(Order.timeCreated.desc()).all()
+        Order.table_name == table_name,
+        Order.isCancelled == False).order_by(Order.timeCreated.desc()).all()
 
     if len(orders) > 0:
 
@@ -7562,50 +7566,43 @@ def mongo_order_drinks(table_name, seat_number, is_kid):
 
             cur_items = json.loads(order.items)
 
-            if "mongo_buffet" + seat_number not in cur_items.keys():
+            dishes = order.dishes
 
-                dishes = order.dishes
+            if not dishes:
 
-                if not dishes:
+                dishes = []
 
-                    dishes = []
+            else:
 
-                else:
+                dishes = json.loads(order.dishes)
 
-                    dishes = json.loads(order.dishes)
+            dishes.append({datetime.timestamp(now): {"items": details,
+                                                     "order_id": order.id,
+                                                     "order_by": seat_number,
+                                                     "is_kid": is_kid,
+                                                     "subtype":"mongo"
+                                                     }})
 
-                dishes.append({datetime.timestamp(now): {"items": details,
-                                                         "order_id": order.id,
-                                                         "order_by": seat_number,
-                                                         "is_kid": is_kid,
-                                                         "subtype":"mongo"
-                                                         }})
+            order.dishes = json.dumps(dishes)
 
-                order.dishes = json.dumps(dishes)
+            cur_dishes = cur_items.keys()
 
-                cur_dishes = cur_items.keys()
+            for dish, items in details.items():
 
-                for dish, items in details.items():
+                if dish not in cur_dishes:
 
-                    if dish in cur_dishes:
+                    cur_items[dish] = items
 
-                        # Buffet qty can only be 1
-                        cur_items[dish]['quantity'] = 1
+            order.items = json.dumps(cur_items)
 
-                    else:
+            order.totalPrice = sum([i[1].get('quantity') * i[1].get('price')
+                                    for i in cur_items.items()])
 
-                        cur_items[dish] = items
+            db.session.commit()
 
-                order.items = json.dumps(cur_items)
+            order.endTotal = order.totalPrice
 
-                order.totalPrice = sum([i[1].get('quantity') * i[1].get('price')
-                                        for i in cur_items.items()])
-
-                db.session.commit()
-
-                order.endTotal = order.totalPrice
-
-                db.session.commit()
+            db.session.commit()
 
     else:
 
@@ -8319,7 +8316,7 @@ def jpbuffet_guest_checkout():
                 # Order first time
                 details["jp_buffet_" + seat_number] = {'quantity': 1,
                                                        'price': buffet_price,
-                                                       'class_name': None,
+                                                       'class_name': "Buffet",
                                                        'order_by': seat_number,
                                                        'is_kid': is_kid}
                 if is_kid == 0:
@@ -8452,7 +8449,7 @@ def jpbuffet_guest_checkout():
 
                     cur_items["jp_buffet_" + seat_number] = {'quantity': 1,
                                                              'price': buffet_price,
-                                                             'class_name': None,
+                                                             'class_name': "Buffet",
                                                              'order_by': seat_number,
                                                              'is_kid': is_kid}
                     if is_kid == 0:
@@ -8488,7 +8485,7 @@ def jpbuffet_guest_checkout():
             # Order first time
             details["jp_buffet_" + seat_number] = {'quantity': 1,
                                                    'price': buffet_price,
-                                                   'class_name': None,
+                                                   'class_name': "Food",
                                                    'order_by': seat_number,
                                                    'is_kid': is_kid}
             if is_kid == 0:
@@ -8802,7 +8799,7 @@ def guest_drinks_checkout():
                 # Order first time
                 details["jp_buffet_" + seat_number] = {'quantity': 1,
                                                        'price': buffet_price,
-                                                       'class_name': None,
+                                                       'class_name': "Buffet",
                                                        'order_by': seat_number,
                                                        'is_kid': is_kid}
                 if is_kid == 0:
@@ -8891,7 +8888,7 @@ def guest_drinks_checkout():
 
                     cur_items["jp_buffet_" + seat_number] = {'quantity': 1,
                                                              'price': buffet_price,
-                                                             'class_name': None,
+                                                             'class_name': "Buffet",
                                                              'order_by': seat_number,
                                                              'is_kid': is_kid}
                     if is_kid == 0:
@@ -8926,7 +8923,7 @@ def guest_drinks_checkout():
             # Order first time
             details["jp_buffet_" + seat_number] = {'quantity': 1,
                                                    'price': buffet_price,
-                                                   'class_name': None,
+                                                   'class_name': "Buffet",
                                                    'order_by': seat_number,
                                                    'is_kid': is_kid}
             if is_kid == 0:
@@ -9163,7 +9160,7 @@ def jpbuffet_special_checkout():
                 # Order first time
                 details["jp_buffet_" + seat_number] = {'quantity': 1,
                                                        'price': buffet_price,
-                                                       'class_name': None,
+                                                       'class_name': "Buffet",
                                                        'order_by': seat_number,
                                                        'is_kid': is_kid}
                 if is_kid == 0:
@@ -9251,7 +9248,7 @@ def jpbuffet_special_checkout():
                     # Order first time
                     cur_items["jp_buffet_" + seat_number] = {'quantity': 1,
                                                              'price': buffet_price,
-                                                             'class_name': None,
+                                                             'class_name': "Buffet",
                                                              'order_by': seat_number,
                                                              'is_kid': is_kid}
                     if is_kid == 0:
@@ -9287,7 +9284,7 @@ def jpbuffet_special_checkout():
             # Order first time
             details["jp_buffet_" + seat_number] = {'quantity': 1,
                                                    'price': buffet_price,
-                                                   'class_name': None,
+                                                   'class_name': "Buffet",
                                                    'order_by': seat_number,
                                                    'is_kid': is_kid}
 

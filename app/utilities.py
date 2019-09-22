@@ -22,6 +22,7 @@ from babel.numbers import format_decimal, format_percent
 
 import pusher
 import requests
+import sys, platform
 
 # Save Image and return image path
 def store_picture(file):
@@ -829,11 +830,39 @@ def trigger_event(channel, event, response):
     channels_client.trigger(channel, event, response)
 
 
-def start_ngrok(port, bit_version):
+def start_ngrok(port):
 
-    executable = str(Path(app.root_path) / 'utils' / 'ngrok' / str(bit_version) / 'ngrok')
+    # Mac OS
+    if platform.system() == "Darwin":
 
-    # ngrok = subprocess.Popen([executable, 'http', '-region=eu', str(port)])
+        exec_path = str(Path(app.root_path) / 'utils' / 'ngrok' / "mac")
+
+        os.chdir(exec_path)
+
+        executable = './ngrok'
+
+        subprocess.Popen([executable, 'http', '-region=eu', str(port)])
+
+    # Win32 or Linux
+    else:
+
+        bit_version = None
+
+        executable = None
+
+        if sys.maxsize > 2**32:
+
+            bit_version = 64
+            executable = str(Path(app.root_path) / 'utils'
+                             / 'ngrok' / str(bit_version) / 'ngrok')
+
+        else:
+
+            bit_version = 32
+            executable = str(Path(app.root_path) / 'utils'
+                             / 'ngrok' / str(bit_version) / 'ngrok')
+
+        subprocess.Popen([executable, 'http', '-region=eu', str(port)])
 
     localhost_url = "http://localhost:4040/api/tunnels"  # Url with tunnel details
     time.sleep(1)
@@ -854,6 +883,6 @@ def start_ngrok(port, bit_version):
 
         json.dump(data, file, indent=2)
 
-    return tunnel_url
+    print(tunnel_url)
 
-print(start_ngrok(port=5000, bit_version=32))
+    return tunnel_url

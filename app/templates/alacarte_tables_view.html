@@ -30,6 +30,11 @@
       margin-top:30px;
     }
 
+    #tableName {
+      margin-right: 5px;
+      font-size: 1.5rem;
+    }
+
 
 </style>
 {% endblock %}
@@ -104,10 +109,22 @@
       <div class="card" id={{ table.name }} >
         <a href={{ url_for('view_table', table_name=table.name) }} style="color: #5a5c69!important">
         <div class="card-body">
-          <center>
-            <h5 class="card-title">{{table.name}}</h5>
-          </center>
+          <!-- <center> -->
+
+            <p>
+              <span id="tableName">{{table.name}}</span>
+              <!-- if this table is buffet -->
+              {% if table2kidsnadults.get(table.name).get('is_buffet') %}
+              <span><i class="fas fa-baby"></i> {{table2kidsnadults.get(table.name).get('num_kids')}}</span>
+              <span><i class="fas fa-user"></i> {{table2kidsnadults.get(table.name).get('num_adults')}}</span>
+              {% endif %}
+            </p>
+
+
+
+          <!-- </center> -->
         </div>
+
         </a>
       </div>
       {% endfor %}

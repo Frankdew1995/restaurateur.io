@@ -3677,6 +3677,7 @@ def waiter_admin():
     tables = db.session.query(Table).all()
 
     for table in tables:
+
         container = json.loads(table.container)
         container['isCalled'] = False
         container['payCalled'] = False
@@ -3699,19 +3700,49 @@ def waiter_admin():
     orders = Order.query.filter(
         Order.type == "In",
         Order.isPaid == False,
-        Order.isCancelled == False ).all()
+        Order.isCancelled == False).all()
 
     # Filtering only orders which happened the same day.(TZ: Berlin)
-    orders = [order for order in orders if
-              order.timeCreated.date() == today and
-                   not order.isCancelled]
-    # Order is not cancelled added
+    orders = [order for order in orders if order.timeCreated.date() == today]
 
     from collections import OrderedDict
     sections = {letter: letter + u"区" for letter in letters}
 
     # Currently Open Tables
     open_tables = list(set([order.table_name for order in orders]))
+
+    # Recording the table info
+
+    table2kidsnadults = {}
+
+    for order in orders:
+
+        dishes = json.loads(order.items)
+
+        table = order.table_name
+
+        # Check if an order is an buffet order or assiciated with a buffet order
+        def is_buffet():
+            return any(["jp_buffet" or "mongo_buffet"
+                        in key for key in dishes.keys()])
+
+        kids_seats = [i for i in dishes.items()
+                      if i[1].get('label') and i[1].get('is_kid') == 1]
+
+        adults_seats = [i for i in dishes.items()
+                        if i[1].get('label') and i[1].get('is_kid') == 0]
+
+        number_of_kids = len(kids_seats)
+
+        number_of_adults = len(adults_seats)
+
+        table2kidsnadults.update({
+            table: {
+                "num_kids": number_of_kids,
+                "num_adults": number_of_adults,
+                "is_buffet": is_buffet()
+            }
+        })
 
     sections_2_tables = {section: [table
                         for table in Table.query.filter_by(section=section).all()
@@ -3770,7 +3801,8 @@ def waiter_admin():
                            selected_sections=selected_sections,
                            company_name=company_info.get('company_name'),
                            title="订单查看",
-                           referrer=referrer)
+                           referrer=referrer,
+                           table2kidsnadults=table2kidsnadults)
 
 
 # Waiter views a table's aggregated order summary
@@ -3963,7 +3995,7 @@ def view_table(table_name):
             cuisines = {"mongo": u"蒙古餐",
                         "jpbuffet": u"日本餐"}
 
-            # Check if an order is an buffte order or assiciated with a buffet order
+            # Check if an order is an buffet order or assiciated with a buffet order
             def is_buffet():
 
                 return any(["jp_buffet" or "mongo_buffet"
@@ -4130,10 +4162,25 @@ def update_alacarte_order():
                  'class_name': class_dict.get(detail.get('item'))}
             for detail in details}
 
-        prices = [i[1].get('quantity') * i[1].get('price') for i in details.items()]
+        cur_items = json.loads(order.items)
+
+        for dish, items in details.items():
+
+            cur_items.update({dish: items})
+
+        dishes = [dish for dish in cur_items.keys() if "mongo_buffet" not in dish]
+
+        # Dishes that've been removed
+        del_dishes = [dish for dish in dishes if dish not in details.keys()]
+
+        for dish in del_dishes:
+
+            cur_items.pop(dish, None)
+
+        prices = [i[1].get('quantity') * i[1].get('price') for i in cur_items.items()]
 
         order.totalPrice = sum(prices)
-        order.items = json.dumps(details)
+        order.items = json.dumps(cur_items)
 
         db.session.commit()
 
@@ -7009,14 +7056,6 @@ def guest_navigate(table_name, seat_number):
                 for batch in batches:
 
                     last_ordered = list(batch.keys())[0]
-
-                    # The guest didn't order buffet
-                    if batch.get(last_ordered).get('order_by') == seat_number \
-                            and not batch.get(last_ordered).get('subtype'):
-
-                        return redirect(url_for('alacarte_navigate',
-                                                table_name=table_name,
-                                                seat_number=seat_number))
 
                     if batch.get(last_ordered).get('order_by') == seat_number \
                             and batch.get(last_ordered).get('subtype') == "jpbuffet":

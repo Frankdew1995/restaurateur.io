@@ -9,9 +9,6 @@ timezone = "Europe/Berlin"
 
 today = datetime.now(tz=pytz.timezone(timezone)).date()
 
-orders = db.session.query(Order).order_by(Order.timeCreated.desc()).all()
+orders = db.session.query(Order).all()
 
-
-items = json.loads(orders[0].dishes)
-
-print(items)
+users = db.session.query(User).all()

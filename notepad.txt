@@ -122,3 +122,4 @@ if "jp_buffet_" + seat_number not in cur_dishes:
 
 total_price = sum([i[1].get('quantity') * i[1].get('price')
                    for i in details.items()])
+{{ url_for('alacarte_orders_manage') }}

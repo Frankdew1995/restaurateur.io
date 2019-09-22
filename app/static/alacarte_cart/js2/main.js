@@ -133,7 +133,7 @@
                       ${productName}
                     </a>
                   </h3>
-                  <span class="cd-cart__price">${"€" + price * quantity}</span>
+                  <span class="cd-cart__price">${"€" + (price * quantity).toLocaleString('de-DE') + ",00"}</span>
                   <div class="cd-cart__actions">
                     <a href="#0" class="cd-cart__delete-item">
                       Delete
@@ -154,7 +154,7 @@
                           isSelected(value=8) +
                           isSelected(value=9) +
                         `</select>
-                        
+
                       </span>
                     </div>
                   </div>
@@ -180,7 +180,7 @@
 
       const totalPrice = document.getElementById('priceTotal');
 
-      totalPrice.textContent = finalTotal;
+      totalPrice.textContent = finalTotal.toLocaleString('de-DE') + ",00";
 
 
 
@@ -292,7 +292,8 @@
 				}
 			}
 
-			cartTotal.innerText = price.toFixed(2);
+      var price = price.toFixed(2);
+			cartTotal.innerText = price;
 			cartCountItems[0].innerText = quantity;
 			cartCountItems[1].innerText = quantity+1;
 		};

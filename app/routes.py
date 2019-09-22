@@ -93,38 +93,45 @@ def page_not_found(e):
 # Login Route
 @app.route("/login", methods=["GET", "POST"])
 def login():
-
     form = LoginForm()
 
     referrer = request.headers.get('Referer')
 
     if current_user.is_authenticated:
 
+        print("Authenticated!")
+
         # Check whether this account is in use
         if json.loads(current_user.container).get("inUse"):
 
+            # Boss Account
+            if current_user.permissions > 5:
+
+                print("I'm boss")
+
+                return redirect(url_for("index"))
+
             # According permission, route the user to the corresponding page
-            if current_user.permissions <= 3:
+            if current_user.permissions <= 5:
 
                 # Admin account
-                if current_user.permissions == 2:
+                if current_user.permissions == 0:
 
-                    return redirect(url_for("index"))
+                    print("I'm a takeaway casher")
+
+                    return redirect(url_for("takeaway_orders_manage"))
 
                 # Waiter account
-                elif current_user.permissions == 1:
+                if current_user.permissions == 1:
+
+                    print("I'm a waiter")
 
                     return redirect(url_for("waiter_admin"))
 
                 # Take away Account
-                elif current_user.permissions == 0:
+                if current_user.permissions == 2 or current_user.permissions == 3:
 
-                    return redirect(url_for("takeaway_orders_manage"))
-
-            # Boss Account
-            else:
-
-                return redirect(url_for('index'))
+                    return redirect(url_for("index"))
 
         else:
 
@@ -135,7 +142,6 @@ def login():
         user = User.query.filter_by(username=form.username.data).first()
 
         if user is None or not user.check_password(password=form.password.data):
-
             flash(u"密码或者用户名无效!")
             return redirect(url_for('login'))
 
@@ -146,30 +152,43 @@ def login():
         # Check whether this account is in use
         if json.loads(user.container).get("inUse"):
 
+            print(f"This account {user.username} is valid")
+
+            # Boss account
+
+            if user.permissions > 5:
+
+                print("I'm boss!")
+
+                return redirect(url_for('index'))
+
             # According permission, route the user to the corresponding page
-            if user.permissions <= 3:
+            if user.permissions <= 5:
 
                 # Admin account
-                if user.permissions == 2:
+                if user.permissions == 0:
 
-                    return redirect(url_for("index"))
+                    print("I'm takeaway casher!")
+
+                    return redirect(url_for("takeaway_orders_manage"))
 
                 # Waiter account
-                elif user.permissions == 1:
+                if user.permissions == 1:
+
+                    print("I'm a waiter")
 
                     return redirect(url_for("waiter_admin"))
 
                 # Take away Account
-                elif user.permissions == 0:
+                elif user.permissions == 2 or user.permissions == 3:
 
-                    return redirect(url_for("takeaway_orders_manage"))
+                    print("I'm administrator!")
 
-            # Boss Account
-            else:
-                return redirect(url_for('index'))
+                    return redirect(url_for("index"))
 
         else:
 
+            print("My account is suspended")
             return render_template('suspension_error.html', referrer=referrer)
 
     return render_template("login.html",

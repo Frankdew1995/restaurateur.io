@@ -6526,7 +6526,7 @@ def view_meallists():
     cur_orders = [order for order in orders if
                   order.timeCreated.date() == today]
 
-    cuisines = {"In": "InHouse",
+    cuisines = {"In": "Im Haus",
                 "Out": u"外卖"}
 
     type_dict = {order.id: cuisines.get(order.type) for order in cur_orders}

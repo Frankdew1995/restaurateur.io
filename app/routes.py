@@ -6929,181 +6929,22 @@ def switch_printer():
         return jsonify({'status': 200})
 
 
-# Index page for all cuisines
+# Index page only for A La Carte
 @app.route('/guest/navigation/<string:table_name>/<string:seat_number>')
 def guest_navigate(table_name, seat_number):
 
-    info = json_reader(str(Path.cwd() / 'app' / 'settings' / 'config.json'))
-
-    hours = info.get('BUSINESS_HOURS')
-
-    buffet = info.get('BUFFET_MODE').strip()
-
-    is_jp_buffet = None
-
-    if buffet == "jpbuffet":
-
-        is_jp_buffet = True
-
-    elif buffet == "mongo":
-
-        is_jp_buffet = False
-
-    am_start = hours.get('MORNING', '').get('START', '').split(":")
-    am_end = hours.get('MORNING', '').get('END', '').split(":")
-
-    pm_start = hours.get('EVENING', '').get('START', '').split(":")
-    pm_end = hours.get('EVENING', '').get('END', '').split(":")
-
-    morning_start = time(int(am_start[0]), int(am_start[1]))
-
-    morning_end = time(int(am_end[0]), int(am_end[1]))
-
-    evening_start = time(int(pm_start[0]), int(pm_start[1]))
-
-    evening_end = time(int(pm_end[0]), int(pm_end[1]))
-
-    # Create a visit object from model and record it in db
-    visit = Visit(count=1,
-                  timeVisited=datetime.now(pytz.timezone('Europe/Berlin')))
-
-    db.session.add(visit)
-    db.session.commit()
-
-    # Query Tables
-    table = Table.query.filter_by(name=table_name).first_or_404()
+    # Query this table
+    table = Table.query.filter_by(name=table_name).first()
 
     # if table existing and table is on
-    if not table or not table.is_on:
-        msg = "Diese Tisch steht noch nicht zu Verfuegung. " \
-              "Bitte melden Sie sich bei Gast Service"
+    if table is None or not table.is_on:
+
+        msg = "Diese Tisch steht noch nicht zu Verfuegung. Bitte melden Sie sich bei Gast Service"
         return render_template('table404.html', msg=msg)
 
-    orders = db.session.query(Order).filter(
-        Order.type == "In",
-        Order.isPaid == False,
-        Order.isCancelled == False,
-        Order.table_name == table_name).order_by(Order.timeCreated.desc()).all()
-
-    if len(orders) > 0:
-
-        order = orders[0]
-
-        if order.timeCreated.date() == today:
-
-            batches = json.loads(order.dishes)
-
-            active_seats = []
-
-            for batch in batches:
-
-                last_ordered = list(batch.keys())[0]
-
-                seat = batch.get(last_ordered).get('order_by')
-
-                active_seats.append(seat)
-
-            # If the current seat has already ordered
-            if seat_number in active_seats:
-
-                for batch in batches:
-
-                    last_ordered = list(batch.keys())[0]
-
-                    # The guest didn't order buffet
-                    if batch.get(last_ordered).get('order_by') == seat_number \
-                            and not batch.get(last_ordered).get('subtype'):
-
-                        return redirect(url_for('alacarte_navigate',
-                                                table_name=table_name,
-                                                seat_number=seat_number))
-
-                    if batch.get(last_ordered).get('order_by') == seat_number \
-                            and batch.get(last_ordered).get('subtype') == "jpbuffet":
-
-                        if int(batch.get(last_ordered).get('is_kid')) == 0:
-
-                            return redirect(url_for('jpbuffet_index',
-                                                    table_name=table_name,
-                                                    seat_number=seat_number,
-                                                    is_kid=0,
-                                                    ))
-
-                        return redirect(url_for('jpbuffet_index',
-                                                    table_name=table_name,
-                                                    seat_number=seat_number,
-                                                    is_kid=1))
-
-                    elif batch.get(last_ordered).get('order_by') == seat_number \
-                            and batch.get(last_ordered).get('subtype') == "mongo":
-
-                        if int(batch.get(last_ordered).get('is_kid')) == 0:
-
-                            return redirect(url_for('mongo_index',
-                                                    table_name=table_name,
-                                                    seat_number=seat_number,
-                                                    is_kid=0))
-
-                        return redirect(url_for('mongo_index',
-                                                table_name=table_name,
-                                                seat_number=seat_number,
-                                                is_kid=1))
-
-    from string import ascii_uppercase
-
-    letters = list(ascii_uppercase)[:8]
-
-    weekday2letter = dict(zip(list(range(1, 7)), letters))
-
-    # Add the index alphabet for Sunday
-    weekday2letter[0] = "G"
-
-    cur_week_num = int(datetime.now(tz=pytz.timezone(timezone)).strftime("%w"))
-
-    buffet_price_kid = None
-
-    buffet_price_adult = None
-
-    # Read the printer setting data from the json file
-    with open(str(Path(app.root_path) / "settings" / "buffet_price.json"),
-              encoding="utf8") as file:
-        data = file.read()
-
-    data = json.loads(data)
-
-    price_info = data.get(weekday2letter.get(cur_week_num))
-
-    if morning_start <= datetime.now(tz=pytz.timezone(timezone)).time() <= morning_end:
-
-        buffet_price_kid = price_info.get('kid').get('noon')
-
-        buffet_price_adult = price_info.get('adult').get('noon')
-
-    elif evening_start <= datetime.now(tz=pytz.timezone(timezone)).time() <= evening_end:
-
-        buffet_price_kid = price_info.get('kid').get('after')
-
-        buffet_price_adult = price_info.get('adult').get('after')
-
-    if not is_business_hours():
-
-        context = dict(title="Gastnavigation",
-                       table_name=table_name,
-                       seat_number=seat_number,
-                       is_business_hours=is_business_hours(),
-                       is_jp_buffet=is_jp_buffet)
-
-        return render_template("guest_index.html", **context)
-
-    context = dict(title="Gastnavigation",
-                   table_name=table_name,
-                   seat_number=seat_number,
-                   buffet_price_kid=formatter(buffet_price_kid),
-                   buffet_price_adult=formatter(buffet_price_adult),
-                   is_business_hours=is_business_hours(),
-                   is_jp_buffet=is_jp_buffet)
-
-    return render_template("guest_index.html", **context)
+    return redirect(url_for('alacarte_navigate',
+                            table_name=table_name,
+                            seat_number=seat_number))
 
 
 @app.route('/mongo/index/<string:table_name>/<string:seat_number>/<int:is_kid>')

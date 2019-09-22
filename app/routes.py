@@ -1369,7 +1369,7 @@ def admin_update_alacarte_order():
 
         order_id = data.get('orderId')
 
-        order = db.session.query(Order).get_or_404(int(order_id))
+        order = db.session.query(Order).get(int(order_id))
 
         price_before = order.totalPrice
 
@@ -1403,6 +1403,11 @@ def admin_update_alacarte_order():
                  'price': float(price_dict.get(detail.get('item'))),
                  'class_name': class_dict.get(detail.get('item'))}
             for detail in details}
+
+        buffet_details = {}
+
+        cur_items = json.loads(order.items)
+
 
         prices = [i[1].get('quantity') * i[1].get('price') for i in details.items()]
 
@@ -4094,7 +4099,7 @@ def update_alacarte_order():
 
     logging = {}
 
-    if request.method =="POST":
+    if request.method == "POST":
 
         data = request.get_json('orderId')
 
@@ -4102,8 +4107,7 @@ def update_alacarte_order():
 
         order_id = data.get('orderId')
 
-        order = db.session.query(Order).get_or_404(int(order_id))
-
+        order = db.session.query(Order).get(int(order_id))
 
         logging['before'] = "\n".join([f"{key}x{items.get('quantity')}" \
                                        for (key, items) in json.loads(order.items).items()])
@@ -4115,25 +4119,40 @@ def update_alacarte_order():
 
         price_dict = {
             i.get('item'):
-                Food.query.filter_by(name=i.get('item')).first_or_404().price_gross
+                Food.query.filter_by(name=i.get('item')).first().price_gross
                       for i in details}
 
         class_dict = {
             i.get('item'):
-                Food.query.filter_by(name=i.get('item')).first_or_404().class_name
+                Food.query.filter_by(name=i.get('item')).first().class_name
                       for i in details}
 
         details = {
-            detail.get('item'):
-                {'quantity': int(detail.get('quantity')),
-                 'price': float(price_dict.get(detail.get('item'))),
-                 'class_name': class_dict.get(detail.get('item'))}
-            for detail in details}
+            i.get('item'):
+                {'quantity': int(i.get('quantity')),
+                 'price': price_dict.get(i.get('item')),
+                 'class_name': class_dict.get(i.get('item'))}
+            for i in details}
 
-        prices = [i[1].get('quantity') * i[1].get('price') for i in details.items()]
+        cur_items = json.loads(order.items)
+
+        for dish, items in details.items():
+
+            cur_items.update({dish: items})
+
+        dishes = [dish for dish in cur_items.keys() if "jp_buffet" not in dish]
+
+        # Dishes that's been removed
+        del_dishes = [dish for dish in dishes if dish not in details.keys()]
+
+        for dish in del_dishes:
+
+            cur_items.pop(dish, None)
+
+        prices = [i[1].get('quantity') * i[1].get('price') for i in cur_items.items()]
 
         order.totalPrice = sum(prices)
-        order.items = json.dumps(details)
+        order.items = json.dumps(cur_items)
 
         db.session.commit()
 
@@ -7010,14 +7029,6 @@ def guest_navigate(table_name, seat_number):
 
                     last_ordered = list(batch.keys())[0]
 
-                    # The guest didn't order buffet
-                    if batch.get(last_ordered).get('order_by') == seat_number \
-                            and not batch.get(last_ordered).get('subtype'):
-
-                        return redirect(url_for('alacarte_navigate',
-                                                table_name=table_name,
-                                                seat_number=seat_number))
-
                     if batch.get(last_ordered).get('order_by') == seat_number \
                             and batch.get(last_ordered).get('subtype') == "jpbuffet":
 
@@ -7968,7 +7979,7 @@ def jpbuffet_index(table_name, seat_number, is_kid):
         Order.type == "In",
         Order.isPaid == False,
         Order.isCancelled == False,
-        # Order.subtype == "jpbuffet",
+        Order.subtype == "jpbuffet",
         Order.type == "In",
         Order.table_name == table_name).order_by(Order.timeCreated.desc()).all()
 

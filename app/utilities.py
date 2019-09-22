@@ -261,17 +261,6 @@ def receipt_templating(context,
 
         doc = DocxTemplate(temp_file)
 
-        #         logo = str(Path(app.root_path) / 'static' / 'img' / 'logo.png')
-        #
-        # # If logo existing, then inserts the LOGO into receipt
-        # if Path(logo).exists():
-        #
-        #     p = doc.tables[1].rows[0].cells[0].add_paragraph()
-        #
-        #     r = p.add_run()
-        #
-        #     r.add_picture(logo)
-
         doc.render(context)
 
         abs_save_path = str(Path(app.root_path) / 'static' / 'out' / 'receipts' / f'{save_as}.docx')

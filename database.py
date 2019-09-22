@@ -12,3 +12,8 @@ today = datetime.now(tz=pytz.timezone(timezone)).date()
 orders = db.session.query(Order).all()
 
 users = db.session.query(User).all()
+
+
+for user in users:
+
+    print(user.username, user.permissions)

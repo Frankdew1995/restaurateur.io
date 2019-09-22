@@ -845,6 +845,9 @@ def trigger_event(channel, event, response):
 
 def start_ngrok(port):
 
+    root_path = str(Path(app.root_path).parent)
+
+    print(root_path)
     # Mac OS
     if platform.system() == "Darwin":
 
@@ -855,6 +858,8 @@ def start_ngrok(port):
         executable = './ngrok'
 
         subprocess.Popen([executable, 'http', '-region=eu', str(port)])
+
+        os.chdir(root_path)
 
     # Win32 or Linux
     else:
@@ -898,3 +903,29 @@ def start_ngrok(port):
 
     print(tunnel_url)
     return tunnel_url
+
+
+def is_xz_printed(timestamp, r_type):
+
+    r_type = r_type.lower()
+
+    import pickle
+
+    with open(str(Path(app.root_path) / 'cache' / f'{r_type}_bon_settings.pickle'),
+              mode="rb") as pickle_out:
+
+        data = pickle.load(pickle_out)
+
+    printed_timestamps = []
+
+    for record in data:
+
+        print(record)
+
+        key = list(record.keys())[0]
+
+        last_printed = record.get(key).get('lastPrinted')
+        last_timestamp = last_printed.timestamp()
+        printed_timestamps.append(last_timestamp)
+
+    return timestamp in printed_timestamps

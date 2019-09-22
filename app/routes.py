@@ -20,11 +20,13 @@ from .forms import (AddDishForm, StoreSettingForm,
 
 from .utilities import (json_reader, store_picture,
                         generate_qrcode, activity_logger,
-                        qrcode2excel, call2print, receipt_templating,
-                        bar_templating, kitchen_templating,
-                        terminal_templating, x_z_receipt_templating,
-                        table_adder, formatter, is_business_hours,
-                        daily_revenue_templating, trigger_event, pay2print)
+                        qrcode2excel, call2print,
+                        receipt_templating, bar_templating,
+                        kitchen_templating, terminal_templating,
+                        x_z_receipt_templating, table_adder,
+                        formatter, is_business_hours,
+                        daily_revenue_templating, trigger_event,
+                        pay2print)
 
 from pathlib import Path
 import json
@@ -4284,7 +4286,7 @@ def revenue_by_section(section):
 
     paid_orders = db.session.query(Order).filter(
         Order.type == "In",
-        Order.isPaid==True).all()
+        Order.isPaid == True).all()
 
     # Filtering only orders which happened the same day.(TZ: Berlin) + order is not cancelled
     cur_paid_orders = [order for order in paid_orders if order.timeCreated.date()
@@ -4298,7 +4300,7 @@ def revenue_by_section(section):
     revenue['total'] = sum([order.totalPrice for order in cur_paid_section_orders])
 
     revenue['by_card'] = sum([order.totalPrice for order in cur_paid_section_orders if
-                                    json.loads(order.pay_via).get('method')=="Card"])
+                                    json.loads(order.pay_via).get('method') == "Card"])
 
     revenue['by_cash'] = sum([order.totalPrice for order in cur_paid_section_orders if
                                 json.loads(order.pay_via).get('method') == "Cash"])
@@ -4991,7 +4993,7 @@ def print_z_receipt(date_time):
 
     else:
 
-        flash(f"今天已经打印过Z单，当天不能二次打印新的z单，但您可以查看和打印历史Z单.")
+        flash(f"今天已经打印过Z单，当天不能二次打印新的z单，但您可以查看历史Z单.")
         return redirect(url_for('z_receipts_manage'))
 
 

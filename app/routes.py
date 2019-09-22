@@ -106,25 +106,31 @@ def login():
             # Boss Account
             if current_user.permissions > 5:
 
+                print("I'm boss")
+
                 return redirect(url_for("index"))
 
             # According permission, route the user to the corresponding page
-            if current_user.permissions <= 3:
+            if current_user.permissions <= 5:
 
                 # Admin account
-                if current_user.permissions == 2 or 3:
+                if current_user.permissions == 0:
 
-                    return redirect(url_for("index"))
+                    print("I'm a takeaway casher")
+
+                    return redirect(url_for("takeaway_orders_manage"))
 
                 # Waiter account
-                elif current_user.permissions == 1:
+                if current_user.permissions == 1:
+
+                    print("I'm a waiter")
 
                     return redirect(url_for("waiter_admin"))
 
                 # Take away Account
-                elif current_user.permissions == 0:
+                if current_user.permissions == 2 or current_user.permissions == 3:
 
-                    return redirect(url_for("takeaway_orders_manage"))
+                    return redirect(url_for("index"))
 
         else:
 

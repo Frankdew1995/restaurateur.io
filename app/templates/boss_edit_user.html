@@ -37,8 +37,18 @@
             {{ form.username(
               class='form-control',
               style="width: 50%",
+              placeholder='请输入用户名', readonly="readonly") }}
+        </p>
+
+
+        <p>
+            {{ form.alias.label }} <br>
+            {{ form.alias(
+              class='form-control',
+              style="width: 50%",
               placeholder='请输入用户名') }}
         </p>
+
 
         <p>
 
@@ -48,7 +58,18 @@
               style="width: 50%") }}
         </p>
 
-        <p>当前权限:{{user.permissions}}</p>
+        <p>当前权限: {{permissions2accounts.get(user.permissions)}}</p>
+
+
+        <p>
+
+          {{ form.section.label }}<br>
+          {{ form.section(
+              class='form-control',
+              style="width: 50%") }}
+        </p>
+
+        <p>当前负责分区: {{user.section}}</p>
 
         <p>
             {{ form.submit(class='btn btn-danger')}}

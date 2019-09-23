@@ -70,10 +70,7 @@ class AddDishForm(FlaskForm):
     description = TextAreaField(u"菜品描述", validators=[DataRequired()])
     price = FloatField(u"单价", validators=[DataRequired()])
     image = FileField(u"上传图片", validators=[FileAllowed(["jpg", "jpeg", "png"])])
-    eat_manner = RadioField(u"用餐方式", choices=[("special", u"特别餐"),
-                                               ("takeaway", u"外卖"),
-                                              ("jpbuffet", u"自助餐"),
-                                              ])
+    eat_manner = RadioField(u"用餐方式", choices=[("special", u"特别餐")])
 
     submit = SubmitField(u"确认添加")
 
@@ -96,9 +93,7 @@ class EditDishForm(FlaskForm):
     description = TextAreaField(u"菜品描述", validators=[DataRequired()])
     price = FloatField(u"单价", validators=[DataRequired()])
     image = FileField(u"上传图片", validators=[FileAllowed(["jpg", "jpeg", "png"])])
-    eat_manner = RadioField(u"用餐方式", choices=[("special", u"特别餐"),
-                                               ("takeaway", u"外卖"),
-                                              ("jpbuffet", u"·自助餐")])
+    eat_manner = RadioField(u"用餐方式", choices=[("special", u"特别餐")])
 
     submit = SubmitField(u"确认更新")
 
@@ -272,30 +267,41 @@ class DatePickForm(FlaskForm):
 # Registration Form
 class AddUserForm(FlaskForm):
 
-    username = StringField(u'用户名', validators=[DataRequired()])
-    alias = StringField(u'姓名', validators=[DataRequired()])
+    import string
+    letter_string = string.ascii_uppercase
+    letters = [letter for letter in letter_string]
+
+    choices = [(u"外卖", u"外卖"), (u"后台", "后台")]
+
+    choices.extend([(i, i) for i in letters])
+
+    username = StringField(u'用户名', validators=[DataRequired(message="请设置用户名")])
+    alias = StringField(u'姓名', validators=[DataRequired(message="请输入姓名!")])
 
     permissions = SelectField(u'设置权限',
-                             choices=[(2, u"等级2 - 管理员"),
-                                      (3, u"等级3 - 超级管理员（可访问老板页面）")],
-                             validators=[DataRequired()])
+                              choices=[(0, u"权限0 - 外卖"),
+                                       (1, u"权限1 - 跑堂"),
+                                       (2, u"等级2 - 管理员"),
+                                       (3, u"等级3 - 超级管理员（可访问老板页面）")],
+
+                              validators=[DataRequired(message="请选择账号类型!")])
 
     account_type = SelectField(u'设置账户类型',
                              choices=[(0, u"外卖"),
                                       (1, u"跑堂")],
                              validators=[DataRequired()])
 
-    section = SelectMultipleField(u'负责分区',
-                                choices=[],
-                                validators=[DataRequired()])
+    section = SelectField(u'负责分区',
+                                choices=choices,
+                                validators=[DataRequired(u"分区为必填项")])
 
-    password = PasswordField(u'设置密码', validators=[DataRequired()])
-    password2 = PasswordField(
-        u'重复密码', validators=[DataRequired(), EqualTo('password')])
+    password = PasswordField(u'设置密码', validators=[DataRequired(u"请设置密码")])
+    password2 = PasswordField(u'重复密码', validators=[DataRequired(),
+                                                   EqualTo('password', message=u"两次密码不一致")])
     submit = SubmitField(u'添加')
 
-    def validate_username(self, username):
-        user = User.query.filter_by(username=username.data).first()
+    def validate_username(self):
+        user = User.query.filter_by(username=self.username.data).first()
         if user is not None:
             raise ValidationError(u'用户名已存在')
 
@@ -303,16 +309,26 @@ class AddUserForm(FlaskForm):
 # Edit User Form
 class EditUserForm(FlaskForm):
 
+    import string
+    letter_string = string.ascii_uppercase
+    letters = [letter for letter in letter_string]
+
+    choices = [(u"外卖", u"外卖"), (u"后台", "后台")]
+
+    choices.extend([(i, i) for i in letters])
+
     username = StringField(u'用户名', validators=[DataRequired()])
     alias = StringField(u'姓名', validators=[DataRequired()])
 
-    section = SelectMultipleField(u'负责分区',
-                                  choices=[],
-                                  validators=[DataRequired()])
+    section = SelectField(u'负责分区', choices=choices, validators=[DataRequired()])
+
+    account_choices = [(0, u"权限0 - 外卖"),
+                       (1, u"权限1 - 跑堂"),
+                       (2, u"等级2 - 管理员"),
+                       (3, u"等级3 - 超级管理员（可访问老板页面）")]
 
     permissions = SelectField(u'设置权限',
-                              choices=[(2, u"等级2 - 管理员"),
-                                       (3, u"等级3 - 超级管理员（可访问老板页面）")],
+                              choices=account_choices,
                               validators=[DataRequired()])
 
     account_type = SelectField(u'设置账户类型',
@@ -321,14 +337,9 @@ class EditUserForm(FlaskForm):
                                validators=[DataRequired()])
 
     password = PasswordField(u'设置密码', validators=[DataRequired()])
-    password2 = PasswordField(
-        u'重复密码', validators=[DataRequired(), EqualTo('password')])
+    password2 = PasswordField(u'重复密码', validators=[DataRequired(),EqualTo('password',
+                                                        message=u"两次密码不一致")])
     submit = SubmitField(u'更新')
-
-    def validate_username(self, username):
-        user = User.query.filter_by(username=username.data).first()
-        if user is not None:
-            raise ValidationError(u'用户名已存在')
 
 
 class EditPrinterForm(FlaskForm):
@@ -382,7 +393,7 @@ class EditHolidayForm(FlaskForm):
 class EditBuffetForm(FlaskForm):
 
     seats = SelectField(u'选择座位',
-                              choices=[(None, "选择座位")],
+                              choices=[],
                               validators=[DataRequired()])
 
     buffet_types = SelectField(u'选择类型',

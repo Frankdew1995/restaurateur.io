@@ -89,6 +89,7 @@ def page_not_found(e):
 
 
 # Login Route
+@app.route('/', methods=["GET", "POST"])
 @app.route("/login", methods=["GET", "POST"])
 def login():
 
@@ -98,35 +99,43 @@ def login():
 
     if current_user.is_authenticated:
 
+        print("Authenticated!")
+
         # Check whether this account is in use
-        if json.loads(current_user.container).get("inUse"):
+        if current_user.inUse:
+
+            # Boss Account
+            if current_user.permissions > 5:
+
+                print("I'm boss")
+
+                return redirect(url_for("index"))
 
             # According permission, route the user to the corresponding page
-            if current_user.permissions <= 3:
+            if current_user.permissions <= 5:
 
                 # Admin account
-                if current_user.permissions == 2:
+                if current_user.permissions == 0:
 
-                    return redirect(url_for("index"))
+                    print("I'm a takeaway casher")
+
+                    return redirect(url_for("takeaway_orders_manage"))
 
                 # Waiter account
-                elif current_user.permissions == 1:
+                if current_user.permissions == 1:
+
+                    print("I'm a waiter")
 
                     return redirect(url_for("waiter_admin"))
 
                 # Take away Account
-                elif current_user.permissions == 0:
+                if current_user.permissions == 2 or current_user.permissions == 3:
 
-                    return redirect(url_for("takeaway_orders_manage"))
-
-            # Boss Account
-            else:
-
-                return redirect(url_for('index'))
+                    return redirect(url_for("index"))
 
         else:
 
-            return render_template('suspension_error.html', referrer=referrer)
+            return render_template('suspension_error.html')
 
     elif form.validate_on_submit():
 
@@ -142,33 +151,44 @@ def login():
         next_page = request.args.get('next')
 
         # Check whether this account is in use
-        if json.loads(user.container).get("inUse"):
+        if user.inUse:
+
+            print(f"This account {user.username} is valid")
+            # Boss account
+
+            if user.permissions > 5:
+
+                print("I'm boss!")
+
+                return redirect(url_for('index'))
 
             # According permission, route the user to the corresponding page
-            if user.permissions <= 3:
+            if user.permissions <= 5:
 
                 # Admin account
-                if user.permissions == 2:
+                if user.permissions == 0:
 
-                    return redirect(url_for("index"))
+                    print("I'm takeaway casher!")
+
+                    return redirect(url_for("takeaway_orders_manage"))
 
                 # Waiter account
-                elif user.permissions == 1:
+                if user.permissions == 1:
+
+                    print("I'm a waiter")
 
                     return redirect(url_for("waiter_admin"))
 
                 # Take away Account
-                elif user.permissions == 0:
+                elif user.permissions == 2 or user.permissions == 3:
 
-                    return redirect(url_for("takeaway_orders_manage"))
+                    print("I'm administrator!")
 
-            # Boss Account
-            else:
-                return redirect(url_for('index'))
+                    return redirect(url_for("index"))
 
         else:
 
-            return render_template('suspension_error.html', referrer=referrer)
+            return render_template('suspension_error.html')
 
     return render_template("login.html",
                            form=form,
@@ -323,7 +343,7 @@ def return_analytics():
 
 
 # Admin Index Page
-@app.route("/")
+@app.route("/index")
 @login_required
 def index():
 
@@ -334,13 +354,11 @@ def index():
 
     if datetime.now(tz=None) >= deadline:
 
-        logout_user()
-
         flash("软件使用权限到期，请及时联系我们续费以便后续使用.谢谢合作！")
 
         return redirect(url_for('login'))
 
-    if not json.loads(current_user.container).get('inUse'):
+    if not current_user.inUse:
 
         return render_template('suspension_error.html')
 
@@ -1341,7 +1359,7 @@ def admin_edit_buffet_order(order_id):
 
         flash(f"订单{order.id}座位号{seat_number}的自助餐类型已经修改")
 
-        if current_user.permissions < 2:
+        if current_user.permissions < 10:
 
             return redirect(url_for('alacarte_order_edit', order_id=order_id))
 
@@ -2321,7 +2339,7 @@ def users_manage():
     user2container = {user.id: ",".join(json.loads(user.container).get('section'))
                       for user in users if json.loads(user.container)}
 
-    user_in_use = {user.id: json.loads(user.container).get('inUse') for user in users}
+    user_in_use = {user.id: user.inUse for user in users}
 
     context = dict(users=users,
                    user2container=user2container,
@@ -2331,68 +2349,6 @@ def users_manage():
                    company_name=company_info.get('company_name'))
 
     return render_template('users_manage.html', **context)
-
-
-@app.route('/admin/users/add', methods=["GET", "POST"])
-@login_required
-def add_user():
-
-    referrer = request.headers.get('Referer')
-
-    form = AddUserForm()
-
-    import string
-    letter_string = string.ascii_uppercase
-    letters = [letter for letter in letter_string]
-
-    holder = [("takeaway", u"外卖")]
-
-    holder.extend([(i, i) for i in letters])
-
-    # Instantiate some options for select fields
-    form.section.choices.extend(holder)
-
-    if request.method == "POST" or form.validate_on_submit():
-
-        try:
-
-            username = form.username.data
-            alias = form.alias.data
-            section = form.section.data
-            password = form.password.data
-
-            # By default permission for waiter/takeaway account is 1 and 0
-            permissions = form.account_type.data
-
-            user = User(username=username,
-                        alias=alias,
-                        container=json.dumps({"section": section, 'inUse': True}),
-                        permissions=permissions,
-                        email=f"{str(uuid4())}@cnfrien.com")
-            # Email attr will be deprecated
-
-            user.set_password(password=password)
-
-            db.session.add(user)
-
-            db.session.commit()
-
-            flash(message=f"已经创建跑堂{user.username}", category="success")
-
-            return redirect(url_for('users_manage'))
-
-        except:
-
-            flash(message=u"请不要重复添加账号", category="success")
-
-            return redirect(url_for('users_manage'))
-
-    context = dict(referrer=referrer,
-                   company_name=company_info.get('company_name'),
-                   form=form,
-                   title=u"添加跑堂人员")
-
-    return render_template('add_user.html', **context)
 
 
 @app.route("/admin/user/<int:user_id>/edit", methods=["GET", "POST"])
@@ -3718,6 +3674,39 @@ def waiter_admin():
     # Currently Open Tables
     open_tables = list(set([order.table_name for order in orders]))
 
+    # Recording the table info
+
+    table2kidsnadults = {}
+
+    for order in orders:
+
+        dishes = json.loads(order.items)
+
+        table = order.table_name
+
+        # Check if an order is an buffet order or assiciated with a buffet order
+        def is_buffet():
+            return any(["jp_buffet" or "mongo_buffet"
+                        in key for key in dishes.keys()])
+
+        kids_seats = [i for i in dishes.items()
+                      if i[1].get('label') and i[1].get('is_kid') == 1]
+
+        adults_seats = [i for i in dishes.items()
+                        if i[1].get('label') and i[1].get('is_kid') == 0]
+
+        number_of_kids = len(kids_seats)
+
+        number_of_adults = len(adults_seats)
+
+        table2kidsnadults.update({
+            table: {
+                "num_kids": number_of_kids,
+                "num_adults": number_of_adults,
+                "is_buffet": is_buffet()
+            }
+        })
+
     sections_2_tables = {section: [table
                         for table in Table.query.filter_by(section=section).all()
                         if table.name in open_tables]
@@ -3775,7 +3764,8 @@ def waiter_admin():
                            selected_sections=selected_sections,
                            company_name=company_info.get('company_name'),
                            title="订单查看",
-                           referrer=referrer)
+                           referrer=referrer,
+                           table2kidsnadults=table2kidsnadults)
 
 
 # Waiter views a table's aggregated order summary
@@ -6206,14 +6196,15 @@ def boss_users_manage():
 
     referrer = request.headers.get('Referer')
 
-    if current_user.permissions < 100:
+    if current_user.permissions <= 2:
 
         return render_template('auth_error.html', referrer=referrer)
 
     # Exclude the current logged in user - You can't delete your self
-    users = User.query.filter(User.id != current_user.id).all()
+    users = User.query.filter(User.id != current_user.id, 
+                              User.permissions < 100).all()
 
-    user_in_use = {user.id: json.loads(user.container).get('inUse') for user in users}
+    user_in_use = {user.id: user.inUse for user in users}
 
     context = dict(users=users,
                    user_in_use=user_in_use,
@@ -6224,28 +6215,45 @@ def boss_users_manage():
     return render_template('boss_users_manage.html', **context)
 
 
+@app.route('/admin/users/add', methods=["GET", "POST"])
 @app.route('/boss/users/add', methods=["GET", "POST"])
 @login_required
 def boss_add_user():
 
     referrer = request.headers.get('Referer')
 
-    if current_user.permissions < 100:
+    print(current_user.username, current_user.permissions)
+
+    if current_user.permissions <= 2:
 
         return render_template('auth_error.html', referrer=referrer)
 
     form = AddUserForm()
+
+    labels = [i[0] for i in form.choices]
+
+    values = [i[1] for i in form.choices]
+
+    sections2cn = dict(zip(labels, values))
 
     if request.method == "POST":
 
         username = form.username.data
         alias = form.alias.data
         permissions = form.permissions.data
+        section = sections2cn.get(form.section.data)
         password = form.password.data
+
+        if User.query.filter_by(username=username).first():
+
+            flash(message=f"账号{username}已经存在，请重试!", category="error")
+
+            return redirect(url_for('boss_add_user'))
 
         user = User(username=username,
                     alias=alias,
-                    container=json.dumps({'inUse': True, 'section': ["Admin"]}),
+                    container=json.dumps({'inUse': True, 'section': section}),
+                    section=section,
                     permissions=permissions,
                     email=f"{str(uuid4())[:11]}@cnfrien.com")
 
@@ -6256,14 +6264,14 @@ def boss_add_user():
 
         db.session.commit()
 
-        flash(message=f"已经创建账号{user.username}", category="success")
+        flash(message=f"已经成功创建账号{user.username}", category="success")
 
         return redirect(url_for('boss_users_manage'))
 
-    context=dict(referrer=referrer,
-                 form=form,
-                 title=u"添加账户",
-                 company_name=company_info.get('company_name'))
+    context = dict(referrer=referrer,
+                   form=form,
+                   title=u"添加账户",
+                   company_name=company_info.get('company_name'))
 
     return render_template('boss_add_user.html', **context)
 
@@ -6274,18 +6282,29 @@ def boss_edit_user(user_id):
 
     referrer = request.headers.get('Referer')
 
-    if current_user.permissions < 100:
+    if current_user.permissions <= 2:
 
         return render_template('auth_error.html', referrer=referrer)
 
-    user = db.session.query(User).get_or_404(user_id)
+    user = db.session.query(User).get(int(user_id))
 
     form = EditUserForm()
+
+    # Swap the positon in each tuple of this list
+
+    account_labels = [i[0] for i in form.account_choices]
+    account_values = [i[0] for i in form.account_choices]
+
+    permissions2accounts = dict(zip(account_labels, account_values))
+
+    print(permissions2accounts)
 
     if request.method == "POST":
 
         user.username = form.username.data
+        user.alias = form.alias.data
         user.permissions = form.permissions.data
+        user.section = form.section.data
 
         db.session.commit()
 
@@ -6294,17 +6313,21 @@ def boss_edit_user(user_id):
         return redirect(url_for('boss_users_manage'))
 
     form.username.data = user.username
-    form.permissions.data = user.permissions
+
+    form.alias.data = user.alias
+
+    form.permissions.data = permissions2accounts.get(user.permissions)
+
+    form.section.data = user.section
 
     context = dict(title="修改账号",
                    form=form,
                    user=user,
                    company_name=company_info.get('company_name'),
-                   referrer=request.headers.get('Referer')
-                   )
+                   referrer=request.headers.get('Referer'),
+                   permissions2accounts=permissions2accounts)
 
-    return render_template('boss_edit_user.html',
-                           **context)
+    return render_template('boss_edit_user.html', **context)
 
 
 @app.route('/boss/update/<int:user_id>/password', methods=["GET", "POST"])
@@ -6315,7 +6338,7 @@ def boss_update_password(user_id):
 
     referrer = request.headers.get('Referer')
 
-    if current_user.permissions < 100:
+    if current_user.permissions <= 2:
 
         return render_template('auth_error.html', referrer=referrer)
 
@@ -6348,9 +6371,9 @@ def boss_update_password(user_id):
 def boss_delete_user(user_id):
 
     referrer = request.headers.get('Referer')
-    user = db.session.query(User).get_or_404(int(user_id))
+    user = db.session.query(User).get(int(user_id))
 
-    if current_user.permissions < 100:
+    if current_user.permissions <=2:
 
         return render_template('auth_error.html', referrer=referrer)
 
@@ -6386,13 +6409,15 @@ def switch_user():
 
         status = data.get('inUse')
 
-        user = db.session.query(User).get_or_404(int(user_id))
+        user = db.session.query(User).get(int(user_id))
 
         container = json.loads(user.container)
 
         container['inUse'] = status
 
         user.container = json.dumps(container)
+
+        user.inUse = status
 
         db.session.commit()
 

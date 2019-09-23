@@ -1,6 +1,6 @@
 
 
-{% extends "base.html" if current_user.permissions >= 2 else "waiter_admin.html" %}
+{% extends "base.html" if current_user.permissions > 10 else "waiter_admin.html" %}
 
 {% block css %}
 

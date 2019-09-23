@@ -8,6 +8,7 @@
 <link rel="stylesheet" type="text/css" href="https://cdn.datatables.net/1.10.19/css/dataTables.bootstrap4.min.css">
 <link rel="stylesheet" href={{ url_for('static', filename='css/table_switch.css') }}>
 <style media="screen">
+
   #back {
     margin-left: 932px;
     margin-bottom:20px;
@@ -79,7 +80,7 @@
       <thead>
         <tr>
           <th scope="col">账号名</th>
-          <th scope="col">权限等级</th>
+          <th scope="col">负责分区</th>
           <th scope="col">启用/停用</th>
           <th scope="col">操作</th>
         </tr>
@@ -91,7 +92,7 @@
         <tr>
           <td>{{user.username}}</td>
 
-          <td>{{ user.permissions }}</td>
+          <td>{{ user.section }}</td>
 
           <td>
             <div class="onoffswitch">

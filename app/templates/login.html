@@ -48,6 +48,22 @@
                   <div class="text-center">
                     <h1 class="h4 text-gray-900 mb-4">欢迎来到{{company_name}}餐饮后台系统</h1>
                   </div>
+                  {% with messages = get_flashed_messages() %}
+
+                    {% if messages %}
+
+                      {% for message in messages %}
+
+                      <div class="alert alert-warning" role="alert">
+                          {{ message }}
+                      </div>
+
+                      {% endfor %}
+
+                    {% endif %}
+
+                  {% endwith %}
+
                   <form class="user" method="POST" action=''>
 
                     {{ form.hidden_tag() }}

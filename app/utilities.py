@@ -22,7 +22,9 @@ from babel.numbers import format_decimal, format_percent
 
 import pusher
 import requests
-import sys, platform
+
+import sys
+import platform
 
 # Save Image and return image path
 def store_picture(file):
@@ -261,6 +263,17 @@ def receipt_templating(context,
         from docxtpl import DocxTemplate
 
         doc = DocxTemplate(temp_file)
+
+        #         logo = str(Path(app.root_path) / 'static' / 'img' / 'logo.png')
+        #
+        # # If logo existing, then inserts the LOGO into receipt
+        # if Path(logo).exists():
+        #
+        #     p = doc.tables[1].rows[0].cells[0].add_paragraph()
+        #
+        #     r = p.add_run()
+        #
+        #     r.add_picture(logo)
 
         doc.render(context)
 
@@ -832,6 +845,9 @@ def trigger_event(channel, event, response):
 
 def start_ngrok(port):
 
+    root_path = str(Path(app.root_path).parent)
+
+    print(root_path)
     # Mac OS
     if platform.system() == "Darwin":
 
@@ -842,6 +858,8 @@ def start_ngrok(port):
         executable = './ngrok'
 
         subprocess.Popen([executable, 'http', '-region=eu', str(port)])
+
+        os.chdir(root_path)
 
     # Win32 or Linux
     else:
@@ -884,5 +902,30 @@ def start_ngrok(port):
         json.dump(data, file, indent=2)
 
     print(tunnel_url)
-
     return tunnel_url
+
+
+def is_xz_printed(timestamp, r_type):
+
+    r_type = r_type.lower()
+
+    import pickle
+
+    with open(str(Path(app.root_path) / 'cache' / f'{r_type}_bon_settings.pickle'),
+              mode="rb") as pickle_out:
+
+        data = pickle.load(pickle_out)
+
+    printed_timestamps = []
+
+    for record in data:
+
+        print(record)
+
+        key = list(record.keys())[0]
+
+        last_printed = record.get(key).get('lastPrinted')
+        last_timestamp = last_printed.timestamp()
+        printed_timestamps.append(last_timestamp)
+
+    return timestamp in printed_timestamps

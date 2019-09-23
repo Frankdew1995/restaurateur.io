@@ -2338,7 +2338,7 @@ def users_manage():
     user2container = {user.id: ",".join(json.loads(user.container).get('section'))
                       for user in users if json.loads(user.container)}
 
-    user_in_use = {user.id: json.loads(user.container).get('inUse') for user in users}
+    user_in_use = {user.id: user.inUse for user in users}
 
     context = dict(users=users,
                    user2container=user2container,
@@ -6274,7 +6274,7 @@ def boss_users_manage():
     users = User.query.filter(User.id != current_user.id,
                               User.permissions < 10).all()
 
-    user_in_use = {user.id: json.loads(user.container).get('inUse') for user in users}
+    user_in_use = {user.id: user.inUse for user in users}
 
     context = dict(users=users,
                    user_in_use=user_in_use,

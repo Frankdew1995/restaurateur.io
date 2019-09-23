@@ -16,4 +16,5 @@ users = db.session.query(User).all()
 
 for user in users:
 
-    print(user.username, user.permissions)
+    user.inUse = True
+    db.session.commit()

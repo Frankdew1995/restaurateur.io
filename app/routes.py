@@ -64,9 +64,6 @@ tax_rate_in = float(company_info.get('tax_rate_in', 0.0))
 
 tax_rate_out = float(company_info.get('tax_rate_out', 0.0))
 
-# Get the public tunnel url
-base_url = settings.get('PUBLIC_TUNNEL_URL')
-
 suffix_url = "guest/navigation"
 
 timezone = 'Europe/Berlin'
@@ -89,6 +86,7 @@ def page_not_found(e):
 
 
 # Login Route
+@app.route('/', methods=["GET", "POST"])
 @app.route("/login", methods=["GET", "POST"])
 def login():
 
@@ -101,7 +99,7 @@ def login():
         print("Authenticated!")
 
         # Check whether this account is in use
-        if json.loads(current_user.container).get("inUse"):
+        if current_user.inUse:
 
             # Boss Account
             if current_user.permissions > 5:
@@ -134,7 +132,7 @@ def login():
 
         else:
 
-            return render_template('suspension_error.html', referrer=referrer)
+            return render_template('suspension_error.html')
 
     elif form.validate_on_submit():
 
@@ -150,7 +148,7 @@ def login():
         next_page = request.args.get('next')
 
         # Check whether this account is in use
-        if json.loads(user.container).get("inUse"):
+        if user.inUse:
 
             print(f"This account {user.username} is valid")
             # Boss account
@@ -187,8 +185,7 @@ def login():
 
         else:
 
-            print("My account is suspended")
-            return render_template('suspension_error.html', referrer=referrer)
+            return render_template('suspension_error.html')
 
     return render_template("login.html",
                            form=form,
@@ -343,7 +340,7 @@ def return_analytics():
 
 
 # Admin Index Page
-@app.route("/")
+@app.route("/index")
 @login_required
 def index():
 
@@ -360,9 +357,9 @@ def index():
 
         return redirect(url_for('login'))
 
-    if not json.loads(current_user.container).get('inUse'):
+    if not current_user.inUse:
 
-        return render_template('suspension_error.html')
+        return redirect(url_for('logout'))
 
     today = datetime.now(pytz.timezone(timezone)).date()
     yesterday = datetime.now(pytz.timezone(timezone)).date() - timedelta(days=1)
@@ -946,7 +943,7 @@ def checkout_takeaway_admin(order_id):
 @login_required
 def takeaway_orders_manage():
 
-    if not json.loads(current_user.container).get('inUse'):
+    if not current_user.inUse:
 
         return render_template('suspension_error.html')
 
@@ -2166,6 +2163,11 @@ def view_qrcode(qrcode_name):
 
     seat_number = qrcode_name.split('_')[1]
 
+    # Get the public tunnel url
+    settings = json_reader(str(Path(app.root_path) / 'settings' / 'credentials.json'))
+
+    base_url = settings.get('PUBLIC_TUNNEL_URL')
+
     context = dict(referrer=request.headers.get('Referer'),
                    title=u"查看二维码",
                    qrcode=qrcode,
@@ -2348,66 +2350,66 @@ def users_manage():
     return render_template('users_manage.html', **context)
 
 
-@app.route('/admin/users/add', methods=["GET", "POST"])
-@login_required
-def add_user():
-
-    referrer = request.headers.get('Referer')
-
-    form = AddUserForm()
-
-    import string
-    letter_string = string.ascii_uppercase
-    letters = [letter for letter in letter_string]
-
-    holder = [("takeaway", u"外卖")]
-
-    holder.extend([(i, i) for i in letters])
-
-    # Instantiate some options for select fields
-    form.section.choices.extend(holder)
-
-    if request.method == "POST" or form.validate_on_submit():
-
-        try:
-
-            username = form.username.data
-            alias = form.alias.data
-            section = form.section.data
-            password = form.password.data
-
-            # By default permission for waiter/takeaway account is 1 and 0
-            permissions = form.account_type.data
-
-            user = User(username=username,
-                        alias=alias,
-                        container=json.dumps({"section": section, 'inUse': True}),
-                        permissions=permissions,
-                        email=f"{str(uuid4())}@cnfrien.com")
-            # Email attr will be deprecated
-
-            user.set_password(password=password)
-
-            db.session.add(user)
-
-            db.session.commit()
-
-            flash(message=f"已经创建跑堂{user.username}", category="success")
-
-            return redirect(url_for('users_manage'))
-
-        except:
-
-            flash(message=u"请不要重复添加账号", category="success")
-
-            return redirect(url_for('users_manage'))
-
-    context = dict(referrer=referrer,
-                   company_name=company_info.get('company_name'),
-                   form=form,
-                   title=u"添加跑堂人员")
-
-    return render_template('add_user.html', **context)
+# @app.route('/admin/users/add', methods=["GET", "POST"])
+# @login_required
+# def add_user():
+#
+#     referrer = request.headers.get('Referer')
+#
+#     form = AddUserForm()
+#
+#     import string
+#     letter_string = string.ascii_uppercase
+#     letters = [letter for letter in letter_string]
+#
+#     holder = [("takeaway", u"外卖"), ("Admin", "后台")]
+#
+#     holder.extend([(i, i) for i in letters])
+#
+#     # Instantiate some options for select fields
+#     form.section.choices.extend(holder)
+#
+#     if request.method == "POST" or form.validate_on_submit():
+#
+#         try:
+#
+#             username = form.username.data
+#             alias = form.alias.data
+#             section = form.section.data
+#             password = form.password.data
+#
+#             # By default permission for waiter/takeaway account is 1 and 0
+#             permissions = form.account_type.data
+#
+#             user = User(username=username,
+#                         alias=alias,
+#                         container=json.dumps({"section": section, 'inUse': True}),
+#                         permissions=permissions,
+#                         email=f"{str(uuid4())}@cnfrien.com")
+#             # Email attr will be deprecated
+#
+#             user.set_password(password=password)
+#
+#             db.session.add(user)
+#
+#             db.session.commit()
+#
+#             flash(message=f"已经创建跑堂{user.username}", category="success")
+#
+#             return redirect(url_for('users_manage'))
+#
+#         except:
+#
+#             flash(message=u"请不要重复添加账号", category="success")
+#
+#             return redirect(url_for('users_manage'))
+#
+#     context = dict(referrer=referrer,
+#                    company_name=company_info.get('company_name'),
+#                    form=form,
+#                    title=u"添加跑堂人员")
+#
+#     return render_template('add_user.html', **context)
 
 
 @app.route("/admin/user/<int:user_id>/edit", methods=["GET", "POST"])
@@ -2951,6 +2953,11 @@ def js_add_table():
     section = data.get("section")
     number = int(data.get('persons'))
 
+    # Get the public tunnel url
+    settings = json_reader(str(Path(app.root_path) / 'settings' / 'credentials.json'))
+
+    base_url = settings.get('PUBLIC_TUNNEL_URL')
+
     th = Thread(target=table_adder, args=(table_name, section,
                                           number, base_url, suffix_url, timezone,))
 
@@ -3013,6 +3020,11 @@ def edit_table(table_id):
             seats = "\n".join([f"{table_name}-{i+1}" for i in range(form.persons.data)])
 
             table.seats = seats
+
+            # Get the public tunnel url
+            settings = json_reader(str(Path(app.root_path) / 'settings' / 'credentials.json'))
+
+            base_url = settings.get('PUBLIC_TUNNEL_URL')
 
             qrcodes = [generate_qrcode(table=form.name.data.upper(),
                                        base_url=base_url,
@@ -3690,7 +3702,7 @@ def waiter_admin():
     referrer = request.headers.get('Referer')
 
     # if Account suspended
-    if not json.loads(current_user.container).get('inUse'):
+    if not current_user.inUse:
 
         return render_template('suspension_error.html')
 
@@ -6254,12 +6266,13 @@ def boss_users_manage():
 
     referrer = request.headers.get('Referer')
 
-    if current_user.permissions < 100:
+    if current_user.permissions <= 2:
 
         return render_template('auth_error.html', referrer=referrer)
 
     # Exclude the current logged in user - You can't delete your self
-    users = User.query.filter(User.id != current_user.id).all()
+    users = User.query.filter(User.id != current_user.id,
+                              User.permissions < 10).all()
 
     user_in_use = {user.id: json.loads(user.container).get('inUse') for user in users}
 
@@ -6272,28 +6285,45 @@ def boss_users_manage():
     return render_template('boss_users_manage.html', **context)
 
 
+@app.route('/admin/users/add', methods=["GET", "POST"])
 @app.route('/boss/users/add', methods=["GET", "POST"])
 @login_required
 def boss_add_user():
 
     referrer = request.headers.get('Referer')
 
-    if current_user.permissions < 100:
+    print(current_user.username, current_user.permissions)
+
+    if current_user.permissions <= 2:
 
         return render_template('auth_error.html', referrer=referrer)
 
     form = AddUserForm()
+
+    labels = [i[0] for i in form.choices]
+
+    values = [i[1] for i in form.choices]
+
+    sections2cn = dict(zip(labels, values))
 
     if request.method == "POST":
 
         username = form.username.data
         alias = form.alias.data
         permissions = form.permissions.data
+        section = sections2cn.get(form.section.data)
         password = form.password.data
+
+        if User.query.filter_by(username=username).first():
+
+            flash(message=f"账号{username}已经存在，请重试!", category="error")
+
+            return redirect(url_for('boss_add_user'))
 
         user = User(username=username,
                     alias=alias,
-                    container=json.dumps({'inUse': True, 'section': ["Admin"]}),
+                    container=json.dumps({'inUse': True, 'section': section}),
+                    section=section,
                     permissions=permissions,
                     email=f"{str(uuid4())[:11]}@cnfrien.com")
 
@@ -6304,14 +6334,14 @@ def boss_add_user():
 
         db.session.commit()
 
-        flash(message=f"已经创建账号{user.username}", category="success")
+        flash(message=f"已经成功创建账号{user.username}", category="success")
 
         return redirect(url_for('boss_users_manage'))
 
-    context=dict(referrer=referrer,
-                 form=form,
-                 title=u"添加账户",
-                 company_name=company_info.get('company_name'))
+    context = dict(referrer=referrer,
+                   form=form,
+                   title=u"添加账户",
+                   company_name=company_info.get('company_name'))
 
     return render_template('boss_add_user.html', **context)
 
@@ -6322,18 +6352,29 @@ def boss_edit_user(user_id):
 
     referrer = request.headers.get('Referer')
 
-    if current_user.permissions < 100:
+    if current_user.permissions <= 2:
 
         return render_template('auth_error.html', referrer=referrer)
 
-    user = db.session.query(User).get_or_404(user_id)
+    user = db.session.query(User).get(int(user_id))
 
     form = EditUserForm()
+
+    # Swap the positon in each tuple of this list
+
+    account_labels = [i[0] for i in form.account_choices]
+    account_values = [i[0] for i in form.account_choices]
+
+    permissions2accounts = dict(zip(account_labels, account_values))
+
+    print(permissions2accounts)
 
     if request.method == "POST":
 
         user.username = form.username.data
+        user.alias = form.alias.data
         user.permissions = form.permissions.data
+        user.section = form.section.data
 
         db.session.commit()
 
@@ -6342,17 +6383,21 @@ def boss_edit_user(user_id):
         return redirect(url_for('boss_users_manage'))
 
     form.username.data = user.username
-    form.permissions.data = user.permissions
+
+    form.alias.data = user.alias
+
+    form.permissions.data = permissions2accounts.get(user.permissions)
+
+    form.section.data = user.section
 
     context = dict(title="修改账号",
                    form=form,
                    user=user,
                    company_name=company_info.get('company_name'),
-                   referrer=request.headers.get('Referer')
-                   )
+                   referrer=request.headers.get('Referer'),
+                   permissions2accounts=permissions2accounts)
 
-    return render_template('boss_edit_user.html',
-                           **context)
+    return render_template('boss_edit_user.html', **context)
 
 
 @app.route('/boss/update/<int:user_id>/password', methods=["GET", "POST"])
@@ -6363,7 +6408,7 @@ def boss_update_password(user_id):
 
     referrer = request.headers.get('Referer')
 
-    if current_user.permissions < 100:
+    if current_user.permissions <= 2:
 
         return render_template('auth_error.html', referrer=referrer)
 
@@ -6398,7 +6443,7 @@ def boss_delete_user(user_id):
     referrer = request.headers.get('Referer')
     user = db.session.query(User).get_or_404(int(user_id))
 
-    if current_user.permissions < 100:
+    if current_user.permissions <= 2:
 
         return render_template('auth_error.html', referrer=referrer)
 
@@ -6441,6 +6486,7 @@ def switch_user():
         container['inUse'] = status
 
         user.container = json.dumps(container)
+        user.inUse = status
 
         db.session.commit()
 

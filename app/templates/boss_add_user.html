@@ -31,6 +31,23 @@
 
 {% block content %}
 
+
+{% with messages = get_flashed_messages() %}
+
+  {% if messages %}
+
+    {% for message in messages %}
+
+    <div class="alert alert-warning" role="alert">
+        {{ message }}
+    </div>
+
+    {% endfor %}
+
+  {% endif %}
+
+{% endwith %}
+
 <form action='' method="POST" enctype="multipart/form-data">
 
     {{ form.hidden_tag() }}
@@ -48,8 +65,28 @@
 
         <p>
 
+          {{ form.alias.label }} <br>
+          {{ form.alias(
+            class='form-control',
+            style="width: 50%",
+            placeholder='请输入姓名') }}
+
+
+        </p>
+
+        <p>
+
           {{ form.permissions.label }}<br>
           {{ form.permissions(
+              class='form-control',
+              style="width: 50%") }}
+
+        </p>
+
+        <p>
+
+          {{ form.section.label }}<br>
+          {{ form.section(
               class='form-control',
               style="width: 50%") }}
 

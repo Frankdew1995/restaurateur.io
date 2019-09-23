@@ -211,7 +211,7 @@
           <span>餐馆设置</span></a>
       </li>
 
-      {% if current_user.permissions == 100 %}
+      {% if current_user.permissions >= 10 %}
       <li class="nav-item">
         <a class="nav-link" href="{{ url_for('boss_users_manage') }}">
           <i class="fas fa-users"></i>
@@ -219,7 +219,7 @@
       </li>
       {% else %}
       <li class="nav-item">
-        <a class="nav-link" href="{{ url_for('users_manage') }}">
+        <a class="nav-link" href="{{ url_for('boss_users_manage') }}">
           <i class="fas fa-users"></i>
           <span>跑堂人员列表</span></a>
       </li>

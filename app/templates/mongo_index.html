@@ -4,7 +4,7 @@
 <head>
   <meta http-equiv="Content-Type" content="text/html; charset=UTF-8"/>
   <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1.0"/>
-  <title>Mongo Buffet</title>
+  <title>{{title}}</title>
 
   <!-- CSS  -->
   <link href="https://fonts.googleapis.com/icon?family=Material+Icons" rel="stylesheet">
@@ -109,7 +109,22 @@
       <!--   Icon Section   -->
       <div class="row">
 
-        
+        {% with messages = get_flashed_messages() %}
+
+          {% if messages %}
+
+            {% for message in messages %}
+
+            <div class="alert alert-success" role="alert">
+                {{ message }}
+            </div>
+
+            {% endfor %}
+
+          {% endif %}
+
+        {% endwith %}
+
         <div class="col s12 m7">
           <div class="card">
             <div class="card-image">
@@ -165,13 +180,15 @@
     <div class="col s6 s6">
       <div class="card">
         <div class="card-image">
-          <a href="#" id="pay">
+          <a href="#" id="pay" data-toggle="modal" data-target="#exampleModal">
             <img src={{ url_for('static', filename="img/mongo_pay.png") }}>
           </a>
         </div>
 
       </div>
     </div>
+
+    
     <p style="display:none">
 
       <span id="tableName">{{table_name}}</span>

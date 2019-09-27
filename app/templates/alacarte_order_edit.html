@@ -117,6 +117,17 @@
   </button>
 
 
+  {% if is_buffet %}
+
+    <button type="button" class="btn btn-info">
+      <a href={{ url_for('admin_edit_buffet_order', order_id=order.id) }} style="color: rgb(247, 249, 252)">
+        修改自助餐
+      </a>
+    </button>
+
+  {% endif %}
+
+
   <button id="update" class="btn btn-secondary">
     <a style="color: rgb(247, 249, 252)" href={{ referrer }}>
       取消

@@ -875,7 +875,10 @@ def start_ngrok(port):
 
         executable = './ngrok'
 
-        subprocess.Popen([executable, 'http', '-region=eu', str(port)])
+        subprocess.Popen([executable,
+                          'http',
+                          '-subdomain=nan-restaurant-duisburg',
+                          '-region=eu', str(port)])
 
         os.chdir(root_path)
 

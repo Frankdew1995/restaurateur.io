@@ -7,17 +7,16 @@ from datetime import datetime, timedelta
 import pytz
 timezone = "Europe/Berlin"
 
+from app.models import Food
+
 today = datetime.now(tz=pytz.timezone(timezone)).date()
 
-orders = db.session.query(Order).order_by(Order.timeCreated.desc()).all()
+orders = db.session.query(Order).all()
 
 
-items = json.loads(orders[0].dishes)
+for order in orders:
 
+    if not order.isCancelled:
 
-users = db.session.query(User).all()
-
-for user in users:
-
-    user.inUse = True
-    db.session.commit()
+        db.session.delete(order)
+        db.session.commit()

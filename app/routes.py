@@ -26,7 +26,7 @@ from .utilities import (json_reader, store_picture,
                         x_z_receipt_templating, table_adder,
                         formatter, is_business_hours,
                         daily_revenue_templating, trigger_event,
-                        pay2print)
+                        pay2print, eat_manner_pickler)
 
 from pathlib import Path
 import json
@@ -38,6 +38,7 @@ from werkzeug.utils import secure_filename
 import pickle
 from babel.dates import format_date, format_datetime, format_time
 from babel.numbers import format_decimal, format_percent
+import os
 
 # Some global variables - read from config file.
 info = json_reader(str(Path(app.root_path) / 'settings' / 'config.json'))
@@ -52,10 +53,6 @@ company_info = {
     }
 
 hours = info.get('BUSINESS_HOURS')
-
-time_buffer_mins = int(info.get('BUFFET_TIME_BUFFER'))
-
-max_rounds = int(info.get('ORDER_TIMES'))
 
 date_format = "%Y.%m.%d"
 
@@ -1836,10 +1833,20 @@ def add_dish():
                     price_net_in=price / (1 + tax_rate_in),
                     price_net_out=price / (1 + tax_rate_out),
                     image=image_path,
-                    eat_manner=eat_manner,
                     class_name=class_name,
                     inUse=True,
                     cn_description=cn_desc)
+
+        if form.eat_manner.data == "alacarte":
+
+            dish.is_a_la_carte = True
+
+        if form.eat_manner.data == "takeaway":
+            dish.is_takeaway = True
+
+        if form.eat_manner.data == "both":
+            dish.is_a_la_carte = True
+            dish.is_takeaway = True
 
         db.session.add(dish)
         db.session.commit()
@@ -1904,7 +1911,7 @@ def edit_dish(dish_id):
     form.class_name.choices.extend([(i, i) for i in class_names])
     form.category.choices.extend([(i, i) for i in sub_categories])
 
-    dish = db.session.query(Food).get_or_404(int(dish_id))
+    dish = db.session.query(Food).get(int(dish_id))
 
     if request.method == "POST" or form.validate_on_submit():
 
@@ -1919,7 +1926,18 @@ def edit_dish(dish_id):
 
         dish.description = form.description.data
 
-        dish.eat_manner = form.eat_manner.data
+        if form.eat_manner.data == "alacarte":
+
+            dish.is_a_la_carte = True
+
+        if form.eat_manner.data == "takeaway":
+
+            dish.is_takeaway = True
+
+        if form.eat_manner.data == "both":
+
+            dish.is_a_la_carte = True
+            dish.is_takeaway = True
 
         file = request.files["file"]
 
@@ -1935,10 +1953,25 @@ def edit_dish(dish_id):
 
         return redirect(url_for("all_dishes"))
 
+    def dish_eat_manner():
+
+        if dish.is_a_la_carte and dish.is_takeaway:
+
+            return "both"
+
+        if dish.is_a_la_carte:
+
+            return "alacarte"
+
+        if dish.is_takeaway:
+
+            return "takeaway"
+
     form.name.data = dish.name
+    form.cn_name.data = dish.cn_description
     form.category.data = dish.category
     form.class_name.data = dish.class_name
-    form.eat_manner.data = dish.eat_manner
+    form.eat_manner.data = dish_eat_manner() # Return the dish eat manner
     form.price.data = dish.price_gross
     form.description.data = dish.description
 
@@ -5103,7 +5136,7 @@ def print_printed_z_receipt(from_timestamp, til_timestamp, z_number):
 @login_required
 def x_receipts_manage():
 
-    with open(str(Path(app.root_path) / 'cache' / 'x_bon_settings.pickle'),
+    with open(str(Path(app.root_path) / 'cache' / 'eat_manner.pickle'),
               mode="rb") as pickle_out:
         data = pickle.load(pickle_out)
 
@@ -5128,7 +5161,7 @@ def view_x_receipt(timestamp):
 
     unpaid_orders = Order.query.filter(Order.isPaid == False).order_by(Order.settleTime.desc()).all()
 
-    with open(str(Path(app.root_path) / 'cache' / 'x_bon_settings.pickle'),
+    with open(str(Path(app.root_path) / 'cache' / 'eat_manner.pickle'),
               mode="rb") as pickle_out:
         data = pickle.load(pickle_out)
 
@@ -5243,7 +5276,7 @@ def print_x_receipt(date_time):
 
     unpaid_orders = Order.query.filter(Order.isPaid == False).order_by(Order.settleTime.desc()).all()
 
-    with open(str(Path(app.root_path) / 'cache' / 'x_bon_settings.pickle'),
+    with open(str(Path(app.root_path) / 'cache' / 'eat_manner.pickle'),
               mode="rb") as pickle_out:
 
         data = pickle.load(pickle_out)
@@ -5376,7 +5409,7 @@ def print_x_receipt(date_time):
 
         data.append({len(data)+1: {"lastPrinted": now}})
 
-    with open(str(Path(app.root_path) / 'cache' / 'x_bon_settings.pickle'),
+    with open(str(Path(app.root_path) / 'cache' / 'eat_manner.pickle'),
               mode="wb") as pickle_in:
 
         pickle.dump(data, pickle_in)
@@ -7764,48 +7797,6 @@ def mongo_guest_checkout():
             return jsonify({"success": "Ihre Bestellung wurde an die Küche geschickt"})
 
 
-@app.route("/jp/buffet/next/order/<string:table_name>/<string:seat_number>",
-           methods=["GET", "POST"])
-def get_next_round_time(table_name, seat_number):
-
-    orders = db.session.query(Order).filter(
-        Order.type == "In",
-        Order.isPaid == False,
-        Order.isCancelled == False,
-        Order.subtype == "jpbuffet",
-        Order.table_name == table_name).order_by(Order.timeCreated.desc()).all()
-
-    if len(orders) > 0:
-
-        order = orders[0]
-
-        batches = json.loads(order.dishes)
-
-        dt_objs = []
-
-        for batch in batches:
-
-            last_ordered = list(batch.keys())[0]
-
-            dt_obj = datetime.fromtimestamp(float(last_ordered))
-
-            if batch.get(last_ordered).get('order_by') == seat_number \
-                    and batch.get(last_ordered).get('subtype') == "jpbuffet":
-                dt_objs.append(dt_obj)
-
-        if len(dt_objs) > 0:
-
-            last_ordered = max(dt_objs)
-
-            next_round_time = last_ordered + timedelta(minutes=time_buffer_mins)
-
-            return jsonify({"success": str(next_round_time)})
-
-        return jsonify({"error": "no next round time available"})
-
-    return jsonify({"error": "no data"})
-
-
 @app.route('/jp/buffet/index/<string:table_name>/<string:seat_number>/<int:is_kid>')
 def jpbuffet_index(table_name, seat_number, is_kid):
 
@@ -7841,17 +7832,17 @@ def jpbuffet_index(table_name, seat_number, is_kid):
 
                 dt_objs.append(dt_obj)
 
-        if len(dt_objs) > 0:
-
-            last_ordered = max(dt_objs)
-
-            next_round_time = last_ordered + timedelta(minutes=time_buffer_mins)
-
-            context["next_round_time"] = str(next_round_time)
-
-            time_delta = next_round_time.minute - datetime.now().minute
-
-            context['timedelta'] = time_delta
+        # if len(dt_objs) > 0:
+        #
+        #     last_ordered = max(dt_objs)
+        #
+        #     next_round_time = last_ordered + timedelta(minutes=time_buffer_mins)
+        #
+        #     context["next_round_time"] = str(next_round_time)
+        #
+        #     time_delta = next_round_time.minute - datetime.now().minute
+        #
+        #     context['timedelta'] = time_delta
 
     return render_template("jp_buffet_index.html", **context)
 
@@ -9253,7 +9244,6 @@ def jpbuffet_special_checkout():
                 print("Error when triggering event with Pusher:", str(e))
 
             return jsonify({"success": "Ihre Bestellung wurde an die Küche geschickt"})
-
 
 
 

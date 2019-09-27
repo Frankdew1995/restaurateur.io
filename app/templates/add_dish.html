@@ -3,6 +3,8 @@
 
 {% block css %}
 
+<link rel="stylesheet" href={{ url_for('static', filename="css/table_switch.css") }}>
+
 
 <style>
 
@@ -62,6 +64,7 @@
 
         </p>
 
+
         <p>
 
           {{ form.eat_manner.label }}<br>
@@ -93,7 +96,7 @@
 
         <p>
 
-            {{ form.submit(class='btn btn-info')}}
+            {{ form.submit(class='btn btn-info', style="border-color:#26a69a; background-color:#26a69a;")}}
 
             <button type="button" class="btn btn-secondary">
               <a href='{{ referrer }}' style="color: rgb(247, 249, 252)">
@@ -117,9 +120,12 @@
   </a>
 </button>
 
+{% endblock %}
 
 
 
+{% block scripts %}
 
+<script type="text/javascript" src={{ url_for('static', filename='js/toggle_eat_manner.js') }}></script>
 
 {% endblock %}

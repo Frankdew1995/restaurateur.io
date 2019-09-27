@@ -71,7 +71,9 @@ class AddDishForm(FlaskForm):
     price = FloatField(u"单价", validators=[DataRequired()])
     image = FileField(u"上传图片", validators=[FileAllowed(["jpg", "jpeg", "png"])])
     eat_manner = RadioField(
-        u"用餐方式", choices=[("takeaway", u"外卖"), ("alacarte", u"单点")]
+        u"用餐方式", choices=[("takeaway", u"外卖"),
+                          ("alacarte", u"单点"),
+                          ("both", u"外卖 + 单点")]
     )
 
     submit = SubmitField(u"确认添加")
@@ -96,7 +98,9 @@ class EditDishForm(FlaskForm):
     price = FloatField(u"单价", validators=[DataRequired()])
     image = FileField(u"上传图片", validators=[FileAllowed(["jpg", "jpeg", "png"])])
     eat_manner = RadioField(
-        u"用餐方式", choices=[("takeaway", u"外卖"), ("alacarte", u"单点")]
+        u"用餐方式", choices=[("takeaway", u"外卖"),
+                          ("alacarte", u"单点"),
+                          ("both", u"外卖 + 单点")]
     )
 
     submit = SubmitField(u"确认更新")

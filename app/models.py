@@ -19,9 +19,12 @@ class Food(db.Model):
     eat_manner = db.Column(db.String(100))
     image = db.Column(db.String(100), nullable=False)
     container = db.Column(db.String(300))
-
     inUse = db.Column(db.Boolean, default=True)
     cn_description = db.Column(db.String(500))
+
+    is_a_la_carte = db.Column(db.Boolean, default=False)
+    is_takeaway = db.Column(db.Boolean, default=False)
+    is_buffet = db.Column(db.Boolean, default=False)
 
     def __repr__(self):
 

@@ -35,13 +35,13 @@
     "Unit": "pfanne"
   },
   {
-    "Class": "Drinks",
-    "Subcategory": "Beer",
-    "Unit": ""
+    "Class": "Food",
+    "Subcategory": "Kaltes Gericht",
+    "Unit": " Teller"
   },
   {
     "Class": "Food",
-    "Subcategory": "Sichuan Cuisine",
-    "Unit": "Topf"
+    "Subcategory": "Hauptgericht",
+    "Unit": "Teller"
   }
 ]

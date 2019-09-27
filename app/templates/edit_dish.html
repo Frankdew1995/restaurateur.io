@@ -2,6 +2,8 @@
 
 
 {% block css %}
+<link rel="stylesheet" href={{ url_for('static', filename="css/table_switch.css") }}>
+
 
 <style>
 
@@ -81,7 +83,7 @@
 
         </p>
 
-
+        <br>
 
         <p>
 
@@ -98,7 +100,7 @@
 
         </p>
 
-
+      
         <p>
 
             <label for="file">更新菜品图片</label>
@@ -132,8 +134,12 @@
 </button>
 
 
+{% endblock %}
 
 
 
+{% block scripts %}
+
+<script type="text/javascript" src={{ url_for('static', filename='js/toggle_eat_manner.js') }}></script>
 
 {% endblock %}

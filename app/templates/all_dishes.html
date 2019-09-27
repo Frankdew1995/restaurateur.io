@@ -75,9 +75,6 @@
       <thead>
         <tr>
           <th scope="col">菜品名称</th>
-          <th scope="col">中文名称</th>
-          <th scope="col">分类</th>
-          <th scope="col">类型</th>
           <th scope="col">点菜次数</th>
           <th scope="col">图片</th>
           <th scope="col">状态</th>
@@ -89,13 +86,12 @@
       {% for dish in dishes %}
         <tr>
           <td>{{ dish.name }}</td>
-          <td>{{dish.cn_description}}</td>
-          <td>{{ dish.category }}</td>
-          <td>{{dish.class_name}}</td>
+
           <td style="text-align:center">{{order_counts.get(dish.name).get('counts', 0)}}</td>
           <td>
             <img src={{ url_for('static', filename="img/"+dish.image) }} alt="" height="42" width="50">
           </td>
+
 
           <td>
 
@@ -157,7 +153,7 @@
 <script>
     $(document).ready(function() {
     $('#example').DataTable({
-      'order': [[4, "desc"]]
+      'order': [[2, "desc"]]
     });
 } );
 </script>
@@ -167,5 +163,7 @@
 <script type="text/javascript" charset="utf8" src="https://code.jquery.com/jquery-3.3.1.js"></script>
 <script type="text/javascript" charset="utf8" src="https://cdn.datatables.net/1.10.19/js/jquery.dataTables.min.js"></script>
 <script type="text/javascript" src={{ url_for('static', filename='js/toggle_dish.js') }}></script>
+<script type="text/javascript" src={{ url_for('static', filename='js/toggle_eat_manner.js') }}></script>
+
 
 {% endblock %}

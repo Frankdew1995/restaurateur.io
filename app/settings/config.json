@@ -1,31 +1,30 @@
 [
   {
-    "STORE_NAME": "Maxmann GmbH",
-    "CITY": "Moers",
-    "STREET": "Maxmann Strasse",
-    "STREET NO.": "555",
+    "STORE_NAME": "China-Restaurant Nan",
+    "CITY": "Duisburg",
+    "STREET": "K\u00f6nigstra\u00dfe ",
+    "STREET NO.": "56",
     "COUNTRY": "DE",
-    "ZIP": "47447",
+    "ZIP": "47051",
     "TAX_ID": "2324234324",
     "TAX_RATE": {
       "takeaway": 0.07,
       "Inhouse Order": 0.19
     },
-    "BUFFET_TIME_BUFFER": 10,
-    "ORDER_TIMES": 10,
+    "BUFFET_TIME_BUFFER": null,
+    "ORDER_TIMES": null,
     "ORDER_AMOUNT_PER_ROUND": null,
     "BUSINESS_HOURS": {
       "MORNING": {
-        "START": "00:00:00",
+        "START": "11:30:00",
         "END": "16:00:00"
       },
       "EVENING": {
         "START": "16:00:00",
-        "END": "23:59:00"
+        "END": "23:30:00"
       }
     },
-    "ORDER_LIMIT": 5,
-    "BUFFET_MODE": "mongo",
-    "PUBLIC_TUNNEL_URL": "http://ffee826e.eu.ngrok.io"
+    "ORDER_LIMIT": null,
+    "BUFFET_MODE": "None"
   }
 ]

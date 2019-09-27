@@ -615,6 +615,24 @@ def void_pickle_dumper(r_type):
 
     return pickle_in
 
+
+def eat_manner_pickler():
+
+    '''
+    :param r_type: receipt type z or x
+    :return:
+    '''
+
+    import pickle
+
+    with open(str(Path(app.root_path) / 'cache' / 'eat_manner.pickle'),
+              mode="wb") as pickle_in:
+
+        pickle.dump({}, pickle_in)
+
+    return pickle_in
+
+
 def x_z_receipt_templating(context,
                            temp_file,
                            save_as,

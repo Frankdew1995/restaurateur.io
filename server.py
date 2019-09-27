@@ -7,7 +7,11 @@ icon = str(Path(app.root_path) / 'static' / 'img' / 'logo.ico')
 
 if __name__ == "__main__":
 
-    start_ngrok(port=5000)
+    try:
+        start_ngrok(port=5000)
+    except Exception as e:
+        print(str(e))
+
     app.run(port=5000)
     # init_gui(app, port=5050, width=1000,
     #          height=500, window_title="Xstar Gastronomy Application", icon=icon)

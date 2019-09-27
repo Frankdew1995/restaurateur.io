@@ -1,0 +1,206 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <script>document.getElementsByTagName("html")[0].className += " js";</script>
+  <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.3.1/css/bootstrap.min.css" integrity="sha384-ggOyR0iXCbMQv3Xipma34MD+dH/1fQ784/j6cY/iJTQUOhcWr7x9JvoRxT2MZw1T" crossorigin="anonymous">
+
+  <link rel="stylesheet" href={{ url_for('static', filename="mongo/css/style.css") }}>
+  <link rel="stylesheet" href="{{ url_for('static', filename='fontawesome-free/css/all.css') }}">
+  <link rel="stylesheet" href="{{ url_for('static', filename='alacarte_cart/css/sticky.css') }}">
+
+
+  <title>{{title}}</title>
+</head>
+
+<style media="screen">
+
+  .invisible{
+    display: none;
+  }
+
+
+  #priceTotal{
+    display: none
+  }
+</style>
+
+<body>
+
+<div class="container">
+
+  <div class="invisible">
+
+    <p>
+      Tisch-Nr:
+      <span id="tableName">
+        {{table_name}}
+      </span>
+
+    </p>
+    <p>
+      Platz-Nr:
+      <span id=seatNumber>
+        {{seat_number}}
+      </span>
+
+    </p>
+
+    <span id="isKid">{{is_kid}}</span>
+
+
+  </div>
+
+
+  <nav class="navbar navbar-expand-lg navbar-light bg-light">
+    <button class="navbar-toggler" type="button" data-toggle="collapse" data-target="#navbarTogglerDemo01" aria-controls="navbarTogglerDemo01" aria-expanded="false" aria-label="Toggle navigation">
+    <span class="navbar-toggler-icon"></span>
+    </button>
+    <div class="collapse navbar-collapse" id="navbarTogglerDemo01">
+
+      <ul class="navbar-nav mr-auto mt-2 mt-lg-0">
+        {% for cate in categories %}
+        <li class="nav-item active">
+          <a class="nav-link" href={{ url_for('mongo_order_by_category',
+                              table_name=table_name,
+                              seat_number=seat_number,
+                              is_kid=is_kid,
+                              cate=cate) }}>{{cate}}
+          </a>
+        </li>
+        {% endfor %}
+
+
+        <li class="nav-item active">
+          <a class="nav-link" href={{ url_for('mongo_order_drinks',
+                                      table_name=table_name,
+                                      seat_number=seat_number,
+                                      is_kid=is_kid) }}>
+                                      Getränke
+
+          </a>
+        </li>
+
+        <li class="nav-item active">
+
+          <a class="nav-link" href={{ url_for('mongo_index',
+                                      table_name=table_name,
+                                      seat_number=seat_number,
+                                      is_kid=is_kid) }}>
+            <i class="fas fa-backward"></i> zurück
+
+          </a>
+        </li>
+
+
+
+      </ul>
+    </div>
+  </nav>
+  <br>
+
+
+
+  <div class="text-component text-center">
+
+    {% for dish in food %}
+
+    <div class="card" style="width: 19rem;">
+        <img src="{{ url_for('static', filename='img/' + dish.image) }}" class="card-img-top" alt="...">
+        <div class="card-body">
+          <h5 class="card-title">
+            {{dish.name}}
+          </h5>
+          <h5 class="card-title">
+            <span id="euro">€</span>
+            {{formatter(dish.price_gross)}}
+          </h5>
+
+          <a href="#0" class="cd-add-to-cart js-cd-add-to-cart" data-price={{dish.price_gross}} id={{dish.id}}>
+            <i class="fas fa-shopping-cart"></i>
+          </a>
+        </div>
+    </div>
+    <br>
+    {% endfor %}
+
+
+
+
+
+
+
+
+
+
+
+  </div>
+
+
+
+
+
+
+</div>
+
+
+
+<main class="cd-main container margin-top-xxl">
+
+
+
+
+
+
+</main>
+
+<div class="cd-cart cd-cart--empty js-cd-cart">
+	<a href="#0" class="cd-cart__trigger text-replace">
+		Cart
+		<ul class="cd-cart__count"> <!-- cart items count -->
+			<li>0</li>
+			<li>0</li>
+		</ul> <!-- .cd-cart__count -->
+	</a>
+
+	<div class="cd-cart__content">
+		<div class="cd-cart__layout">
+			<header class="cd-cart__header">
+				<h2>Cart</h2>
+				<span class="cd-cart__undo">Item removed. <a href="#0">Undo</a></span>
+			</header>
+
+			<div class="cd-cart__body">
+				<ul>
+					<!-- products added to the cart will be inserted here using JavaScript -->
+				</ul>
+			</div>
+
+			<footer class="cd-cart__footer">
+				<a href="#0" class="cd-cart__checkout" id="checkout">
+          <em>Bestellen <span id="priceTotal">0</span>
+            <svg class="icon icon--sm" viewBox="0 0 24 24"><g fill="none" stroke="currentColor"><line stroke-width="2" stroke-linecap="round" stroke-linejoin="round" x1="3" y1="12" x2="21" y2="12"/><polyline stroke-width="2" stroke-linecap="round" stroke-linejoin="round" points="15,6 21,12 15,18 "/></g>
+            </svg>
+          </em>
+        </a>
+			</footer>
+		</div>
+	</div> <!-- .cd-cart__content -->
+</div> <!-- cd-cart -->
+<script src={{ url_for('static', filename="mongo/js/util.js") }}></script>
+<script src={{ url_for('static', filename="mongo/js/main.js") }}></script>
+<script src={{ url_for('static', filename="mongo/js/mongo.js") }}></script>
+<script src="https://code.jquery.com/jquery-3.3.1.slim.min.js" integrity="sha384-q8i/X+965DzO0rT7abK41JStQIAqVgRVzpbzo5smXKp4YfRvH+8abtTE1Pi6jizo" crossorigin="anonymous"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/popper.js/1.14.7/umd/popper.min.js" integrity="sha384-UO2eT0CpHqdSJQ6hJty5KVphtPhzWj9WO1clHTMGa3JDZwrnQq4sF86dIHNDz0W1" crossorigin="anonymous"></script>
+<script src="https://stackpath.bootstrapcdn.com/bootstrap/4.3.1/js/bootstrap.min.js" integrity="sha384-JjSmVgyd0p3pXB1rRibZUAYoIIy6OrQ6VrjIEaFf/nJGzIxFDsf4x0xIM+B07jRM" crossorigin="anonymous"></script>
+<script type="text/javascript">
+
+  const cartTotal = document.getElementById("cartTotal");
+
+  const totalAmount = Number(cartTotal.textContent);
+  console.log(totalAmount);
+
+</script>
+</body>
+</html>

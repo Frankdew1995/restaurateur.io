@@ -1,210 +1,197 @@
-
-<!DOCTYPE html>
+<!doctype html>
 <html lang="en">
 <head>
-  <meta http-equiv="Content-Type" content="text/html; charset=UTF-8"/>
-  <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1.0"/>
-  <title>{{title}}</title>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <script>document.getElementsByTagName("html")[0].className += " js";</script>
+  <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.3.1/css/bootstrap.min.css" integrity="sha384-ggOyR0iXCbMQv3Xipma34MD+dH/1fQ784/j6cY/iJTQUOhcWr7x9JvoRxT2MZw1T" crossorigin="anonymous">
 
-  <!-- CSS  -->
-  <link href="https://fonts.googleapis.com/icon?family=Material+Icons" rel="stylesheet">
-  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/materialize/1.0.0/css/materialize.min.css">
+  <link rel="stylesheet" href={{ url_for('static', filename="alacarte/css/style.css") }}>
+  <link rel="stylesheet" href="{{ url_for('static', filename='fontawesome-free/css/all.css') }}">
+
+
+  <title>{{title}}</title>
 </head>
 
 <style media="screen">
-      /* Custom Stylesheet */
-      /**
-      * Use this file to override Materialize files so you can update
-      * the core Materialize files in the future
-      *
-      * Made By MaterializeCSS.com
-      */
 
-      .right_img {
-          top: -35%;
-          position: absolute;
-          width: 100%;
-          display: flex;
-          justify-content: space-around;
-      }
+  .invisible{
+    display: none;
+  }
 
 
-      .icon-block {
-      padding: 0 15px;
-      }
-      .icon-block .material-icons {
-      font-size: inherit;
-      }
-
-
-
-      .card .card-content {
-
-        border-radius: 0 0 2px 2px;
-        padding: 15px;
-      }
-
-      .card-title {
-        margin-top:1px;
-        text-align: left;
-      }
-
-      .blue-grey .darken-1 {
-
-        background-color: #202224;
-      }
-
-
-
-      .row {
-
-          margin-left: auto;
-          margin-right: auto;
-          margin-bottom: 0;
-
-      }
-
-      .card-content .white-text{
-        text-align: left;
-      }
-
-      .card-action > a{
-        margin-left: 5px;
-        margin-top: 5px;
-      }
-
-      .section {
-          padding-top: 0rem;
-          padding-bottom: 0rem;
-      }
-
-      .row .col {
-          float: left;
-          -webkit-box-sizing: border-box;
-          box-sizing: border-box;
-          padding: 0.1rem;
-          min-height: 1px;
-      }
-
-      .row .col.s12 {
-        width: 100%;
-        margin-left: auto;
-        margin-top: 1px;
-        left: auto;
-        right: auto;
-
-    }
-
+  #priceTotal{
+    display: none
+  }
 </style>
-
 
 <body>
 
+<div class="container">
+
+  <div class="invisible">
+
+    <p>
+      Tisch-Nr:
+      <span id="tableName">
+        {{table_name}}
+      </span>
+
+    </p>
+    <p>
+      Platz-Nr:
+      <span id=seatNumber>
+        {{seat_number}}
+      </span>
+
+    </p>
+
+    <span id="isKid">{{is_kid}}</span>
 
 
-  <div class="container">
-    <div class="section">
-
-      <!--   Icon Section   -->
-      <div class="row">
-
-            <div class="col s12 m7">
-              <div class="card">
-                <div class="card-image">
-                  <img src={{ url_for('static', filename="img/alacarte_bg.jpg") }}>
-                </div>
-                <div class="card-content">
-                  <p>Das Bestellsystem wird aktiviert, wenn Sie entweder auf "BUFFET" oder "KINDER BUFFET" klicken.
-                    Die entsprechenden Mahlzeitengebühren werden nach dem Anklicken berechnet.</p>
-                </div>
-
-              </div>
-            </div>
-
-      </div>
+  </div>
 
 
-      <div class="row">
+  <nav class="navbar navbar-expand-lg navbar-light bg-light">
+    <button class="navbar-toggler" type="button" data-toggle="collapse" data-target="#navbarTogglerDemo01" aria-controls="navbarTogglerDemo01" aria-expanded="false" aria-label="Toggle navigation">
+    <span class="navbar-toggler-icon"></span>
+    </button>
+    <div class="collapse navbar-collapse" id="navbarTogglerDemo01">
+
+      <ul class="navbar-nav mr-auto mt-2 mt-lg-0">
+        {% for cate in categories %}
+        <li class="nav-item active">
+          <a class="nav-link" href={{ url_for('order_alacarte_by_category',
+                              table_name=table_name,
+                              seat_number=seat_number,
+                              cate=cate) }}>{{cate}}
+          </a>
+        </li>
+        {% endfor %}
+
+
+        <li class="nav-item active">
+          <a class="nav-link" href={{ url_for('order_alacarte_drinks',
+                                      table_name=table_name,
+                                      seat_number=seat_number) }}>
+                                      Getränke
+
+          </a>
+        </li>
+
+        <li class="nav-item active">
+
+          <a class="nav-link" href={{ url_for('alacarte_navigate',
+                                      table_name=table_name,
+                                      seat_number=seat_number) }}>
+            <i class="fas fa-backward"></i> zurück
+
+          </a>
+        </li>
 
 
 
-        <div class="col s3 s3" id="timedeltaCard">
-          <div class="card">
-            <div class="card-image">
-
-              <a href="#">
-                <img src={{ url_for('static', filename="img/mongo_order.png") }}>
-              </a>
-
-            </div>
-
-          </div>
-        </div>
-
-
-      <div class="col s3 s3">
-        <div class="card">
-          <div class="card-image">
-
-            <a href="#">
-
-              <img src={{ url_for('static', filename="img/img4.png") }}>
-
-            </a>
-          </div>
-
-        </div>
-      </div>
-
-
-      <div class="col s3 s3">
-        <div class="card">
-
-          <div class="card-image">
-
-            <a href="#" id="service">
-              <img src={{ url_for('static', filename="img/ala_service.png") }}>
-            </a>
-          </div>
-
-        </div>
-      </div>
-
-
-      <div class="col s3 s3">
-        <div class="card">
-          <div class="card-image">
-            <a href="#" id="pay">
-              <img src={{ url_for('static', filename="img/ala_pay.png") }}>
-            </a>
-          </div>
-
-        </div>
-
-      </div>
-
+      </ul>
     </div>
-    <br><br>
+  </nav>
+  <br>
+
+
+
+  <div class="text-component text-center">
+
+    {% for dish in dishes %}
+
+    <div class="card" style="width: 19rem;">
+        <img src="{{ url_for('static', filename='img/' + dish.image) }}" class="card-img-top" alt="...">
+        <div class="card-body">
+          <h5 class="card-title">
+            {{dish.name}}
+          </h5>
+          <h5 class="card-title cn">
+            {{dish.cn_description}}
+          </h5>
+          <h5 class="card-title">
+            <span id="euro">€</span>
+            {{formatter(dish.price_gross)}}
+          </h5>
+
+          <a href="#0" class="cd-add-to-cart js-cd-add-to-cart" data-price={{dish.price_gross}} id={{dish.id}}>
+            <i class="fas fa-shopping-cart"></i>
+          </a>
+        </div>
+    </div>
+    <br>
+    {% endfor %}
+
+
+
+
+
+
+
+
+
+
+
   </div>
 
 
 
-  </div>
 
 
-  <!-- Compiled and minified JavaScript -->
-  <script src="https://cdnjs.cloudflare.com/ajax/libs/materialize/1.0.0/js/materialize.min.js"></script>
 
-  <script type="text/javascript">
-          window.onload = startInterval;
-          function startInterval() {
-              setInterval("startTime();",1000);
-          }
-          function startTime() {
-              var now = new Date();
-              document.getElementById('datetime').textContent = now.getHours() + ":" + now.getMinutes() + ":" +now.getSeconds();
-      }
-    </script>
+</div>
 
-  </body>
+
+
+<main class="cd-main container margin-top-xxl">
+
+
+
+
+
+
+</main>
+
+<div class="cd-cart cd-cart--empty js-cd-cart">
+	<a href="#0" class="cd-cart__trigger text-replace">
+		Cart
+		<ul class="cd-cart__count"> <!-- cart items count -->
+			<li>0</li>
+			<li>0</li>
+		</ul> <!-- .cd-cart__count -->
+	</a>
+
+	<div class="cd-cart__content">
+		<div class="cd-cart__layout">
+			<header class="cd-cart__header">
+				<h2>Cart</h2>
+				<span class="cd-cart__undo">Item removed. <a href="#0">Undo</a></span>
+			</header>
+
+			<div class="cd-cart__body">
+				<ul>
+					<!-- products added to the cart will be inserted here using JavaScript -->
+				</ul>
+			</div>
+
+			<footer class="cd-cart__footer">
+				<a href="#0" class="cd-cart__checkout" id="checkout">
+          <em>Bestellen <span id="priceTotal">0</span>
+            <svg class="icon icon--sm" viewBox="0 0 24 24"><g fill="none" stroke="currentColor"><line stroke-width="2" stroke-linecap="round" stroke-linejoin="round" x1="3" y1="12" x2="21" y2="12"/><polyline stroke-width="2" stroke-linecap="round" stroke-linejoin="round" points="15,6 21,12 15,18 "/></g>
+            </svg>
+          </em>
+        </a>
+			</footer>
+		</div>
+	</div> <!-- .cd-cart__content -->
+</div> <!-- cd-cart -->
+<script src={{ url_for('static', filename="alacarte/js/util.js") }}></script>
+<script src={{ url_for('static', filename="alacarte/js/main.js") }}></script>
+<script src={{ url_for('static', filename="alacarte/js/alacarte.js") }}></script>
+<script src="https://code.jquery.com/jquery-3.3.1.slim.min.js" integrity="sha384-q8i/X+965DzO0rT7abK41JStQIAqVgRVzpbzo5smXKp4YfRvH+8abtTE1Pi6jizo" crossorigin="anonymous"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/popper.js/1.14.7/umd/popper.min.js" integrity="sha384-UO2eT0CpHqdSJQ6hJty5KVphtPhzWj9WO1clHTMGa3JDZwrnQq4sF86dIHNDz0W1" crossorigin="anonymous"></script>
+<script src="https://stackpath.bootstrapcdn.com/bootstrap/4.3.1/js/bootstrap.min.js" integrity="sha384-JjSmVgyd0p3pXB1rRibZUAYoIIy6OrQ6VrjIEaFf/nJGzIxFDsf4x0xIM+B07jRM" crossorigin="anonymous"></script>
+</body>
 </html>

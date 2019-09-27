@@ -43,5 +43,10 @@
     "Class": "Food",
     "Subcategory": "Hauptgericht",
     "Unit": "Teller"
+  },
+  {
+    "Class": "Drinks",
+    "Subcategory": "Bier",
+    "Unit": "Flasche"
   }
 ]

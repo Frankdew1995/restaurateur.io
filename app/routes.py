@@ -3197,7 +3197,7 @@ def order_alacarte(table_name, seat_number):
 
     dishes = Food.query.filter(Food.inUse == True,
                                Food.class_name == "Food",
-                               Food.eat_manner == "alacarte").all()
+                               Food.is_a_la_carte == True).all()
 
     for dish in dishes:
 
@@ -3219,7 +3219,7 @@ def order_alacarte(table_name, seat_number):
 
     if table and table.is_on:
 
-        return render_template('alacarte2.html', **context)
+        return render_template('alacarte.html', **context)
 
     else:
 
@@ -3234,7 +3234,7 @@ def order_alacarte_by_category(table_name, seat_number, cate):
     table = Table.query.filter_by(name=table_name).first_or_404()
 
     dishes = Food.query.filter(Food.inUse == True,
-                               Food.eat_manner == "alacarte",
+                               Food.is_a_la_carte == True,
                                Food.category == cate).all()
 
     for dish in dishes:
@@ -3257,7 +3257,7 @@ def order_alacarte_by_category(table_name, seat_number, cate):
 
     if table and table.is_on:
 
-        return render_template('alacarte2.html', **context)
+        return render_template('alacarte.html', **context)
 
     else:
 
@@ -3277,7 +3277,7 @@ def order_alacarte_drinks(table_name, seat_number):
                                 table_name=table_name,
                                 seat_number=seat_number))
 
-    table = Table.query.filter_by(name=table_name).first_or_404()
+    table = Table.query.filter_by(name=table_name).first()
 
     dishes = Food.query.filter(Food.inUse == True,
                                Food.class_name == "Drinks").all()
@@ -3358,130 +3358,48 @@ def order_alacarte_drinks_category(table_name, seat_number, cate):
         return render_template('table404.html', msg=msg)
 
 
-@app.route("/alacarte/guest/checkout", methods=["GET", "POST"])
+@app.route("/alacarte/guest/checkout", methods=["POST"])
 def alacarte_guest_checkout():
 
-    if request.method == "POST":
+    # Json Data Posted via AJAX
+    json_data = request.json
 
-        # Json Data Posted via AJAX
-        json_data = request.json
+    table_name = json_data.get('tableName').upper()
+    seat_number = json_data.get('seatNumber')
 
-        table_name = json_data.get('tableName').upper()
-        seat_number = json_data.get('seatNumber')
+    section = Table.query.filter_by(name=table_name).first().section
 
-        section = Table.query.filter_by(name=table_name).first().section
+    details = json_data.get('details')
 
-        details = json_data.get('details')
+    price_dict = {Food.query.get_or_404(int(i.get('itemId'))).name:
+                      Food.query.get_or_404(int(i.get('itemId'))).price_gross
+                  for i in details}
 
-        price_dict = {Food.query.get_or_404(int(i.get('itemId'))).name:
-                          Food.query.get_or_404(int(i.get('itemId'))).price_gross
-                      for i in details}
+    details = {
+        Food.query.get_or_404(int(i.get('itemId'))).name:
+            {'quantity': int(i.get('itemQuantity')),
+             'price': float(price_dict.get(Food.query.get_or_404(int(i.get('itemId'))).name)),
+             'class_name': Food.query.get_or_404(int(i.get('itemId'))).class_name,
+             'order_by': seat_number}
+        for i in details}
 
-        details = {
-            Food.query.get_or_404(int(i.get('itemId'))).name:
-                {'quantity': int(i.get('itemQuantity')),
-                 'price': float(price_dict.get(Food.query.get_or_404(int(i.get('itemId'))).name)),
-                 'class_name': Food.query.get_or_404(int(i.get('itemId'))).class_name,
-                 'order_by': seat_number}
-            for i in details}
+    total_price = sum([i[1].get('quantity') * i[1].get('price') for i in details.items()])
 
-        total_price = sum([i[1].get('quantity') * i[1].get('price') for i in details.items()])
+    # Check if this table is already associated with an open order
+    orders = db.session.query(Order).filter(
+        Order.type == "In",
+        Order.isPaid == False,
+        Order.isCancelled==False,
+        Order.table_name == table_name).order_by(Order.timeCreated.desc()).all()
 
-        # Check if this table is already associated with an open order
-        orders = db.session.query(Order).filter(
-            Order.type == "In",
-            Order.isPaid == False,
-            Order.isCancelled==False,
-            Order.table_name == table_name).order_by(Order.timeCreated.desc()).all()
+    # None variable for further override.
+    order_id = None
 
-        # None variable for further override.
-        order_id = None
+    if len(orders) > 0:
 
-        if len(orders) > 0:
+        order = orders[0]
 
-            order = orders[0]
-
-            if order.timeCreated.date() != today:
-
-                now = datetime.now(pytz.timezone(timezone))
-
-                cur_max_id = max([order.id for order in Order.query.all()])
-
-                # Create a new order for this table
-                order = Order(
-                    totalPrice=total_price,
-                    endTotal=total_price,
-                    orderNumber=str(uuid4().int),
-                    items=json.dumps(details),
-                    timeCreated=now,
-                    type="In",
-                    table_name=table_name,
-                    seat_number=seat_number,
-                    section=section,
-                    isCancelled=False,
-                    dishes=json.dumps([{datetime.timestamp(now): {"items": details,
-                                                                  "order_id": cur_max_id + 1,
-                                                                  "order_by": seat_number,
-                                                                  "subtype": None}}]))
-
-                db.session.add(order)
-                db.session.commit()
-
-                # Override the order id
-                order_id = order.id
-
-            else:
-
-                now = datetime.now(pytz.timezone(timezone))
-
-                cur_items = json.loads(order.items)
-
-                dishes = order.dishes
-
-                if not dishes:
-
-                    dishes = []
-
-                else:
-
-                    dishes = json.loads(order.dishes)
-
-                dishes.append({datetime.timestamp(now): {"items": details,
-                                                         "order_id": order.id,
-                                                         "order_by": seat_number,
-                                                         "subtype": None
-                                                         }})
-
-                order.dishes = json.dumps(dishes)
-
-                cur_dishes = cur_items.keys()
-
-                for dish, items in details.items():
-
-                    if dish in cur_dishes:
-
-                        cur_items[dish]['quantity'] = cur_items[dish]['quantity'] \
-                                                      + items.get('quantity')
-
-                    else:
-
-                        cur_items[dish] = items
-
-                order.items = json.dumps(cur_items)
-
-                order.totalPrice = sum([i[1].get('quantity') * i[1].get('price')
-                                        for i in cur_items.items()])
-
-                db.session.commit()
-
-                order.endTotal = order.totalPrice
-
-                db.session.commit()
-
-                # override the order_id
-                order_id = order.id
-
-        else:
+        if order.timeCreated.date() != today:
 
             now = datetime.now(pytz.timezone(timezone))
 
@@ -3502,9 +3420,7 @@ def alacarte_guest_checkout():
                 dishes=json.dumps([{datetime.timestamp(now): {"items": details,
                                                               "order_id": cur_max_id + 1,
                                                               "order_by": seat_number,
-                                                              "subtype": None
-                                                              }}])
-            )
+                                                              "subtype": None}}]))
 
             db.session.add(order)
             db.session.commit()
@@ -3512,99 +3428,181 @@ def alacarte_guest_checkout():
             # Override the order id
             order_id = order.id
 
-        details_kitchen = {key: {'quantity': items.get('quantity'),
-                                 'total': items.get('quantity') * items.get('price')}
-                           for key, items in details.items() if items.get("class_name") == "Food"}
+        else:
 
-        details_bar = {key: {'quantity': items.get('quantity'),
+            now = datetime.now(pytz.timezone(timezone))
+
+            cur_items = json.loads(order.items)
+
+            dishes = order.dishes
+
+            if not dishes:
+
+                dishes = []
+
+            else:
+
+                dishes = json.loads(order.dishes)
+
+            dishes.append({datetime.timestamp(now): {"items": details,
+                                                     "order_id": order.id,
+                                                     "order_by": seat_number,
+                                                     "subtype": None
+                                                     }})
+
+            order.dishes = json.dumps(dishes)
+
+            cur_dishes = cur_items.keys()
+
+            for dish, items in details.items():
+
+                if dish in cur_dishes:
+
+                    cur_items[dish]['quantity'] = cur_items[dish]['quantity'] \
+                                                  + items.get('quantity')
+
+                else:
+
+                    cur_items[dish] = items
+
+            order.items = json.dumps(cur_items)
+
+            order.totalPrice = sum([i[1].get('quantity') * i[1].get('price')
+                                    for i in cur_items.items()])
+
+            db.session.commit()
+
+            order.endTotal = order.totalPrice
+
+            db.session.commit()
+
+            # override the order_id
+            order_id = order.id
+
+    else:
+
+        now = datetime.now(pytz.timezone(timezone))
+
+        cur_max_id = max([order.id for order in Order.query.all()])
+
+        # Create a new order for this table
+        order = Order(
+            totalPrice=total_price,
+            endTotal=total_price,
+            orderNumber=str(uuid4().int),
+            items=json.dumps(details),
+            timeCreated=now,
+            type="In",
+            table_name=table_name,
+            seat_number=seat_number,
+            section=section,
+            isCancelled=False,
+            dishes=json.dumps([{datetime.timestamp(now): {"items": details,
+                                                          "order_id": cur_max_id + 1,
+                                                          "order_by": seat_number,
+                                                          "subtype": None
+                                                          }}])
+        )
+
+        db.session.add(order)
+        db.session.commit()
+
+        # Override the order id
+        order_id = order.id
+
+    details_kitchen = {key: {'quantity': items.get('quantity'),
                              'total': items.get('quantity') * items.get('price')}
-                       for key, items in details.items() if items.get("class_name") == "Drinks"}
+                       for key, items in details.items() if items.get("class_name") == "Food"}
 
-        context_kitchen = {"details": details_kitchen,
-                           "seat_number": seat_number,
-                           "table_name": table_name,
-                           "now": datetime.now().strftime("%Y-%m-%d %H:%M:%S")}
+    details_bar = {key: {'quantity': items.get('quantity'),
+                         'total': items.get('quantity') * items.get('price')}
+                   for key, items in details.items() if items.get("class_name") == "Drinks"}
 
-        kitchen_temp = str(Path(app.root_path) / 'static' / 'docx' / 'kitchen_alacarte.docx')
-        save_as_kitchen = f"alacarte_meallist_kitchen_{order.id}_{str(uuid4())}"
-
-        context_bar = {"details": details_bar,
+    context_kitchen = {"details": details_kitchen,
                        "seat_number": seat_number,
                        "table_name": table_name,
                        "now": datetime.now().strftime("%Y-%m-%d %H:%M:%S")}
 
-        bar_temp = str(Path(app.root_path) / 'static' / 'docx' / 'bar_alacarte.docx')
-        save_as_bar = f"alacarte_meallist_bar_{order.id}_{str(uuid4())}"
+    kitchen_temp = str(Path(app.root_path) / 'static' / 'docx' / 'kitchen_alacarte.docx')
+    save_as_kitchen = f"alacarte_meallist_kitchen_{order.id}_{str(uuid4())}"
 
-        # Read the printer setting data from the json file
-        with open(str(Path(app.root_path) / "settings" / "printer.json"), encoding="utf8") as file:
-            data = file.read()
+    context_bar = {"details": details_bar,
+                   "seat_number": seat_number,
+                   "table_name": table_name,
+                   "now": datetime.now().strftime("%Y-%m-%d %H:%M:%S")}
 
-        data = json.loads(data)
+    bar_temp = str(Path(app.root_path) / 'static' / 'docx' / 'bar_alacarte.docx')
+    save_as_bar = f"alacarte_meallist_bar_{order.id}_{str(uuid4())}"
 
-        def master_printer():
+    # Read the printer setting data from the json file
+    with open(str(Path(app.root_path) / "settings" / "printer.json"), encoding="utf8") as file:
+        data = file.read()
 
-            # Print to kitchen
-            kitchen_templating(context=context_kitchen,
-                               temp_file=kitchen_temp,
-                               save_as=save_as_kitchen,
-                               printer=data.get('kitchen').get('printer'))
+    data = json.loads(data)
 
-            # Print to bar
-            bar_templating(context=context_bar,
-                           temp_file=bar_temp,
-                           save_as=save_as_bar,
-                           printer=data.get('bar').get('printer'))
+    def master_printer():
 
-        # Start the thread
-        th = Thread(target=master_printer)
+        # Print to kitchen
+        kitchen_templating(context=context_kitchen,
+                           temp_file=kitchen_temp,
+                           save_as=save_as_kitchen,
+                           printer=data.get('kitchen').get('printer'))
 
-        # Validate if the ordering has really been taken
+        # Print to bar
+        bar_templating(context=context_bar,
+                       temp_file=bar_temp,
+                       save_as=save_as_bar,
+                       printer=data.get('bar').get('printer'))
 
-        order = db.session.query(Order).get_or_404(int(order_id))
+    # Start the thread
+    th = Thread(target=master_printer)
 
-        if not order:
+    # Validate if the ordering has really been taken
+
+    order = db.session.query(Order).get_or_404(int(order_id))
+
+    if not order:
+
+        return jsonify({"error": "Leider Ihre Bestellung war nicht durchgeführt. "
+                                 "Bitte versuchen Sie erneut."})
+
+    dishes = json.loads(order.dishes)
+
+    # Order is empty
+    if len(dishes) == 0:
+
+        return jsonify({"error": "Leider Ihre Bestellung war nicht durchgeführt. "
+                                 "Bitte versuchen Sie erneut."})
+
+    else:
+
+        latest_time = str(max([float(list(i.keys())[0]) for i in dishes]))
+
+        latest_order = [i for i in dishes if str(list(i.keys())[0]) == str(latest_time)][0]
+
+        last_batch = latest_order.get(latest_time).get('items')
+
+        if last_batch != details:
 
             return jsonify({"error": "Leider Ihre Bestellung war nicht durchgeführt. "
                                      "Bitte versuchen Sie erneut."})
 
-        dishes = json.loads(order.dishes)
+        # !!!!Order is validated and start printing!!!!
+        th.start()
 
-        # Order is empty
-        if len(dishes) == 0:
+        # trigger the new order event
+        try:
 
-            return jsonify({"error": "Leider Ihre Bestellung war nicht durchgeführt. "
-                                     "Bitte versuchen Sie erneut."})
+            trigger_event(channel="orders",
+                          event="new order",
+                          response={"success": "Order has been placed",
+                                    "table": table_name})
 
-        else:
+        except Exception as e:
 
-            latest_time = str(max([float(list(i.keys())[0]) for i in dishes]))
+            print("Error when triggering event with Pusher:", str(e))
 
-            latest_order = [i for i in dishes if str(list(i.keys())[0]) == str(latest_time)][0]
-
-            last_batch = latest_order.get(latest_time).get('items')
-
-            if last_batch != details:
-
-                return jsonify({"error": "Leider Ihre Bestellung war nicht durchgeführt. "
-                                         "Bitte versuchen Sie erneut."})
-
-            # !!!!Order is validated and start printing!!!!
-            th.start()
-
-            # trigger the new order event
-            try:
-
-                trigger_event(channel="orders",
-                              event="new order",
-                              response={"success": "Order has been placed",
-                                        "table": table_name})
-
-            except Exception as e:
-
-                print("Error when triggering event with Pusher:", str(e))
-
-            return jsonify({"success": "Ihre Bestellung wurde an die Küche geschickt"})
+        return jsonify({"success": "Ihre Bestellung wurde an die Küche geschickt"})
 
 
 @app.route('/service/call', methods=['POST'])

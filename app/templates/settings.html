@@ -118,6 +118,27 @@
         </p>
 
         <p>
+            {{ form.buffet_mode.label }}<br>
+            {{ form.buffet_mode(class="form-control")}}
+        </p>
+
+
+        <p>
+            {{ form.jp_buffet_time_buffer.label }}<br>
+            {{ form.jp_buffet_time_buffer(placeholder='请输入整分钟数', class="form-control")}}
+        </p>
+
+        <p>
+            {{ form.order_times.label }}<br>
+            {{ form.order_times(placeholder='请输入整数轮次, 例如10', class="form-control")}}
+        </p>
+
+        <p>
+            {{ form.order_limit_per_round.label }}<br>
+            {{ form.order_limit_per_round(placeholder='请输入最大点餐数, 例如5', class="form-control")}}
+        </p>
+
+        <p>
 
           {{ form.business_hours_start_morning.label }}<br>
           {{ form.business_hours_start_morning(class="form-control") }}

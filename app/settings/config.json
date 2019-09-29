@@ -25,6 +25,6 @@
       }
     },
     "ORDER_LIMIT": null,
-    "BUFFET_MODE": "mongo"
+    "BUFFET_MODE": "None"
   }
 ]

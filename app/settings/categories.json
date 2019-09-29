@@ -6,33 +6,8 @@
   },
   {
     "Class": "Food",
-    "Subcategory": "Japan Buffet",
-    "Unit": "Teller"
-  },
-  {
-    "Class": "Drinks",
-    "Subcategory": "Liqor",
-    "Unit": "Bottle"
-  },
-  {
-    "Class": "Food",
-    "Subcategory": "Grillen",
-    "Unit": "Pfanne"
-  },
-  {
-    "Class": "Food",
-    "Subcategory": "Fish",
-    "Unit": ""
-  },
-  {
-    "Class": "Food",
     "Subcategory": "Mongo Buffet",
     "Unit": "Pfand"
-  },
-  {
-    "Class": "Food",
-    "Subcategory": "Grill",
-    "Unit": "pfanne"
   },
   {
     "Class": "Food",
@@ -48,5 +23,35 @@
     "Class": "Drinks",
     "Subcategory": "Bier",
     "Unit": "Flasche"
+  },
+  {
+    "Class": "Food",
+    "Subcategory": "Topf Gericht",
+    "Unit": "Topf"
+  },
+  {
+    "Class": "Food",
+    "Subcategory": "Suppen",
+    "Unit": "Shuessel"
+  },
+  {
+    "Class": "Food",
+    "Subcategory": "Suppen Nudeln",
+    "Unit": "schuessel"
+  },
+  {
+    "Class": "Food",
+    "Subcategory": " Dim Sum",
+    "Unit": "Teller"
+  },
+  {
+    "Class": "Drinks",
+    "Subcategory": "Warme Getraenke",
+    "Unit": "Bottle"
+  },
+  {
+    "Class": "Food",
+    "Subcategory": "Alkoholfrei Getraenke",
+    "Unit": "pfanne"
   }
 ]

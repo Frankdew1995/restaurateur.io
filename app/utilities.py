@@ -901,7 +901,10 @@ def start_ngrok(port):
             executable = str(Path(app.root_path) / 'utils'
                              / 'ngrok' / str(bit_version) / 'ngrok')
 
-        subprocess.Popen([executable, 'http', '-region=eu', str(port)])
+        subprocess.Popen([executable,
+                          'http',
+                          '-subdomain=nan-restaurant-duisburg',
+                          '-region=eu', str(port)])
 
     localhost_url = "http://localhost:4040/api/tunnels"  # Url with tunnel details
     time.sleep(1)
@@ -950,3 +953,45 @@ def is_xz_printed(timestamp, r_type):
         printed_timestamps.append(last_timestamp)
 
     return timestamp in printed_timestamps
+
+
+def print_qrcode():
+
+    '''
+    :param context: a dictionary key-value pair
+    :param temp_file: template file path for receipt printing(Takeout and InHouse)
+    :param save_as: the file name without file extension
+    :param printer: the printer name for printing the receipt
+    :return: "ok. if successfully printed
+    '''
+
+    # Read the printer setting data from the json file
+    with open(str(Path(app.root_path) / "settings" / "printer.json"), encoding="utf8") as file:
+        data = file.read()
+
+    data = json.loads(data)
+
+    # if the printer is on
+    if data.get('receipt').get('is_on'):
+
+        qr_sheet_path = str(Path(app.root_path) / 'static' / 'docx' / '21.pdf')
+
+        # Print the PDF info from the thermal printer
+        printer_path = str(Path(app.root_path) / 'utils' / 'printer' / 'PDFtoPrinter')
+
+        printer = "Star TSP100 Cutter (TSP143)"
+        import subprocess
+        # call the command to print the pdf file
+        wait_start = time.time()
+        while True:
+            if not Path(qr_sheet_path).exists():
+                time.sleep(0.5)
+                wait_end = time.time()
+
+                if wait_end - wait_start > 30:
+                    break
+            else:
+                subprocess.Popen(f'{printer_path} {qr_sheet_path} "{printer}"', shell=True)
+                break
+
+        return "ok"

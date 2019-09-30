@@ -43,7 +43,6 @@ import os
 # Some global variables - read from config file.
 info = json_reader(str(Path(app.root_path) / 'settings' / 'config.json'))
 
-
 company_info = {
             "tax_rate_out": info.get('TAX_RATE').get('takeaway'),
             "tax_rate_in": info.get('TAX_RATE').get('Inhouse Order'),
@@ -67,7 +66,6 @@ suffix_url = "guest/navigation"
 timezone = 'Europe/Berlin'
 
 today = datetime.now(tz=pytz.timezone(timezone)).date()
-
 
 # Custom Error Page
 @app.errorhandler(404)
@@ -518,16 +516,41 @@ def index():
 
 
 # Guest Facing Order Interface
-@app.route("/takeaway/frontviews")
+@app.route("/takeaway/all")
 def food_frontview():
 
-    dishes = Food.query.filter(Food.inUse == True).all()
+    dishes = Food.query.filter(Food.inUse == True,
+                               Food.is_takeaway == True).all()
 
-    categories = set([dish.category for dish in dishes])
+    categories = set([dish.category for dish in dishes if dish.inUse
+                      and "Please" not in dish.category])
 
     context =dict(dishes=dishes,
                   categories=categories,
-                  title='Xstar Takeout Food',
+                  title='Takeout',
+                  tel="+ 49 555555",
+                  formatter=formatter)
+
+    return render_template('foodfrontview.html', **context)
+
+
+# Guest Facing Order Interface
+@app.route("/takeaway/frontviews/<string:cate>")
+def takeaway_by_category(cate):
+
+    all_dishes = Food.query.filter(Food.inUse == True,
+                               Food.is_takeaway == True).all()
+
+    categories = set([dish.category for dish in all_dishes if dish.inUse
+                      and "Please" not in dish.category])
+
+    dishes = Food.query.filter(Food.inUse == True,
+                               Food.is_takeaway == True,
+                               Food.category == cate).all()
+
+    context =dict(dishes=dishes,
+                  categories=categories,
+                  title='Takeout',
                   tel="+ 49 555555",
                   formatter=formatter)
 
@@ -5134,7 +5157,7 @@ def print_printed_z_receipt(from_timestamp, til_timestamp, z_number):
 @login_required
 def x_receipts_manage():
 
-    with open(str(Path(app.root_path) / 'cache' / 'eat_manner.pickle'),
+    with open(str(Path(app.root_path) / 'cache' / 'x_bon_settings.pickle'),
               mode="rb") as pickle_out:
         data = pickle.load(pickle_out)
 
@@ -5159,7 +5182,7 @@ def view_x_receipt(timestamp):
 
     unpaid_orders = Order.query.filter(Order.isPaid == False).order_by(Order.settleTime.desc()).all()
 
-    with open(str(Path(app.root_path) / 'cache' / 'eat_manner.pickle'),
+    with open(str(Path(app.root_path) / 'cache' / 'x_bon_settings.pickle'),
               mode="rb") as pickle_out:
         data = pickle.load(pickle_out)
 
@@ -5274,7 +5297,7 @@ def print_x_receipt(date_time):
 
     unpaid_orders = Order.query.filter(Order.isPaid == False).order_by(Order.settleTime.desc()).all()
 
-    with open(str(Path(app.root_path) / 'cache' / 'eat_manner.pickle'),
+    with open(str(Path(app.root_path) / 'cache' / 'x_bon_settings.pickle'),
               mode="rb") as pickle_out:
 
         data = pickle.load(pickle_out)
@@ -5407,7 +5430,7 @@ def print_x_receipt(date_time):
 
         data.append({len(data)+1: {"lastPrinted": now}})
 
-    with open(str(Path(app.root_path) / 'cache' / 'eat_manner.pickle'),
+    with open(str(Path(app.root_path) / 'cache' / 'x_bon_settings.pickle'),
               mode="wb") as pickle_in:
 
         pickle.dump(data, pickle_in)

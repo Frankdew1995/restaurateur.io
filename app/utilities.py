@@ -955,7 +955,7 @@ def is_xz_printed(timestamp, r_type):
     return timestamp in printed_timestamps
 
 
-def print_qrcode():
+def print_qrcode(qrcode_path):
 
     '''
     :param context: a dictionary key-value pair
@@ -974,8 +974,6 @@ def print_qrcode():
     # if the printer is on
     if data.get('receipt').get('is_on'):
 
-        qr_sheet_path = str(Path(app.root_path) / 'static' / 'docx' / '21.pdf')
-
         # Print the PDF info from the thermal printer
         printer_path = str(Path(app.root_path) / 'utils' / 'printer' / 'PDFtoPrinter')
 
@@ -984,14 +982,14 @@ def print_qrcode():
         # call the command to print the pdf file
         wait_start = time.time()
         while True:
-            if not Path(qr_sheet_path).exists():
+            if not Path(qrcode_path).exists():
                 time.sleep(0.5)
                 wait_end = time.time()
 
                 if wait_end - wait_start > 30:
                     break
             else:
-                subprocess.Popen(f'{printer_path} {qr_sheet_path} "{printer}"', shell=True)
+                subprocess.Popen(f'{printer_path} {qrcode_path} "{printer}"', shell=True)
                 break
 
         return "ok"

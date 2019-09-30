@@ -43,7 +43,7 @@ checkBtn.addEventListener("click", function(){
         alert(resp.success);
 
         // redirct handling + javascript template literals
-        window.location = "/takeaway/frontviews";
+        window.location = "/takeaway/all";
       }
 
   }

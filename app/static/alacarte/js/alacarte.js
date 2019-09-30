@@ -5,6 +5,8 @@ const checkBtn = document.getElementById('checkout');
 
 checkBtn.addEventListener("click", function(){
 
+  alert("Ihre Bestellung wurde an die Küche geschickt!!");
+
   const totalPrice = parseFloat(document.getElementById("priceTotal").textContent);
 
   const order = {};
@@ -52,9 +54,7 @@ checkBtn.addEventListener("click", function(){
                 location.reload(true);
 
             } else {
-              // if success, alert the msg and redirect to alacarte index page
-              alert(resp.success);
-
+              
               // redirct handling + javascript template literals > alacarte index page
               window.location = `/alacarte/interface/${order.tableName}/${order.seatNumber}`;
             }

@@ -29,15 +29,7 @@
         <ul class="navbar-nav mx-auto text-capitalize">
 
 
-          <li class="nav-item active">
-            <a class="nav-link" href="#">home</a>
-          </li>
-          <li class="nav-item">
-            <a class="nav-link " href="#">about</a>
-          </li>
-          <li class="nav-item">
-            <a class="nav-link" href="#">store</a>
-          </li>
+
         </ul>
         <div class="nav-info-items d-none d-lg-flex ">
           <!-- single info -->
@@ -93,34 +85,23 @@
       <!-- section title -->
       <div class="row">
         <div class="col-10 mx-auto col-sm-6 text-center">
-          <h1 class="text-capitalize">our <strong class="banner-title ">store</strong></h1>
+          <h1 class="text-capitalize">our <strong class="banner-title ">menu</strong></h1>
         </div>
       </div>
       <!-- end of section title -->
       <!--filter buttons -->
       <div class="row">
         <div class=" col-lg-8 mx-auto d-flex justify-content-around my-2 sortBtn flex-wrap">
-          <a href="#" class="btn btn-outline-secondary btn-black text-uppercase filter-btn m-2" data-filter="all"> all</a>
-          <a href="#" class="btn btn-outline-secondary btn-black text-uppercase filter-btn m-2" data-filter="cakes">cakes</a>
-          <a href="#" class="btn btn-outline-secondary btn-black text-uppercase filter-btn m-2" data-filter="cupcakes">cupcakes</a>
-          <a href="#" class="btn btn-outline-secondary btn-black text-uppercase filter-btn m-2" data-filter="sweets">sweets</a>
-          <a href="#" class="btn btn-outline-secondary btn-black text-uppercase filter-btn m-2" data-filter="doughnuts">doughnuts</a>
+          <a href={{ url_for('food_frontview') }} class="btn btn-outline-secondary btn-black text-uppercase filter-btn m-2" data-filter="all"> all</a>
+          {% for cate in categories %}
+          <a href={{ url_for('takeaway_by_category', cate=cate) }} class="btn btn-outline-secondary btn-black text-uppercase filter-btn m-2" data-filter="cakes">{{ cate }}</a>
+          {% endfor %}
         </div>
       </div>
       <!-- search box -->
       <div class="row">
 
-        <div class="col-10 mx-auto col-md-6">
-          <form>
-            <div class="input-group mb-3">
-              <div class="input-group-prepend ">
-                <span class="input-group-text search-box" id="search-icon"><i class="fas fa-search"></i></span>
-              </div>
-              <input type="text" class="form-control" placeholder='item....' id="search-item">
-            </div>
 
-          </form>
-        </div>
       </div>
       <!--end of filter buttons -->
       <!-- store  items-->

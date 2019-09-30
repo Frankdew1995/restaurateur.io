@@ -13,6 +13,10 @@ if __name__ == "__main__":
         print(str(e))
 
     # app.run(port=5000)
-    init_gui(app, port=5000, width=1000,
-             height=500, window_title="Xstar Gastronomy Application", icon=icon)
+    init_gui(app,
+             port=5000,
+             width=1000,
+             height=500,
+             window_title="Swiftify Gastronomy Application",
+             icon=icon)
 

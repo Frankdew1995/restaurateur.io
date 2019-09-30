@@ -9,8 +9,8 @@ import subprocess
 import os
 import pickle
 
-from app.utilities import eat_manner_pickler, void_pickle_dumper, print_qrcode
+from app.utilities import void_pickle_dumper, print_qrcode
 
-# void_pickle_dumper(r_type="x")
+void_pickle_dumper(r_type="z")
 
-print_qrcode()
+# print_qrcode()

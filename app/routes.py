@@ -67,6 +67,7 @@ timezone = 'Europe/Berlin'
 
 today = datetime.now(tz=pytz.timezone(timezone)).date()
 
+
 # Custom Error Page
 @app.errorhandler(404)
 def page_not_found(e):

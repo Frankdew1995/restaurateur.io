@@ -4,6 +4,7 @@ cur_path = os.path.dirname(__file__)
 
 basedir = os.path.abspath(cur_path)
 
+
 class Config(object):
 
     SECRET_KEY = os.environ.get('SECRET_KEY') or 'you-will-never-guess'
@@ -13,9 +14,10 @@ class Config(object):
 
     SQLALCHEMY_TRACK_MODIFICATIONS = False
 
-    DEBUG = True
+    DEBUG = False
 
     CACHE_TYPE = "simple"
+
 
 class DevConfig(Config):
 

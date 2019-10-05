@@ -410,3 +410,11 @@ class EditBuffetForm(FlaskForm):
                               validators=[DataRequired()])
 
     submit = SubmitField(u"确认更新")
+
+
+class PaymentForm(FlaskForm):
+
+    card_submit = SubmitField(u"Karte")
+
+    cash_submit = SubmitField(u"Bar")
+

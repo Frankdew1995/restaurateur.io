@@ -1,206 +1,230 @@
+
 <!DOCTYPE html>
 <html lang="en">
-
 <head>
+  <meta http-equiv="Content-Type" content="text/html; charset=UTF-8"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1.0"/>
+  <title>{{title}}</title>
 
-
-  <meta charset="utf-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
-  <meta name="description" content="">
-  <meta name="author" content="">
-
-  <title id="title">{{title}}</title>
-
-  <!-- Bootstrap Core CSS -->
-  <link href="{{ url_for('static', filename='css/bootstrap.min.css') }}" rel="stylesheet">
-
-  <!-- Custom Fonts -->
-  <!-- <link href=" {{ url_for('static', filename='fontawesome-free/css/all.min.css') }} " rel="stylesheet" type="text/css"> -->
-  <link href="https://fonts.googleapis.com/css?family=Source+Sans+Pro:300,400,700,300italic,400italic,700italic" rel="stylesheet" type="text/css">
-  <!-- <link href="{{ url_for('static', filename='simple-line-icons/css/simple-line-icons.css') }}" rel="stylesheet"> -->
-
-  <!-- Custom CSS -->
-  <!-- <link href="{{ url_for('static', filename='css/stylish-portfolio.min.css') }}" rel="stylesheet"> -->
-
+  <!-- CSS  -->
+  <link href="https://fonts.googleapis.com/icon?family=Material+Icons" rel="stylesheet">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/materialize/1.0.0/css/materialize.min.css">
+  <link rel="stylesheet" href={{ url_for('static', filename="fontawesome-free/css/all.min.css") }}>
 </head>
-<style>
 
-    .right_img {
-        top: -35%;
-        position: absolute;
+<style media="screen">
+
+      /* Custom Stylesheet */
+      /**
+      * Use this file to override Materialize files so you can update
+      * the core Materialize files in the future
+      *
+      * Made By MaterializeCSS.com
+      */
+
+      .icon-block {
+      padding: 0 15px;
+      }
+      .icon-block .material-icons {
+      font-size: inherit;
+      }
+
+
+
+      .card .card-content {
+
+        border-radius: 0 0 2px 2px;
+        padding: 15px;
+      }
+
+      .card-title {
+        margin-top:1px;
+        text-align: left;
+      }
+
+      .blue-grey .darken-1 {
+
+        background-color: #202224;
+      }
+
+
+
+      .row {
+
+          margin-left: auto;
+          margin-right: auto;
+          margin-bottom: 0;
+
+      }
+
+      .card-content .white-text{
+        text-align: left;
+      }
+
+      .card-action > a{
+        margin-left: 5px;
+        margin-top: 5px;
+      }
+
+      .section {
+          padding-top: 0rem;
+          padding-bottom: 0rem;
+      }
+
+      .row .col {
+          float: left;
+          -webkit-box-sizing: border-box;
+          box-sizing: border-box;
+          padding: 0.1rem;
+          min-height: 1px;
+      }
+
+      .row .col.s12 {
         width: 100%;
-        display: flex;
-        justify-content: space-around;
+        margin-left: auto;
+        margin-top: 1px;
+        left: auto;
+        right: auto;
+
     }
-
-          .column {
-        float: left;
-        width: 20.33%;
-        padding: 5px;
-        margin-left: 13px
-
-      }
-
-        /* Clear floats after image containers */
-        .row::after {
-          content: "";
-          clear: both;
-          display: table;
-
-        }
-
-
-        .container {
-
-          margin-top: 390px
-        }
-
-
-      body {
-
-        background-size: 100% 90%
-      }
-
-
-
-
 
 </style>
 
-<body id="page-top" background={{url_for('static', filename='img/food6.jpg')}}>
 
+<body>
 
-  <section class="content-section text-white text-center" id="services">
+  <div class="section no-pad-bot" id="index-banner">
     <div class="container">
 
-      {% with messages = get_flashed_messages() %}
 
-        {% if messages %}
 
-          {% for message in messages %}
+    </div>
+  </div>
 
-          <div class="alert alert-success" role="alert">
-              {{ message }}
-          </div>
 
-          {% endfor %}
+  <div class="container">
+    <div class="section">
 
-        {% endif %}
-
-      {% endwith %}
+      <!--   Icon Section   -->
+  <div class="row">
 
 
 
-      <div class="row">
-
-        <div class="column">
-
-          <a href={{ url_for('order_alacarte', table_name=table_name, seat_number=seat_number) }}>
-                  <img class="img1" src={{ url_for('static', filename='img/wydc.png') }}/>
-          </a>
-
-          <h6>
-            <strong>Bestellen</strong>
-          </h6>
+    <div class="col s4 s4">
+      <div class="card blue-grey darken-1">
+        <div class="card-content white-text">
+          <p>Uhrzeiten</p>
+          <p id="datetime">00:00:00</p>
         </div>
-
-
-
-        <div class="column">
-
-          <a href={{ url_for('order_alacarte_drinks', table_name=table_name, seat_number=seat_number) }}>
-            <img class="img1" src={{ url_for('static', filename='img/jsyl.png') }}/>
-          </a>
-
-          <h6>
-            <strong>Getraenke</strong>
-          </h6>
-
-        </div>
-
-
-
-        <div class="column">
-
-
-          <a href="#" id="" data-toggle="modal" data-target="#exampleModal">
-            <img class="img1" src={{ url_for('static', filename='img/wyjz.png') }}/>
-          </a>
-
-          <h6>
-            <strong>Zahlen</strong>
-          </h6>
-
-        </div>
-
-        <!-- Modal -->
-        <div class="modal fade" id="exampleModal" tabindex="-1" role="dialog" aria-labelledby="exampleModalLabel" aria-hidden="true">
-          <div class="modal-dialog" role="document">
-            <div class="modal-content">
-
-              <div class="modal-body" style="color:black">
-                Woohoo, hat Ihnen das Essen geschmeckt? Und wie möchten Sie bezahlen?
-              </div>
-              <div class="modal-footer">
-
-                  <button type="button" class="btn btn-info" id="Karte">
-                      Karte
-                  </button>
-
-                  <button type="button" class="btn btn-primary" id="Bar">Bar</button>
-
-              </div>
-            </div>
-          </div>
-        </div>
-
-
-
-        <div class="column">
-
-            <a href="#" id="service">
-              <img class="img1" src={{ url_for('static', filename='img/fwyxd.png') }}/>
-            </a>
-          <h6>
-            <strong>Service</strong>
-          </h6>
-
-        </div>
-
-
-
       </div>
     </div>
 
-    <p style="display:none">
 
-      <span id="tableName">{{table_name}}</span>
-      <span id="seatNumber">{{seat_number}}</span>
-
-    </p>
-
-
-
-    <p>
-      Wenn Sie auf die Schaltfläche Start klicken, können Sie das automatische Bestellsystem verwenden.
-      Dieses System speichert keine privaten Daten, die mit Ihnen verknüpft sind. Es werden nur Kunden-IDs für die einmalige Verwendung zur Differenzierung generiert.
-    </p>
-  </section>
+    <div class="col s4 s4">
+      <div class="card blue-grey darken-1">
+        <div class="card-content white-text">
+          <p>Platz</p>
+          <p>{{seat_number}}</p>
+        </div>
+      </div>
+    </div>
 
 
+    <div class="col s4 s4">
+      <div class="card blue-grey darken-1">
+        <div class="card-content white-text">
+          <p>Tisch</p>
+          <p>{{table_name}}</p>
+        </div>
+      </div>
+    </div>
 
-  <!-- Bootstrap core JavaScript -->
-  <script src="{{ url_for('static', filename='js/jquery/jquery.min.js') }}"></script>
-  <script src="{{ url_for('static', filename='js/bootstrap/bootstrap.bundle.min.js') }}"></script>
 
-  <!-- Plugin JavaScript -->
-  <script src="{{ url_for('static', filename='js/jquery/jquery.easing.min.js') }}"></script>
+    <div class="col s12 m7">
+      <div class="card">
+        <div class="card-image">
+          <img src="https://images.pexels.com/photos/459469/pexels-photo-459469.jpeg?auto=compress&cs=tinysrgb&dpr=2&w=500">
+        </div>
+        {% with messages = get_flashed_messages() %}
 
-  <!-- Custom scripts for this template -->
-  <script src="{{ url_for('static', filename='js/stylish-portfolio.min.js') }}"></script>
+          {% if messages %}
+
+            {% for message in messages %}
+
+            <div class="alert alert-success" role="alert">
+              <span class="card-title">
+                {{ message }}
+              </span>
+
+            </div>
+
+            {% endfor %}
+
+          {% endif %}
+
+        {% endwith %}
+
+        <p style="display:none">
+
+          <span id="tableName">{{table_name}}</span>
+          <span id="seatNumber">{{seat_number}}</span>
+
+        </p>
+
+        <div class="card-action">
+          <a href={{ url_for('order_alacarte', table_name=table_name, seat_number=seat_number) }} class="waves-effect waves-light btn">
+            <i class="fas fa-utensils">
+              Bestellen
+            </i>
+          </a>
+
+          <a href={{ url_for('order_alacarte_drinks', table_name=table_name, seat_number=seat_number) }} class="waves-effect waves-light btn">
+            <i class="fas fa-cocktail">
+              Getränke
+            </i>
+          </a>
+
+          <a href="#" class="waves-effect waves-light btn" id="service">
+            <i class="fas fa-phone-volume">
+              der Kellner
+            </i>
+          </a>
+
+          <a href={{ url_for('select_payment', table_name=table_name, seat_number=seat_number) }} class="waves-effect waves-light btn">
+            <i class="fas fa-euro-sign">
+              Zahlen
+            </i>
+          </a>
+
+
+
+
+
+        </div>
+      </div>
+    </div>
+
+  </div>
+
+    </div>
+    <br><br>
+  </div>
+
+
+  <!-- Compiled and minified JavaScript -->
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/materialize/1.0.0/js/materialize.min.js"></script>
   <script src="{{ url_for('static', filename='js/alacarte_service_call.js') }}"></script>
 
+  <script type="text/javascript">
+          window.onload = startInterval;
+          function startInterval() {
+              setInterval("startTime();",1000);
+          }
+          function startTime() {
+              var now = new Date();
+              document.getElementById('datetime').textContent = now.getHours() + ":" + now.getMinutes() + ":" +now.getSeconds();
+      }
+    </script>
 
-</body>
-
+  </body>
 </html>

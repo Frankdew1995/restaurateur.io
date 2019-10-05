@@ -16,7 +16,8 @@ from .forms import (AddDishForm, StoreSettingForm,
                     EditPrinterForm, EditBuffetPriceForm,
                     AddHolidayForm, EditHolidayForm,
                     AddCategoryForm, EditCategoryForm,
-                    AuthForm, EditBuffetForm)
+                    AuthForm, EditBuffetForm,
+                    PaymentForm)
 
 from .utilities import (json_reader, store_picture,
                         generate_qrcode, activity_logger,
@@ -9427,4 +9428,77 @@ def jpbuffet_special_checkout():
             return jsonify({"success": "Ihre Bestellung wurde an die Küche geschickt"})
 
 
+@app.route('/guest/select/payment/<string:table_name>/<string:seat_number>',
+           methods=["GET", "POST"])
+def select_payment(table_name, seat_number):
 
+    referrer = request.headers.get('Referer')
+
+    form = PaymentForm()
+
+    # If a guest selects a payment
+    if form.validate_on_submit() or request.method == "POST":
+
+        if form.card_submit:
+
+            pay_with = "Karte"
+
+            is_paying = True
+
+            table = db.session.query(Table).filter_by(name=table_name.upper()).first()
+
+            container = json.loads(table.container)
+
+            container['payCalled'] = True
+
+            table.container = json.dumps(container)
+
+            db.session.commit()
+
+            from threading import Thread
+
+            th = Thread(target=pay2print, args=(table_name, seat_number, is_paying, pay_with,))
+
+            th.start()
+
+            flash("Vielen Dank für Ihren Besuch und demnächst "
+                  "kommt ein Kellner mit der Kasse!!")
+
+            return redirect(url_for('alacarte_navigate',
+                                    table_name=table_name,
+                                    seat_number=seat_number))
+
+        if form.cash_submit:
+
+            pay_with = "Bar"
+
+            is_paying = True
+
+            table = db.session.query(Table).filter_by(name=table_name.upper()).first()
+
+            container = json.loads(table.container)
+
+            container['payCalled'] = True
+
+            table.container = json.dumps(container)
+
+            db.session.commit()
+
+            from threading import Thread
+
+            th = Thread(target=pay2print, args=(table_name, seat_number, is_paying, pay_with,))
+
+            th.start()
+
+            flash("Vielen Dank für Ihren Besuch und demnächst "
+                  "kommt ein Kellner mit der Kasse!!")
+
+            return redirect(url_for('alacarte_navigate',
+                                    table_name=table_name,
+                                    seat_number=seat_number))
+
+    context = dict(form=form,
+                   referrer=referrer,
+                   title=u"À la carte")
+
+    return render_template("select_payment.html", **context)

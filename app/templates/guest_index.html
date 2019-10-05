@@ -9,9 +9,11 @@
   <!-- CSS  -->
   <link href="https://fonts.googleapis.com/icon?family=Material+Icons" rel="stylesheet">
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/materialize/1.0.0/css/materialize.min.css">
+  <link rel="stylesheet" href={{ url_for('static', filename="fontawesome-free/css/all.min.css") }}>
 </head>
 
 <style media="screen">
+
       /* Custom Stylesheet */
       /**
       * Use this file to override Materialize files so you can update
@@ -95,6 +97,7 @@
     <div class="container">
 
       <div class="card blue-grey darken-1">
+
                 <div class="card-content white-text">
                   {% if not is_business_hours %}
                   <p>noch Ausserhalb Geschäftszeiten!</p>
@@ -104,6 +107,7 @@
                   <p>{{buffet_price_kid}} € pro Kind (Kind bis 4 Jahre essenfrei, bis 12 Jahre zum halben Preis)</p>
                   {% endif %}
                 </div>
+
       </div>
 
     </div>
@@ -114,7 +118,7 @@
     <div class="section">
 
       <!--   Icon Section   -->
-      <div class="row">
+  <div class="row">
 
 
 
@@ -158,11 +162,14 @@
             Die entsprechenden Mahlzeitengebühren werden nach dem Anklicken berechnet.</p>
         </div>
         <div class="card-action">
+
           {% if is_jp_buffet %}
+
           <a href={{ url_for('jpbuffet_index', table_name=table_name, seat_number=seat_number, is_kid=0) }} class="waves-effect waves-light btn">Buffet</a>
           <a href={{ url_for('jpbuffet_index', table_name=table_name, seat_number=seat_number, is_kid=1) }} class="waves-effect waves-light btn">Kinder Buffet</a>
 
           {% elif is_jp_buffet == False %}
+
           <a href={{ url_for('mongo_index', table_name=table_name, seat_number=seat_number, is_kid=0) }} class="waves-effect waves-light btn">Buffet</a>
           <a href={{ url_for('mongo_index', table_name=table_name, seat_number=seat_number, is_kid=1) }} class="waves-effect waves-light btn">Kinder Buffet</a>
 

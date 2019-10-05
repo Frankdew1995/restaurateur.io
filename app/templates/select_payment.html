@@ -1,0 +1,176 @@
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta http-equiv="Content-Type" content="text/html; charset=UTF-8"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1.0"/>
+  <title>{{title}}</title>
+
+  <!-- CSS  -->
+  <link href="https://fonts.googleapis.com/icon?family=Material+Icons" rel="stylesheet">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/materialize/1.0.0/css/materialize.min.css">
+  <link rel="stylesheet" href={{ url_for('static', filename="fontawesome-free/css/all.min.css") }}>
+</head>
+
+<style media="screen">
+
+      /* Custom Stylesheet */
+      /**
+      * Use this file to override Materialize files so you can update
+      * the core Materialize files in the future
+      *
+      * Made By MaterializeCSS.com
+      */
+
+      .icon-block {
+      padding: 0 15px;
+      }
+      .icon-block .material-icons {
+      font-size: inherit;
+      }
+
+
+
+      .card .card-content {
+
+        border-radius: 0 0 2px 2px;
+        padding: 15px;
+      }
+
+      .card-title {
+        margin-top:1px;
+        text-align: left;
+      }
+
+      .blue-grey .darken-1 {
+
+        background-color: #202224;
+      }
+
+
+
+      .row {
+
+          margin-left: auto;
+          margin-right: auto;
+          margin-bottom: 0;
+
+      }
+
+      .card-content .white-text{
+        text-align: left;
+      }
+
+      .card-action > a{
+        margin-left: 5px;
+        margin-top: 5px;
+      }
+
+      .section {
+          padding-top: 0rem;
+          padding-bottom: 0rem;
+      }
+
+      .row .col {
+          float: left;
+          -webkit-box-sizing: border-box;
+          box-sizing: border-box;
+          padding: 0.1rem;
+          min-height: 1px;
+      }
+
+      .row .col.s12 {
+        width: 100%;
+        margin-left: auto;
+        margin-top: 1px;
+        left: auto;
+        right: auto;
+
+    }
+
+</style>
+
+
+<body>
+
+  <div class="section no-pad-bot" id="index-banner">
+    <div class="container">
+
+
+
+    </div>
+  </div>
+
+
+  <div class="container">
+    <div class="section">
+
+      <!--   Icon Section   -->
+  <div class="row">
+
+
+    <div class="col s12 m7">
+
+      <div class="card">
+
+        <div class="card-content">
+
+          <span class="card-title">
+
+            Woohoo, hat Ihnen das Essen geschmeckt? Und wie möchten Sie bezahlen?
+
+          </span>
+
+
+        </div>
+
+        <div class="card-action">
+
+          <form action='' method="POST" enctype="multipart/form-data">
+
+
+              {{ form.hidden_tag() }}
+
+
+                  <p>
+                      
+                      {{ form.card_submit( class='waves-effect waves-light btn' )}}
+
+                      {{ form.cash_submit( class='waves-effect waves-light btn' )}}
+
+                      <br>
+
+                  </p>
+
+                  <p>
+
+                    <a href='{{ referrer }}' class='waves-effect waves-light btn red'>
+                      Abbrechen
+                    </a>
+
+
+                  </p>
+
+          </form>
+
+        </div>
+
+      </div>
+
+    </div>
+
+  </div>
+
+    </div>
+    <br><br>
+  </div>
+
+
+  <!-- Compiled and minified JavaScript -->
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/materialize/1.0.0/js/materialize.min.js"></script>
+  <script src="{{ url_for('static', filename='js/alacarte_service_call.js') }}"></script>
+
+
+
+  </body>
+</html>

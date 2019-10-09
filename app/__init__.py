@@ -24,6 +24,7 @@ cache = Cache(app)
 
 # Set the Login View to protect a view
 login.login_view = "login"
+
 from app import routes, models
 
 
